@@ -1,0 +1,143 @@
+<chapter>
+  <title>Advanced Memory Segments</title>
+
+  <para>
+    This is the last section of the Ophis tutorial.  By now we've
+    covered the basics of every command in the assembler; in this
+    final installment we show the full capabilities of
+    the <literal>.text</literal> and <literal>.data</literal> commands
+    as we produce a final set of Commodore 64 header files.
+  </para>
+
+  <section>
+    <title>The Problem</title>
+
+    <para>
+      Our <literal>print'str</literal> routine
+      in <xref linkend="tutor6-src" endterm="tutor6-fname"> accesses
+      memory locations $10 and $11 directly.  We'd prefer to have
+      symbolic names for them.  This reprises our concerns back in
+      <xref linkend="ch5-link"> when we concluded that we wanted two
+      separate program counters.  Now we realize that we really need
+      three; one for the text, one for the data, and one for the zero
+      page data.  And if we're going to allow three, we really should
+      allow any number.
+    </para>
+  </section>
+  <section>
+    <title>The Solution</title>
+
+    <para>
+      The <literal>.data</literal> and <literal>.text</literal>
+      commands can take a label name after them&mdash;this names a new
+      segment.  We'll define a new segment
+      called <literal>zp</literal> (for <quote>zero page</quote>) and
+      have our zero-page variables be placed there.  We can't actually
+      use the default origin of $0000 here either, though, because the
+      Commodore 64 reserves memory locations 0 and 1 to control its
+      memory mappers:
+    </para>
+
+<programlisting>
+.data zp
+.org $0002
+</programlisting>
+
+    <para>
+      Now, actually, the rest of the zero page is reserved too:
+      locations $02-$7F are used by the BASIC interpreter, and
+      locations $80-$FF are used by the KERNAL.  We don't need the
+      BASIC interpreter, though, so we can back up all of $02-$7F at
+      the start of our program and restore it all when we're done:
+    </para>
+
+<programlisting>
+.scope
+        ; Cache BASIC's zero page at top of available RAM.
+        ldx #$7E
+*       lda $01, x
+        sta $CF81, x
+        dex
+        bne -
+
+        jsr _main
+
+        ; Restore BASIC's zero page and return control.
+
+        ldx #$7E
+*       lda $CF81, x
+        sta $01, x
+        dex
+        bne -
+        rts
+
+_main:
+        ; _main points at the start of the real program,
+        ; which is actually outside of this scope
+.scend
+</programlisting>
+
+    <para>
+      The new, improved header file is <xref linkend="c64-2-src"
+      endterm="c64-2-fname">.
+    </para>
+
+    <para>
+      Our <literal>print'str</literal> routine is then rewritten to
+      declare and use a zero-page variable, like so:
+    </para>
+
+<programlisting>
+; PRINTSTR routine.  Accumulator stores the low byte of the address,
+; X register stores the high byte.  Destroys the values of $10 and
+; $11.
+
+.scope
+.data zp
+.space _ptr 2
+.text
+printstr:
+        sta _ptr
+        stx _ptr+1
+        ldy #$00
+_lp:    lda (_ptr),y
+        beq _done
+        jsr chrout
+        iny
+        bne _lp
+_done:  rts
+.scend
+</programlisting>
+
+    <para>
+      Also, we ought to put in an extra check to make sure our
+      zero-page allocations don't overflow, either:
+    </para>
+
+<programlisting>
+.data zp
+.checkpc $80
+</programlisting>
+
+    <para>
+      That concludes our tour.  The final source file
+      is <xref linkend="tutor7-src" endterm="tutor7-fname">.
+    </para>
+  </section>
+  <section>
+    <title>Where to go from here</title>
+    <para>
+      This tutorial has touched on everything that the assembler can
+      do, but it's not really well organized as a
+      reference.  <xref linkend="ref-link"> is a better place to look
+      up matters of syntax or consult lists of available commands.
+    </para>
+    <para>
+      If you're looking for projects to undertake, the Commodore 64
+      and Atari 2600 development communities are both very strong, and
+      the Apple II and NES development communities are still alive and
+      well as well.  There's an annual Minigame Competition that's
+      always looking for new entries.
+    </para>
+  </section>
+</chapter>

@@ -1,0 +1,110 @@
+<chapter id="ch4-link">
+  <title>Character maps</title>
+
+  <para>
+    Now we will close the gap between the Commodore's
+    version of ASCII and the real one.  We'll also add a time-delay
+    routine to slow down the output.  This routine isn't really of
+    interest to us right now, so we'll add a subroutine
+    called <literal>delay</literal> that executes 2,560*(accumulator)
+    <userinput>NOP</userinput>s.  By the time the program is finished,
+    we'll have executed 768,000 no-ops.
+  </para>
+
+  <para>
+    There actually are better ways of getting a time-delay on the
+    Commodore 64; we'll deal with those in <xref linkend="ch5-link">.
+    As a result, there isn't really a lot to discuss here.  The later
+    tutorials will be building off of <xref linkend="tutor4a-src"
+    endterm="tutor4a-fname">, so you may want to get familiar with
+    that.  Note also the change to the body of
+    the <literal>greet</literal> macro.
+  </para>
+
+  <para>
+    On to the topic at hand.  Let's change the code to use mixed case.
+    We defined the <literal>upper'case</literal>
+    and <literal>lower'case</literal> aliases back
+    in <xref linkend="ch3-link"> as part of the
+    standard <xref linkend="kernal-src" endterm="kernal-fname">
+    header, so we can add this before our invocations of
+    the <literal>greet</literal> macro:
+  </para>
+
+<programlisting>
+          lda #lower'case
+          jsr chrout
+</programlisting>
+
+  <para>
+    And that will put us into mixed case mode.  So, now we just need
+    to redefine the data so that it uses the mixed-case:
+  </para>
+
+<programlisting>
+hello1:   .byte "Hello, ",0
+hello2:   .byte "!", 13, 0
+
+target1:  .byte "programmer", 0
+target2:  .byte "room", 0
+target3:  .byte "building", 0
+target4:  .byte "neighborhood", 0
+target5:  .byte "city", 0
+target6:  .byte "nation", 0
+target7:  .byte "world", 0
+target8:  .byte "Solar System", 0
+target9:  .byte "Galaxy", 0
+target10: .byte "Universe", 0
+</programlisting>
+
+  <para>
+    The code that does this is in <xref linkend="tutor4b-src"
+    endterm="tutor4b-fname">.  If you assemble and run it, you will
+    notice that the output is not what we want.  In particular, upper
+    and lowercase are reversed, so we have messages
+    like <computeroutput>hELLO, sOLAR sYSTEM!</computeroutput>.  For
+    the specific case of PETSCII, we can just fix our strings, but
+    that's less of an option if we're writing for the Apple II's
+    character set, or targeting a game console that puts its letters
+    in arbitrary locations.  We need to remap how strings are turned
+    into byte values.  The <literal>.charmap</literal>
+    and <literal>.charmapbin</literal> directives do what we need.
+  </para>
+
+  <para>
+    The <literal>.charmap</literal> directive usually takes two
+    arguments; a byte (usually in character form) indicating the ASCII
+    value to start remapping from, and then a string giving the new
+    values.  To do our case-swapping, we write two directives before
+    defining any string constants:
+  </para>
+
+<programlisting>
+.charmap 'A, "abcdefghijklmnopqrstuvwxyz"
+.charmap 'a, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+</programlisting>
+
+  <para>
+    Note that the <literal>'a</literal> constant in the second
+    directive refers to the <quote>a</quote> character in the source,
+    not in the current map.
+  </para>
+
+  <para>
+    The fixed code is in <xref linkend="tutor4c-src"
+    endterm="tutor4c-fname">, and will produce the expected results
+    when run.
+  </para>
+
+  <para>
+    An alternative is to use a <literal>.charmapbin</literal>
+    directive to replace the entire character map directly.  This
+    specifies an external file, 256 bytes long, that is loaded in at
+    that point.  A binary character map for the Commodore 64 is
+    provided with the sample programs
+    as <filename>petscii.map</filename>. There are also three
+    files, <filename>a2normal.map</filename>, <filename>a2inverse.map</filename>,
+    and <filename>a2blink.map</filename> that handle the Apple II's
+    very nonstandard character encodings.
+  </para>
+</chapter>

@@ -1,0 +1,315 @@
+<chapter id="part1">
+  <title>The basics</title>
+
+  <para>
+    In this first part of the tutorial we will create a
+    simple <quote>Hello World</quote> program to run on the Commodore
+    64.  This will cover:
+
+    <itemizedlist>
+      <listitem><para>How to make programs run on a Commodore 64</para></listitem>
+      <listitem><para>Writing simple code with labels</para></listitem>
+      <listitem><para>Numeric and string data</para></listitem>
+      <listitem><para>Invoking the assembler</para></listitem>
+    </itemizedlist>
+  </para>
+
+  <section>
+    <title>A note on numeric notation</title>
+
+    <para>
+      Throughout these tutorials, I will be using a lot of both
+      decimal and hexadecimal notation.  Hex numbers will have a
+      dollar sign in front of them.  Thus, 100 = $64, and $100 = 256.
+    </para>
+  </section>
+
+  <section>
+    <title>Producing Commodore 64 programs</title>
+
+    <para>
+       Commodore 64 programs are stored in
+       the <filename>PRG</filename> format on disk.  Some emulators
+       (such as CCS64 or VICE) can run <filename>PRG</filename>
+       programs directly; others need them to be transferred to
+       a <filename>D64</filename> image first.
+    </para>
+
+    <para>
+      The <filename>PRG</filename> format is ludicrously simple.  It
+      has two bytes of header data: This is a little-endian number
+      indicating the starting address.  The rest of the file is a
+      single continuous chunk of data loaded into memory, starting at
+      that address.  BASIC memory starts at memory location 2048, and
+      that's probably where we'll want to start.
+    </para>
+
+    <para>
+      Well, not quite.  We want our program to be callable from BASIC,
+      so we should have a BASIC program at the start.  We guess the
+      size of a simple one line BASIC program to be about 16 bytes.
+      Thus, we start our program at memory location 2064 ($0810), and
+      the BASIC program looks like this:
+    </para>
+
+    <programlisting>
+10 SYS 2064
+    </programlisting>
+
+    <para>
+      We <userinput>SAVE</userinput> this program to a file, then
+      study it in a debugger.  It's 15 bytes long:
+    </para>
+
+    <screen>
+1070:0100  01 08 0C 08 0A 00 9E 20-32 30 36 34 00 00 00
+    </screen>
+
+    <para>
+      The first two bytes are the memory location: $0801.  The rest of
+      the data breaks down as follows:
+    </para>
+
+    <table frame="all">
+      <title>BASIC program breakdown</title>
+      <tgroup cols='2'>
+        <thead>
+          <row>
+            <entry align="center">Memory Locations</entry>
+            <entry align="center">Value</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row><entry>$0801-$0802</entry><entry>2-byte pointer to the next line of BASIC code ($080C).</entry></row>
+          <row><entry>$0803-$0804</entry><entry>2-byte line number ($000A = 10).</entry></row>
+          <row><entry>$0805</entry><entry>Byte code for the <userinput>SYS</userinput> command.</entry></row>
+          <row><entry>$0806-$080A</entry><entry>The rest of the line, which is just the string <quote> 2064</quote>.</entry></row>
+          <row><entry>$080B</entry><entry>Null byte, terminating the line.</entry></row>
+          <row><entry>$080C-$080D</entry><entry>2-byte pointer to the next line of BASIC code ($0000 = end of program).</entry></row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>
+      That's 13 bytes.  We started at 2049, so we need 2 more bytes of
+      filler to make our code actually start at location 2064.  These
+      17 bytes will give us the file format and the BASIC code we need
+      to have our machine language program run.
+    </para>
+
+    <para>
+      These are just bytes&mdash;indistinguishable from any other sort of
+      data.  In Ophis, bytes of data are specified with
+      the <literal>.byte</literal> command.  We'll also have to tell
+      Ophis what the program counter should be, so that it knows what
+      values to assign to our labels.  The <literal>.org</literal>
+      (origin) command tells Ophis this.  Thus, the Ophis code for our
+      header and linking info is:
+    </para>
+
+    <programlisting>
+.byte $01, $08, $0C, $08, $0A, $00, $9E, $20
+.byte $32, $30, $36, $34, $00, $00, $00, $00
+.byte $00, $00
+.org $0810
+    </programlisting>
+
+    <para>
+       This gets the job done, but it's completely incomprehensible,
+       and it only uses two directives&mdash;not very good for a
+       tutorial.  Here's a more complicated, but much clearer, way of
+       saying the same thing.
+    </para>
+
+    <programlisting>
+.word $0801
+.org  $0801
+
+        .word next, 10       ; Next line and current line number
+        .byte $9e," 2064",0  ; SYS 2064
+next:   .word 0              ; End of program
+
+.advance 2064
+    </programlisting>
+
+    <para>
+      This code has many advantages over the first.
+
+      <itemizedlist>
+        <listitem><para> It describes better what is actually
+          happening.  The <literal>.word</literal> directive at the
+          beginning indicates a 16-bit value stored in the typical
+          65xx way (small byte first).  This is followed by
+          an <literal>.org</literal> statement, so we let the
+          assembler know right away where everything is supposed to
+          be.
+        </para></listitem>
+        <listitem><para> Instead of hardcoding in the value $080C, we
+           instead use a label to identify the location it's pointing
+           to.  Ophis will compute the address
+           of <literal>next</literal> and put that value in as data.
+           We also describe the line number in decimal since BASIC
+           line numbers generally <emphasis>are</emphasis> in decimal.
+           Labels are defined by putting their name, then a colon, as
+           seen in the definition of <literal>next</literal>.
+        </para></listitem>
+        <listitem><para> 
+           Instead of putting in the hex codes for the string part of
+           the BASIC code, we included the string directly.  Each
+           character in the string becomes one byte.
+        </para></listitem>
+        <listitem><para> 
+          Instead of adding the buffer ourselves, we
+          used <literal>.advance</literal>, which outputs zeros until
+          the specified address is reached.  Attempting
+          to <literal>.advance</literal> backwards produces an
+          assemble-time error.
+        </para></listitem>
+        <listitem><para> 
+          It has comments that explain what the data are for.  The
+          semicolon is the comment marker; everything from a semicolon
+          to the end of the line is ignored.
+        </para></listitem>
+      </itemizedlist>
+    </para>
+  </section>
+
+  <section>
+    <title>Related commands and options</title>
+
+    <para>
+      This code includes constants that are both in decimal and in
+      hex.  It is also possible to specify constants in octal, binary,
+      or with an ASCII character.
+
+      <itemizedlist>
+        <listitem><para>To specify decimal constants, simply write the number.</para></listitem>
+        <listitem><para>To specify hexadecimal constants, put a $ in front.</para></listitem>
+        <listitem><para>To specify octal constants, put a 0 (zero) in front.</para></listitem>
+        <listitem><para>To specify binary constants, put a % in front.</para></listitem>
+        <listitem><para>To specify ASCII constants, put an apostrophe in front.</para></listitem>
+      </itemizedlist>
+
+      Example: 65 = $41 = 0101 = %1000001 = 'A
+    </para>
+    <para>
+      There are other commands besides <literal>.byte</literal>
+      and <literal>.word</literal> to specify data.  In particular,
+      the <literal>.dword</literal> command specifies four-byte values
+      which some applications will find useful.  Also, some linking
+      formats (such as the <filename>SID</filename> format) have
+      header data in big-endian (high byte first) format.
+      The <literal>.wordbe</literal> and <literal>.dwordbe</literal>
+      directives provide a way to specify multibyte constants in
+      big-endian formats cleanly.
+    </para>
+  </section>
+
+  <section>
+    <title>Writing the actual code</title>
+
+    <para>
+      Now that we have our header information, let's actually write
+      the <quote>Hello world</quote> program.  It's pretty
+      short&mdash;a simple loop that steps through a hardcoded array
+      until it reaches a 0 or outputs 256 characters.  It then returns
+      control to BASIC with an <literal>RTS</literal> statement.
+    </para>
+
+    <para>
+      Each character in the array is passed as an argument to a
+      subroutine at memory location $FFD2.  This is part of the
+      Commodore 64's BIOS software, which its development
+      documentation calls the KERNAL.  Location $FFD2 prints out the
+      character corresponding to the character code in the
+      accumulator.
+    </para>
+
+    <programlisting>
+        ldx #0
+loop:   lda hello, x
+        beq done
+        jsr $ffd2
+        inx
+        bne loop
+done:   rts
+
+hello:  .byte "HELLO, WORLD!", 0
+    </programlisting>
+
+    <para>
+      The complete, final source is available in
+      the <xref linkend="tutor1-src" endterm="tutor1-fname"> file.
+    </para>
+  </section>
+  <section>
+    <title>Assembling the code</title>
+
+    <para>
+       The Ophis assembler is a collection of Python modules,
+       controlled by a master script.  On Windows, this should all
+       have been combined into an executable
+       file <command>ophis.exe</command>; on other platforms, the
+       Ophis modules should be in the library and
+       the <command>ophis</command> script should be in your path.
+       Typing <command>ophis</command> with no arguments should give a
+       summary of available command line options.
+    </para>
+
+    <table frame="all">
+      <title>Ophis Options</title>
+      <tgroup cols='2'>
+        <thead>
+          <row>
+            <entry align="center">Option</entry>
+            <entry align="center">Effect</entry>
+          </row> 
+        </thead>
+        <tbody>                          
+          <row><entry><option>-6510</option></entry><entry>Allows the 6510 undocumented opcodes as listed in the VICE documentation.</entry></row>
+          <row><entry><option>-65c02</option></entry><entry>Allows opcodes and addressing modes added by the 65C02.</entry></row>
+          <row><entry><option>-v 0</option></entry><entry>Quiet operation.  Only reports errors.</entry></row>
+          <row><entry><option>-v 1</option></entry><entry>Default operation.  Reports files as they are loaded, and gives statistics on the final output.</entry></row>
+          <row><entry><option>-v 2</option></entry><entry>Verbose operation.  Names each assembler pass as it runs.</entry></row>
+          <row><entry><option>-v 3</option></entry><entry>Debug operation:  Dumps the entire IR after each pass.</entry></row>
+          <row><entry><option>-v 4</option></entry><entry>Full debug operation:  Dumps the entire IR and symbol table after each pass.</entry></row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>
+      The only options Ophis demands are an input file and an output
+      file.  Here's a sample session, assembling the tutorial file
+      here:
+    </para>
+    <screen>
+localhost$ ophis tutor1.oph tutor1.prg -v 2
+Loading tutor1.oph
+Running: Macro definition pass
+Running: Macro expansion pass
+Running: Label initialization pass
+Fixpoint failed, looping back
+Running: Label initialization pass
+Running: Circularity check pass
+Running: Expression checking pass
+Running: Easy addressing modes pass
+Running: Label Update Pass
+Fixpoint failed, looping back
+Running: Label Update Pass
+Running: Instruction Collapse Pass
+Running: Mode Normalization pass
+Running: Label Update Pass
+Running: Assembler
+Assembly complete: 45 bytes output (14 code, 29 data, 2 filler)
+    </screen>
+    <para>
+      If your emulator can run <filename>PRG</filename> files
+      directly, this file will now run (and
+      print <computeroutput>HELLO, WORLD!</computeroutput>) as many
+      times as you type <userinput>RUN</userinput>.  Otherwise, use
+      a <filename>D64</filename> management utility to put
+      the <filename>PRG</filename> on a <filename>D64</filename>, then
+      load and run the file off that.
+    </para>
+  </section>
+</chapter>

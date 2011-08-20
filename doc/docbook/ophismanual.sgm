@@ -1,0 +1,29 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN"
+ [<!ENTITY part1 SYSTEM "tutor1.sgm">
+  <!ENTITY part2 SYSTEM "tutor2.sgm">
+  <!ENTITY part3 SYSTEM "tutor3.sgm">
+  <!ENTITY part4 SYSTEM "tutor4.sgm">
+  <!ENTITY part5 SYSTEM "tutor5.sgm">
+  <!ENTITY part6 SYSTEM "tutor6.sgm">
+  <!ENTITY part7 SYSTEM "tutor7.sgm">
+  <!ENTITY samplecode SYSTEM "samplecode.sgm">
+  <!ENTITY pre1 SYSTEM "preface.sgm">
+  <!ENTITY cmdref SYSTEM "cmdref.sgm">
+]>
+<book>
+  <bookinfo>
+    <title>Programming with Ophis</title>
+    <author><firstname>Michael</firstname><surname>Martin</surname></author>
+    <copyright><year>2006-7</year><holder>Michael Martin</holder></copyright>
+  </bookinfo>
+  &pre1;
+  &part1;
+  &part2;
+  &part3;
+  &part4;
+  &part5;
+  &part6;
+  &part7;
+  &samplecode;
+  &cmdref;
+</book>

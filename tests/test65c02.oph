@@ -1,0 +1,74 @@
+; Test file for 65C02 extended opcode compliance
+; This odd little source file uses every addressing mode
+; of every opcode, and uses the opcode itself as the argument
+; to each instruction that takes one.  The resulting binary's
+; bytes are thus in strictly increasing numerical order.
+
+; Some opcodes have multiple mnemonics; we provide both.
+
+; This file also doesn't include the 65C02's opcodes that
+; are also available in stock 6502s - see testbase.oph for
+; those.
+	TSB	$04		;  04: TSB - Zero Page
+	RMB0	$07		;  07: RMB0 - Zero Page
+	TSB	$0C0C		;  0C: TSB - Absolute
+	BBR0	^+$11		;  0F: BBR0 - Relative
+	ORA	($12)		;  12: ORA - (Zero Page)
+	TRB	$14		;  14: TRB - Zero Page
+	RMB1	$17		;  17: RMB1 - Zero Page
+	INA			;  1A: INA - Implied
+	INC			;  INC - Implied
+	TRB	$1C1C		;  1C: TRB - Absolute
+	BBR1	^+$21		;  1F: BBR1 - Relative
+	RMB2	$27		;  27: RMB2 - Zero Page
+	BBR2	^+$31		;  2F: BBR2 - Relative
+	AND	($32)		;  32: AND - (Zero Page)
+	BIT	$34, X		;  34: BIT - Zero Page, X
+	RMB3	$37		;  37: RMB3 - Zero Page
+	DEA			;  3A: DEA - Implied 
+	DEC			;  3A: DEC - Implied
+	BIT	$3C3C,X		;  3C: BIT - Absolute, X
+	BBR3	^+$41		;  3F: BBR3 - Relative
+	RMB4	$47		;  47: RMB4 - Zero Page
+	BBR4	^+$51		;  4F: BBR4 - Relative
+	EOR	($52)		;  52: EOR - (Zero Page)
+	RMB5	$57		;  57: RMB5 - Zero Page
+	PHY			;  5A: PHY - Implied
+	BBR5	^+$61		;  5F: BBR5 - Relative
+	STZ	$64		;  64: STZ - Zero Page
+	RMB6	$67		;  67: RMB6 - Zero Page
+	BBR6	^+$71		;  6F: BBR6 - Relative
+	ADC	($72)		;  72: ADC - (Zero Page)
+	STZ	$74, X		;  74: STZ - Zero Page, X
+	RMB7	$77		;  77: RMB7 - Zero Page
+	PLY			;  7A: PLY - Implied
+	JMP	($7C7C, X)	;  7C: JMP - (Absolute, X)
+	BBR7	^+$81		;  7F: BBR7 - Relative
+	BRA	^-$7E		;  80: BRA - Relative
+	SMB0	$87		;  87: SMB0 - Zero Page
+	BIT	#$89		;  89: BIT - Immediate
+	BBS0	^-$6F		;  8F: BBS0 - Relative
+	STA	($92)		;  92: STA - (Zero Page)
+	SMB1	$97		;  97: SMB1 - Zero Page
+	STZ	$9C9C		;  9C: STZ - Absolute
+	STZ	$9E9E, X	;  9E: STZ - Absolute, X
+	BBS1	^-$5F		;  9F: BBS1 - Relative
+	SMB2	$A7		;  A7: SMB2 - Zero Page
+	BBS2	^-$4F		;  AF: BBS2 - Relative
+	LDA	($B2)		;  B2: LDA - (Zero Page)
+	SMB3	$B7		;  B7: SMB3 - Zero Page
+	BBS3	^-$3F		;  BF: BBS3 - Relative
+	SMB4	$C7		;  C7: SMB4 - Zero Page
+	WAI			;  CB: WAI - Implied
+	BBS4	^-$2F		;  CF: BBS4 - Relative
+	CMP	($D2)		;  D2: CMP - (Zero Page)
+	SMB5	$D7		;  D7: SMB5 - Zero Page
+	PHX			;  DA: PHX - Implied
+	STP			;  DB: STP - Implied
+	BBS5	^-$1F		;  DF: BBS5 - Relative
+	SMB6	$E7		;  E7: SMB6 - Zero Page
+	BBS6	^-$0F		;  EF: BBS6 - Relative
+	SBC	($F2)		;  F2: SBC - (Zero Page)
+	SMB7	$F7		;  F7: SMB7 - Zero Page
+	PLX			;  FA: PLX - Implied
+	BBS7	^+$01		;  FF: BBS7 - Relative

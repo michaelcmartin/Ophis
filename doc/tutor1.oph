@@ -1,0 +1,18 @@
+.word $0801
+.org  $0801
+
+	.word next, 10		; Next line and current line number
+	.byte $9e," 2064",0	; SYS 2064
+next:	.word 0			; End of program
+
+.advance 2064
+
+	ldx #0
+loop:	lda hello, x
+	beq done
+	jsr $ffd2
+	inx
+	bne loop
+done:	rts
+
+hello:	.byte "HELLO, WORLD!", 0

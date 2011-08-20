@@ -1,0 +1,160 @@
+<chapter id="ch3-link">
+  <title>Headers, Libraries, and Macros</title>
+
+  <para>
+    In this chapter we will split away parts of our <quote>Hello
+    World</quote> program into reusable header files and libraries.
+    We will also abstract away our string printing technique into a
+    macro which may be invoked at will, on arbitrary strings.  We will
+    then multiply the output of our program tenfold.
+  </para>
+
+  <section>
+    <title>Header files and libraries</title>
+
+    <para>
+      The prelude to our program&mdash;the <filename>PRG</filename>
+      information and the BASIC program&mdash;are going to be the same
+      in many, many programs.  Thus, we should put them into a header
+      file to be included later.  The <literal>.include</literal>
+      directive will load a file and insert it as source at the
+      designated point.
+    </para>
+
+    <para>
+      A related directive, <literal>.require</literal>, will include
+      the file as long as it hasn't been included yet elsewhere.  It
+      is useful for ensuring a library is linked in.
+    </para>
+
+    <para>
+      For pre-assembled code or raw binary data,
+      the <literal>.incbin</literal> directive lets you include the
+      contents of a binary file directly in the output.  This is handy
+      for linking in pre-created graphics or sound data.
+    </para>
+
+    <para>
+      As a sample library, we will expand the definition of
+      the <literal>chrout</literal> routine to include the standard
+      names for every KERNAL routine.  Our header file will
+      then <literal>.require</literal> it.
+    </para>
+
+    <para>
+      We'll also add some convenience aliases for things like reverse
+      video, color changes, and shifting between upper case/graphics
+      and mixed case text.  We'd feed those to
+      the <literal>chrout</literal> routine to get their effects.
+    </para>
+
+    <para>
+      Since there have been no interesting changes to the prelude, and
+      the KERNAL values are standard, we do not reproduce them here.
+      (The files in question are <xref linkend="c64-1-src"
+      endterm="c64-1-fname"> and <xref linkend="kernal-src"
+      endterm="kernal-fname">.)
+    </para>
+  </section>
+  <section>
+    <title>Macros</title>
+
+    <para>
+      A macro is a way of expressing a lot of code or data with a
+      simple shorthand.  It's also usually configurable.  Traditional
+      macro systems such as C's <literal>#define</literal> mechanic
+      use <emphasis>textual replacement</emphasis>: a macro is
+      expanded before any evaluation or even parsing occurs.
+    </para>
+
+    <para>
+      In contrast, Ophis's macro system uses a <emphasis>call by
+      value</emphasis> approach where the arguments to macros are
+      evaluated to bytes or words before being inserted into the macro
+      body.  This produces effects much closer to those of a
+      traditional function call.  A more detailed discussion of the
+      tradeoffs may be found in <xref linkend="ref-link">.
+    </para>
+
+    <section>
+      <title>Macro definitions</title>
+
+      <para>
+        A macro definition is a set of statements between
+        a <literal>.macro</literal> statement and
+        a <literal>.macend</literal> statement.
+        The <literal>.macro</literal> statement also names the macro
+        being defined.
+      </para>
+
+      <para>
+        No global or anonymous labels may be defined inside a macro:
+        temporary labels only persist in the macro expansion itself.
+        (Each macro body has its own scope.)
+      </para>
+
+      <para>
+        Arguments to macros are referred to by number: the first is
+        <literal>_1</literal>, the second <literal>_2</literal>, and so on.
+      </para>
+
+      <para>
+        Here's a macro that encapsulates the printing routine in our
+        <quote>Hello World</quote> program, with an argument being the
+        address of the string to print:
+      </para>
+
+<programlisting>
+.macro print
+        ldx #0
+_loop:  lda _1, x
+        beq _done
+        jsr chrout
+        inx
+        bne _loop
+_done:
+.macend
+</programlisting>
+
+    </section>
+    <section>
+      <title>Macro invocations</title>
+
+      <para>
+        Macros may be invoked in two ways: one that looks like a
+        directive, and one that looks like an instruction.
+      </para>
+
+      <para>
+        The most common way to invoke a macro is to backquote the name
+        of the macro.  It is also possible to use
+        the <literal>.invoke</literal> command.  These commands look
+        like this:
+      </para>
+
+<programlisting>
+`print msg
+.invoke print msg
+</programlisting>
+
+      <para>
+        Arguments are passed to the macro as a comma-separated list.
+        They must all be expressions that evaluate to byte or word
+        values&mdash;a mechanism similar to <literal>.alias</literal>
+        is used to assign their values to the <literal>_n</literal>
+        names.
+      </para>
+    </section>
+  </section>
+  <section>
+    <title>Example code</title>
+
+    <para>
+      <xref linkend="tutor3-src" endterm="tutor3-fname"> expands our
+      running example, including the code above and also defining a
+      new macro <literal>greet</literal> that takes a string argument
+      and prints a greeting to it.  It then greets far too many
+      targets.
+    </para>
+  </section>
+</chapter>

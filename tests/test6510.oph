@@ -1,0 +1,78 @@
+; Test file for base 6510 undocumented opcode compliance
+; This odd little source file uses every addressing mode
+; of every opcode, and uses the opcode itself as the argument
+; to each instruction that takes one.  The resulting binary's
+; bytes are thus in strictly increasing numerical order.
+
+; Many mnemonics have multiple opcodes with identical
+; effects; Ophis chooses one of them and the arguments
+; herein assume that any assembler will choose as Ophis
+; does.
+
+; This file also doesn't include the 6502's *documented*
+; opcodes - see testbase.oph for those.
+
+	SLO	($03, X)
+	SLO	$07
+	ANC	#$0B
+	SLO	$0F0F
+	SLO	($13), Y
+	SLO	$17, X
+	SLO	$1B1B, Y
+	SLO	$1F1F, X
+	RLA	($23, X)
+	RLA	$27
+	RLA	$2F2F
+	RLA	($33), Y
+	RLA	$37, X
+	RLA	$3B3B, Y
+	RLA	$3F3F, X
+	SRE	($43, X)
+	SRE	$47
+	ASR	#$4B
+	SRE	$4F4F
+	SRE	($53), Y
+	SRE	$57, X
+	SRE	$5B5B, Y
+	SRE	$5F5F, X
+	RRA	($63, X)
+	RRA	$67
+	ARR	#$6B
+	RRA	$6F6F
+	RRA	($73), Y
+	RRA	$77, X
+	RRA	$7B7B, Y
+	RRA	$7F7F, X
+	SAX	($83, X)
+	SAX	$87
+	ANE	#$8B
+	SAX	$8F8F
+	SHA	($93), Y
+	SAX	$97, Y
+	SHS	$9B9B, Y
+	SHX	$9E9E, Y
+	SHA	$9F9F, Y
+	LAX	($A3, X)
+	LAX	$A7
+	LXA	#$AB
+	LAX	$AFAF
+	LAX	($B3), Y
+	LAX	$B7, Y
+	LAS	$BBBB, Y
+	LAX	$BFBF, Y
+	DCP	($C3, X)
+	DCP	$C7
+	SBX	#$CB
+	DCP	$CFCF
+	DCP	($D3), Y
+	DCP	$D7, X
+	DCP	$DBDB, Y
+	DCP	$DFDF, X
+	ISB	($E3, X)
+	ISB	$E7
+	ISB	$EFEF
+	ISB	($F3), Y
+	ISB	$F7, X
+	ISB	$FBFB, Y
+	ISB	$FFFF, X
+	

@@ -1,0 +1,73 @@
+.include "c64-1.oph"
+
+.macro print
+	ldx #0
+_loop:	lda _1, x
+	beq _done
+	jsr chrout
+	inx
+	bne _loop
+_done:
+.macend
+
+.macro greet
+	lda #30
+	jsr delay
+	`print hello1
+	`print _1
+	`print hello2
+.macend
+
+	lda #147
+	jsr chrout
+	lda #lower'case
+	jsr chrout
+	`greet target1
+	`greet target2
+	`greet target3
+	`greet target4
+	`greet target5
+	`greet target6
+	`greet target7
+	`greet target8
+	`greet target9
+	`greet target10
+	rts
+
+.charmap 'A, "abcdefghijklmnopqrstuvwxyz"
+.charmap 'a, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+hello1: .byte "Hello, ",0
+hello2: .byte "!", 13, 0
+
+target1:  .byte "programmer", 0
+target2:  .byte "room", 0
+target3:  .byte "building", 0
+target4:  .byte "neighborhood", 0
+target5:  .byte "city", 0
+target6:  .byte "nation", 0
+target7:  .byte "world", 0
+target8:  .byte "Solar System", 0
+target9:  .byte "Galaxy", 0
+target10: .byte "Universe", 0
+
+; DELAY routine.  Executes 2,560*(A) NOP statements.
+delay:	tax
+	ldy #00
+*	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	iny
+	bne -
+	dex
+	bne -
+	
+	
+	rts

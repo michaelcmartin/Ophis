@@ -1,0 +1,67 @@
+; KERNAL routine aliases (C64)
+
+.alias acptr  $ffa5
+.alias chkin  $ffc6
+.alias chkout $ffc9
+.alias chrin  $ffcf
+.alias chrout $ffd2
+.alias ciout  $ffa8
+.alias cint   $ff81
+.alias clall  $ffe7
+.alias close  $ffc3
+.alias clrchn $ffcc
+.alias getin  $ffe4
+.alias iobase $fff3
+.alias ioinit $ff84
+.alias listen $ffb1
+.alias load   $ffd5
+.alias membot $ff9c
+.alias memtop $ff99
+.alias open   $ffc0
+.alias plot   $fff0
+.alias ramtas $ff87
+.alias rdtim  $ffde
+.alias readst $ffb7
+.alias restor $ff8a
+.alias save   $ffd8
+.alias scnkey $ff9f
+.alias screen $ffed
+.alias second $ff93
+.alias setlfs $ffba
+.alias setmsg $ff90
+.alias setnam $ffbd
+.alias settim $ffdb
+.alias settmo $ffa2
+.alias stop   $ffe1
+.alias talk   $ffb4
+.alias tksa   $ff96
+.alias udtim  $ffea
+.alias unlsn  $ffae
+.alias untlk  $ffab
+.alias vector $ff8d
+
+; Character codes for the colors.
+.alias color'0 144
+.alias color'1 5
+.alias color'2 28
+.alias color'3 159
+.alias color'4 156
+.alias color'5 30
+.alias color'6 31
+.alias color'7 158
+.alias color'8 129
+.alias color'9 149
+.alias color'10 150
+.alias color'11 151
+.alias color'12 152
+.alias color'13 153
+.alias color'14 154
+.alias color'15 155
+
+; ...and reverse video
+.alias reverse'on 18
+.alias reverse'off 146
+
+; ...and character set
+.alias upper'case 142
+.alias lower'case 14

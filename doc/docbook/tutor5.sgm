@@ -1,0 +1,157 @@
+<chapter id="ch5-link">
+  <title>Local variables and memory segments</title>
+
+  <para>
+    As mentioned in <xref linkend="ch4-link">, there are better ways
+    to handle waiting than just executing vast numbers of NOPs.  The
+    Commodore 64 KERNAL library includes a <literal>rdtim</literal>
+    routine that returns the uptime of the machine, in
+    60<superscript>th</superscript>s of a second, as a 24-bit integer.
+    The Commodore 64 programmer's guide available online actually has
+    a bug in it, reversing the significance of the A and Y registers.
+    The accumulator holds the <emphasis>least</emphasis> significant
+    byte, not the most.
+  </para>
+
+  <para>
+    Here's a first shot at a better delay routine:
+  </para>
+
+<programlisting>
+.scope
+        ; data used by the delay routine
+        _tmp:    .byte 0
+        _target: .byte 0
+
+delay:  sta _tmp        ; save argument (rdtim destroys it)
+        jsr rdtim
+        clc
+        adc _tmp        ; add current time to get target
+        sta _target
+*       jsr rdtim
+        cmp _target
+        bmi -           ; Buzz until target reached
+        rts
+.scend
+</programlisting>
+
+  <para>
+    This works, but it eats up two bytes of file space that don't
+    really need to be specified.  Also, it's modifying data inside a
+    program text area, which isn't good if you're assembling to a ROM
+    chip.  (Since the Commodore 64 stores its programs in RAM, it's
+    not an issue for us here.)  A slightly better solution is to
+    use <literal>.alias</literal> to assign the names to chunks of RAM
+    somewhere.  There's a 4K chunk of RAM from $C000 through $CFFF
+    between the BASIC ROM and the I/O ROM that should serve our
+    purposes nicely.  We can replace the definitions
+    of <literal>_tmp</literal> and <literal>_target</literal> with:
+  </para>
+
+<programlisting>
+        ; data used by the delay routine
+        .alias _tmp    $C000
+        .alias _target $C001
+</programlisting>
+
+  <para>
+    This works better, but now we've just added a major bookkeeping
+    burden upon ourselves&mdash;we must ensure that no routines step on
+    each other.  What we'd really like are two separate program
+    counters&mdash;one for the program text, and one for our variable
+    space.
+  </para>
+
+  <para>
+    Ophis lets us do this with the <literal>.text</literal>
+    and <literal>.data</literal> commands.
+    The <literal>.text</literal> command switches to the program-text
+    counter, and the <literal>.data</literal> command switches to the
+    variable-data counter.  When Ophis first starts assembling a file,
+    it starts in <literal>.text</literal> mode.
+  </para>
+
+  <para>
+    To reserve space for a variable, use the .space command.  This
+    takes the form:
+
+<programlisting>
+.space varname size
+</programlisting>
+
+    which assigns the name <literal>varname</literal> to the current
+    program counter, then advances the program counter by the amount
+    specified in <literal>size</literal>.  Nothing is output to the
+    final binary as a result of the <literal>.space</literal> command.
+  </para>
+
+  <para>
+    You may not put in any commands that produce output into
+    a <literal>.data</literal> segment.  Generally, all you will be
+    using are <literal>.org</literal> and <literal>.space</literal>
+    commands.  Ophis will not complain if you
+    use <literal>.space</literal> inside a <literal>.text</literal>
+    segment, but this is nearly always wrong.
+  </para>
+
+  <para>
+    The final version of <literal>delay</literal> looks like this:
+  </para>
+
+<programlisting>
+; DELAY routine.  Takes values from the Accumulator and pauses
+; for that many jiffies (1/60th of a second).
+.scope
+.data
+.space _tmp 1
+.space _target 1
+
+.text
+
+delay:  sta _tmp        ; save argument (rdtim destroys it)
+        jsr rdtim
+        clc
+        adc _tmp        ; add current time to get target
+        sta _target
+*       jsr rdtim
+        cmp _target
+        bmi -                ; Buzz until target reached
+        rts
+.scend
+</programlisting>
+
+  <para>
+    We're not quite done yet, however, because we have to tell the
+    data segment where to begin.  (If we don't, it starts at 0, which
+    is usually wrong.)  We add a very brief data segment to the top of
+    our code:
+  </para>
+
+<programlisting>
+.data
+.org $C000
+.text
+</programlisting>
+
+  <para>
+    This will run.  However, we also ought to make sure that we aren't
+    overstepping any boundaries.  Our program text shouldn't run into
+    the BASIC chip at $A000, and our data shouldn't run into the I/O
+    region at $D000.  The <literal>.checkpc</literal> command lets us
+    assert that the program counter hasn't reached a specific point
+    yet.  We put, at the end of our code:
+  </para>
+
+<programlisting>
+.checkpc $A000
+.data
+.checkpc $D000
+</programlisting>
+
+  <para>
+    The final program is available as <xref linkend="tutor5-src"
+    endterm="tutor5-fname">.  Note that we based this on the
+    all-uppercase version from the last section, not any of the
+    charmapped versions.
+  </para>
+</chapter>

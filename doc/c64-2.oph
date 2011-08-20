@@ -1,0 +1,40 @@
+.word $0801
+.org  $0801
+
+.scope
+	.word _next, 10		; Next line and current line number
+	.byte $9e," 2064",0	; SYS 2064
+_next:	.word 0			; End of program
+.scend
+
+.advance $0810
+
+.require "kernal.oph"
+
+.data zp
+.org $0002
+
+.text
+
+.scope
+	; Cache BASIC's zero page at top of available RAM.
+	ldx #$7E
+*	lda $01, x
+	sta $CF81, x
+	dex
+	bne -
+
+	jsr _main
+
+	; Restore BASIC's zero page and return control.
+
+	ldx #$7E
+*	lda $CF81, x
+	sta $01, x
+	dex
+	bne -
+	rts
+
+_main:
+	; Program follows...
+.scend

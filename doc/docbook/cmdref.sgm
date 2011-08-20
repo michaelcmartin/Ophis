@@ -1,0 +1,478 @@
+  <appendix id="ref-link">
+    <title>Ophis Command Reference</title>
+    <section>
+      <title>Command Modes</title>
+      <para>
+        These mostly follow the <emphasis>MOS Technology 6500
+        Microprocessor Family Programming Manual</emphasis>, except
+        for the Accumulator mode. Accumulator instructions are written
+        and interpreted identically to Implied mode instructions.
+      </para>
+      <itemizedlist>
+        <listitem><para><emphasis>Implied:</emphasis> <literal>RTS</literal></para></listitem>
+        <listitem><para><emphasis>Accumulator:</emphasis> <literal>LSR</literal></para></listitem>
+        <listitem><para><emphasis>Immediate:</emphasis> <literal>LDA #$06</literal></para></listitem>
+        <listitem><para><emphasis>Zero Page:</emphasis> <literal>LDA $7C</literal></para></listitem>
+        <listitem><para><emphasis>Zero Page, X:</emphasis> <literal>LDA $7C,X</literal></para></listitem>
+        <listitem><para><emphasis>Zero Page, Y:</emphasis> <literal>LDA $7C,Y</literal></para></listitem>
+        <listitem><para><emphasis>Absolute:</emphasis> <literal>LDA $D020</literal></para></listitem>
+        <listitem><para><emphasis>Absolute, X:</emphasis> <literal>LDA $D000,X</literal></para></listitem>
+        <listitem><para><emphasis>Absolute, Y:</emphasis> <literal>LDA $D000,Y</literal></para></listitem>
+        <listitem><para><emphasis>(Zero Page Indirect, X):</emphasis> <literal>LDA ($80, X)</literal></para></listitem>
+        <listitem><para><emphasis>(Zero Page Indirect), Y:</emphasis> <literal>LDA ($80), Y</literal></para></listitem>
+        <listitem><para><emphasis>(Absolute Indirect):</emphasis> <literal>JMP ($A000)</literal></para></listitem>
+        <listitem><para><emphasis>Relative:</emphasis> <literal>BNE loop</literal></para></listitem>
+        <listitem><para><emphasis>(Absolute Indirect, X):</emphasis> <literal>JMP ($A000, X)</literal> &mdash; Only available with 65C02 extensions</para></listitem>
+        <listitem><para><emphasis>(Zero Page Indirect):</emphasis> <literal>LDX ($80)</literal> &mdash; Only available with 65C02 extensions</para></listitem>
+      </itemizedlist>
+    </section>
+    <section>
+      <title>Basic arguments</title>
+      <para>
+        Most arguments are just a number or label. The formats for
+        these are below.
+      </para>
+      <section>
+        <title>Numeric types</title>
+        <itemizedlist>
+          <listitem><para><emphasis>Hex:</emphasis> <literal>$41</literal> (Prefixed with $)</para></listitem>
+          <listitem><para><emphasis>Decimal:</emphasis> <literal>65</literal> (No markings)</para></listitem>
+          <listitem><para><emphasis>Octal:</emphasis> <literal>0101</literal> (Prefixed with zero)</para></listitem>
+          <listitem><para><emphasis>Binary:</emphasis> <literal>%01000001</literal> (Prefixed with %)</para></listitem>
+          <listitem><para><emphasis>Character:</emphasis> <literal>'A</literal> (Prefixed with single quote)</para></listitem>
+        </itemizedlist>
+      </section>
+      <section>
+        <title>Label types</title>
+        <para>
+          Normal labels are simply referred to by name. Anonymous
+          labels may be referenced with strings of - or + signs (the
+          label <literal>-</literal> refers to the immediate
+          previous anonymous label, <literal>--</literal> the
+          one before that, etc., while <literal>+</literal>
+          refers to the next anonymous label), and the special
+          label <literal>^</literal> refers to the program
+          counter at the start of the current instruction or directive.
+        </para>
+        <para>
+          Normal labels are <emphasis>defined</emphasis> by
+          prefixing a line with the label name and then a colon
+          (e.g., <literal>label:</literal>).  Anonymous labels
+          are defined by prefixing a line with an asterisk
+          (e.g., <literal>*</literal>).
+        </para>
+        <para>
+          Temporary labels are only reachable from inside the
+          innermost enclosing <literal>.scope</literal>
+          statement. They are identical to normal labels in every
+          way, except that they start with an underscore.
+        </para>
+      </section>
+      <section>
+        <title>String types</title>
+        <para>
+          Strings are enclosed in double quotation marks. Backslashed
+          characters (including backslashes and double quotes) are
+          treated literally, so the string <literal>"The man said,
+          \"The \\ character is the backslash.\""</literal> produces
+          the ASCII sequence for <literal>The man said, "The \
+          character is the backslash."</literal>
+        </para>
+        <para>
+          Strings are generally only used as arguments to assembler
+          directives&mdash;usually for filenames
+          (e.g., <literal>.include</literal>) but also for string
+          data (in association with <literal>.byte</literal>).
+        </para>
+        <para>
+          It is legal, though unusual, to attempt to pass a string to
+          the other data statements.  This will produces a series of
+          words/dwords where all bytes that aren't least-significant
+          are zero.  Endianness and size will match what the directive
+          itself indicated.
+        </para>
+      </section>
+    </section>
+    <section>
+      <title>Compound Arguments</title>
+      <para>
+        Compound arguments may be built up from simple ones, using the
+        standard +, -, *, and / operators, which carry the usual
+        precedence. Also, the unary operators &gt; and &lt;, which
+        bind more tightly than anything else, provide the high and low
+        bytes of 16-bit values, respectively.
+      </para>
+      <para>
+        Use brackets [ ] instead of parentheses ( ) when grouping
+        arithmetic operations, as the parentheses are needed for the
+        indirect addressing modes.
+      </para>
+      <para>
+        Examples:
+      </para>
+      <itemizedlist>
+        <listitem><para><literal>$D000</literal> evaluates to $D000</para></listitem>
+        <listitem><para><literal>$D000+32</literal> evaluates to $D020</para></listitem>
+        <listitem><para><literal>$D000+$20</literal> also evaluates to $D020</para></listitem>
+        <listitem><para><literal>&lt;$D000+32</literal> evaluates to $20</para></listitem>
+        <listitem><para><literal>&gt;$D000+32</literal> evaluates to $F0</para></listitem>
+        <listitem><para><literal>&gt;[$D000+32]</literal> evaluates to $D0</para></listitem>
+        <listitem><para><literal>&gt;$D000-275</literal> evaluates to $CE</para></listitem>
+      </itemizedlist>
+    </section>
+    <section>
+      <title>Memory Model</title>
+      <para>
+        In order to properly compute the locations of labels and the
+        like, Ophis must keep track of where assembled code will
+        actually be sitting in memory, and it strives to do this in a
+        way that is independent both of the target file and of the
+        target machine.
+      </para>
+      <section>
+        <title>Basic PC tracking</title>
+        <para>
+          The primary technique Ophis uses is <emphasis>program counter
+          tracking</emphasis>. As it assembles the code, it keeps
+          track of a virtual program counter, and uses that to
+          determine where the labels should go.
+        </para>
+        <para>
+          In the absence of an <literal>.org</literal> directive, it
+          assumes a starting PC of zero. <literal>.org</literal>
+          is a simple directive, setting the PC to the value
+          that <literal>.org</literal> specifies. In the simplest
+          case, one <literal>.org</literal> directive appears at the
+          beginning of the code and sets the location for the rest of
+          the code, which is one contiguous block.
+        </para>
+       </section>
+       <section>
+         <title>Basic Segmentation simulation</title>
+         <para>
+           However, this isn't always practical. Often one wishes to
+           have a region of memory reserved for data without actually
+           mapping that memory to the file. On some systems (typically
+           cartridge-based systems where ROM and RAM are seperate, and
+           the target file only specifies the ROM image) this is
+           mandatory. In order to access these variables symbolically,
+           it's necessary to put the values into the label lookup
+           table.
+         </para>
+         <para>
+           It is possible, but inconvenient, to do this
+           with <literal>.alias</literal>, assigning a specific
+           memory location to each variable. This requires careful
+           coordination through your code, and makes creating reusable
+           libraries all but impossible.
+         </para>
+         <para>
+           A better approach is to reserve a section at the beginning
+           or end of your program, put an <literal>.org</literal>
+           directive in, then use the <literal>.space</literal>
+           directive to divide up the data area.  This is still a bit
+           inconvenient, though, because all variables must be
+           assigned all at once. What we'd really like is to keep
+           multiple PC counters, one for data and one for code.
+         </para>
+         <para>
+           The <literal>.text</literal>
+           and <literal>.data</literal> directives do this.  Each
+           has its own PC that starts at zero, and you can switch
+           between the two at any point without corrupting the other's
+           counter. In this way each function can have
+           a <literal>.data</literal> section (filled
+           with <literal>.space</literal> commands) and
+           a <literal>.text</literal> section (that contains the
+           actual code). This lets our library routines be almost
+           completely self-contained - we can have one source file
+           that could be <literal>.included</literal> by multiple
+           projects without getting in anything's way.
+         </para>
+         <para>
+           However, any given program may have its own ideas about
+           where data and code go, and it's good to ensure with
+           a <literal>.checkpc</literal> at the end of your code
+           that you haven't accidentally overwritten code with data or
+           vice versa. If your <literal>.data</literal>
+           segment <emphasis>did</emphasis> start at zero, it's
+           probably wise to make sure you aren't smashing the stack,
+           too (which is sitting in the region from $0100 to
+           $01FF).
+         </para>
+         <para>
+           If you write code with no segment-defining statements in
+           it, the default segment
+           is <literal>text</literal>.
+         </para>
+         <para>
+           The <literal>data</literal> segment is designed only
+           for organizing labels. As such, errors will be flagged if
+           you attempt to actually output information into
+           a <literal>data</literal> segment.
+         </para>
+       </section>
+       <section>
+         <title>General Segmentation Simulation</title>
+         <para>
+           One text and data segment each is usually sufficient, but
+           for the cases where it is not, Ophis allows for user-defined
+           segments. Putting a label
+           after <literal>.text</literal>
+           or <literal>.data</literal> produces a new segment with
+           the specified name.
+         </para>
+         <para>
+           Say, for example, that we have access to the RAM at the low
+           end of the address space, but want to reserve the zero page
+           for truly critical variables, and use the rest of RAM for
+           everything else. Let's also assume that this is a 6510
+           chip, and locations $00 and $01 are reserved for the I/O
+           port. We could start our program off with:
+         </para>
+<programlisting>
+.data
+.org $200
+.data zp
+.org $2
+.text
+.org $800
+</programlisting>
+         <para>
+           And, to be safe, we would probably want to end our code
+           with checks to make sure we aren't overwriting anything:
+         </para>
+<programlisting>
+.data
+.checkpc $800
+.data zp
+.checkpc $100
+</programlisting>
+       </section>
+     </section> 
+     <section>
+       <title>Macros</title>
+       <para>
+         Assembly language is a powerful tool&mdash;however, there are
+         many tasks that need to be done repeatedly, and with
+         mind-numbing minor modifications.  Ophis includes a facility
+         for <emphasis>macros</emphasis> to allow this.  Ophis macros
+         are very similar in form to function calls in higher level
+         languages.
+       </para>
+       <section>
+         <title>Defining Macros</title>
+         <para>
+           Macros are defined with the <literal>.macro</literal>
+           and <literal>.macend</literal> commands.  Here's a
+           simple one that will clear the screen on a Commodore
+           64:
+         </para>
+<programlisting>
+.macro clr'screen
+    lda #147
+    jsr $FFD2
+.macend
+</programlisting>
+       </section>
+       <section>
+         <title>Invoking Macros</title>
+         <para>
+           To invoke a macro, either use
+           the <literal>.invoke</literal> command or backquote the
+           name of the routine.  The previous macro may be expanded
+           out in either of two ways, at any point in the
+           source:
+         </para>
+         <programlisting>.invoke clr'screen</programlisting>
+         <para>or</para>
+         <programlisting>`clr'screen</programlisting>
+         <para>will work equally well.</para>
+       </section>
+       <section>
+         <title>Passing Arguments to Macros</title>
+         <para>
+           Macros may take arguments.  The arguments to a macro are
+           all of the <quote>word</quote> type, though byte values may
+           be passed and used as bytes as well.  The first argument in
+           an invocation is bound to the label
+           <literal>_1</literal>, the second
+           to <literal>_2</literal>, and so on.  Here's a macro
+           for storing a 16-bit value into a word pointer:
+         </para>
+<programlisting>
+.macro store16   ; `store16 dest, src
+	lda #&lt;_2
+	sta _1
+	lda #&gt;_2
+	sta _1+1
+.macend
+</programlisting>
+         <para>
+           Macro arguments behave, for the most part, as if they were
+           defined by <literal>.alias</literal>
+           commands <emphasis>in the calling context</emphasis>.
+           (They differ in that they will not produce duplicate-label
+           errors if those names already exist in the calling scope,
+           and in that they disappear after the call is
+           completed.)
+         </para>
+       </section>
+       <section>
+         <title>Features and Restrictions of the Ophis Macro Model</title>
+         <para>
+           Unlike most macro systems (which do textual replacement),
+           Ophis macros evaluate their arguments and bind them into the
+           symbol table as temporary labels.  This produces some
+           benefits, but it also puts some restrictions on what kinds of
+           macros may be defined.
+         </para>
+         <para>
+           The primary benefit of this <quote>expand-via-binding</quote>
+           discipline is that there are no surprises in the semantics.
+           The expression <literal>_1+1</literal> in the macro above
+           will always evaluate to one more than the value that was
+           passed as the first argument, even if that first argument is
+           some immensely complex expression that an
+           expand-via-substitution method may accidentally
+           mangle.
+         </para>
+         <para>
+           The primary disadvantage of the expand-via-binding
+           discipline is that only fixed numbers of words and bytes
+           may be passed.  A substitution-based system could define a
+           macro including the line <literal>LDA _1</literal> and
+           accept as arguments both <literal>$C000</literal>
+           (which would put the value of memory location $C000 into
+           the accumulator) and <literal>#$40</literal> (which
+           would put the immediate value $40 into the accumulator).
+           If you <emphasis>really</emphasis> need this kind of
+           behavior, a run a C preprocessor over your Ophis source,
+           and use <literal>#define</literal> to your heart's
+           content.
+         </para>
+       </section>
+     </section>
+     <section>
+       <title>Assembler directives</title>
+       <para>
+         Assembler directives are all instructions to the assembler
+         that are not actual instructions. Ophis's set of directives
+         follow.
+       </para>
+       <itemizedlist>
+       <listitem><para><literal>.advance</literal> <emphasis>address</emphasis>:
+      Forces the program counter to
+      be <emphasis>address</emphasis>. Unlike
+      the <literal>.org</literal>
+      directive, <literal>.advance</literal> outputs zeroes until the
+      program counter reaches a specified address. Attempting
+      to <literal>.advance</literal> to a point behind the current
+      program counter is an assemble-time error.</para></listitem>
+      <listitem><para><literal>.alias</literal> <emphasis>label</emphasis> <emphasis>value</emphasis>: The
+      .alias directive assigns an arbitrary value to a label. This
+      value may be an arbitrary argument, but cannot reference any
+      label that has not already been defined (this prevents
+      recursive label dependencies).</para></listitem>
+      <listitem><para><literal>.byte</literal> <emphasis>arg</emphasis> [ , <emphasis>arg</emphasis>, ... ]:
+      Specifies a series of arguments, which are evaluated, and
+      strings, which are included as raw ASCII data. The final
+      results of these arguments must be one byte in size. Seperate
+      constants are seperated by comments.</para></listitem>
+      <listitem><para><literal>.checkpc</literal> <emphasis>address</emphasis>: Ensures that the
+      program counter is less than or equal to the address
+      specified, and emits an assemble-time error if it is not.
+      <emphasis>This produces no code in the final binary - it is there to
+      ensure that linking a large amount of data together does not
+      overstep memory boundaries.</emphasis></para></listitem>
+      <listitem><para><literal>.data</literal> <emphasis>[label]</emphasis>: Sets the segment to
+      the segment name specified and disallows output. If no label
+      is given, switches to the default data segment.</para></listitem>
+      <listitem><para><literal>.incbin</literal> <emphasis>filename</emphasis>: Inserts the
+      contents of the file specified as binary data. Use it to
+      include graphics information, precompiled code, or other
+      non-assembler data.</para></listitem>
+      <listitem><para><literal>.include</literal> <emphasis>filename</emphasis>: Includes the
+      entirety of the file specified at that point in the program.
+      Use this to order your final sources.</para></listitem>
+      <listitem><para><literal>.org</literal> <emphasis>address</emphasis>: Sets the program
+      counter to the address specified. <emphasis>This does not emit any
+      code in and of itself, nor does it overwrite anything that
+      previously existed.</emphasis> If you wish to jump ahead in memory,
+      use <literal>.advance</literal>.</para></listitem>
+      <listitem><para><literal>.require</literal> <emphasis>filename</emphasis>: Includes the entirety 
+      of the file specified at that point in the program.  Unlike <literal>.include</literal>,
+      however, code included with <literal>.require</literal> will only be inserted once.
+      The <literal>.require</literal> directive is useful for ensuring that certain code libraries
+      are somewhere in the final binary.  They are also very useful for guaranteeing that
+      macro libraries are available.</para></listitem>
+      <listitem><para><literal>.space</literal> <emphasis>label</emphasis> <emphasis>size</emphasis>: This
+      directive is used to organize global variables. It defines the
+      label specified to be at the current location of the program
+      counter, and then advances the program counter <emphasis>size</emphasis>
+      steps ahead. No actual code is produced. This is equivalent
+      to <literal>label: .org ^+size</literal>.</para></listitem>
+      <listitem><para><literal>.text</literal> <emphasis>[label]</emphasis>: Sets the segment to
+      the segment name specified and allows output. If no label is
+      given, switches to the default text segment.</para></listitem>
+      <listitem><para><literal>.word</literal> <emphasis>arg</emphasis> [ , <emphasis>arg</emphasis>, ... ]:
+      Like <literal>.byte</literal>, but values are all treated as two-byte
+      values and stored low-end first (as is the 6502's wont). Use
+      this to create jump tables (an unadorned label will evaluate
+      to that label's location) or otherwise store 16-bit
+      data.</para></listitem>
+      <listitem><para><literal>.dword</literal> <emphasis>arg</emphasis> [ , <emphasis>arg</emphasis>, ...]:
+      Like <literal>.word</literal>, but for 32-bit values.</para></listitem>
+      <listitem><para><literal>.wordbe</literal> <emphasis>arg</emphasis> [ , <emphasis>arg</emphasis>, ...]:
+      Like <literal>.word</literal>, but stores the value in a big-endian format (high byte first).</para></listitem>
+      <listitem><para><literal>.dwordbe</literal> <emphasis>arg</emphasis> [ , <emphasis>arg</emphasis>, ...]:
+      Like <literal>.dword</literal>, but stores the value high byte first.</para></listitem>
+      <listitem><para><literal>.scope</literal>: Starts a new scope block. Labels
+      that begin with an underscore are only reachable from within
+      their innermost enclosing <literal>.scope</literal> statement.</para></listitem>
+      <listitem><para><literal>.scend</literal>: Ends a scope block. Makes the
+      temporary labels defined since the last <literal>.scope</literal>
+      statement unreachable, and permits them to be redefined in a
+      new scope.</para></listitem>
+      <listitem><para><literal>.macro</literal> <emphasis>name</emphasis>: Begins a macro
+      definition block. This is a scope block that can be inlined
+      at arbitrary points with <literal>.invoke</literal>. Arguments to the
+      macro will be bound to temporary labels with names like
+      <literal>_1</literal>, <literal>_2</literal>, etc.</para></listitem>
+      <listitem><para><literal>.macend</literal>: Ends a macro definition
+      block.</para></listitem>
+      <listitem><para><literal>.invoke</literal> <emphasis>label</emphasis> [<emphasis>argument</emphasis> [,
+      <emphasis>argument</emphasis> ...]]: invokes (inlines) the specified
+      macro, binding the values of the arguments to the ones the
+      macro definition intends to read.  A shorthand for <literal>.invoke</literal>
+      is the name of the macro to invoke, backquoted.</para></listitem>
+         </itemizedlist>
+         <para>
+           The following directives are deprecated, added for
+           compatibility with the old Perl
+           assembler <command>P65</command>. Use
+           the <literal>-d</literal> option to Ophis to enable
+           them.
+         </para>
+    <itemizedlist>
+      <listitem><para><literal>.ascii</literal>: Equivalent to <literal>.byte</literal>,
+      which didn't used to be able to handle strings.</para></listitem>
+      <listitem><para><literal>.code</literal>: Equivalent to <literal>.text</literal>.</para></listitem>
+      <listitem><para><literal>.segment</literal>: Equivalent to <literal>.text</literal>,
+      from when there was no distinction between <literal>.text</literal> and
+      <literal>.data</literal> segments.</para></listitem>
+      <listitem><para><literal>.address</literal>: Equivalent to
+      <literal>.word</literal>.</para></listitem>
+      <listitem><para><literal>.link</literal> <emphasis>filename address</emphasis>: Assembles
+      the file specified as if it began at the address specified.
+      This is generally for use in <quote>top-level</quote> files, where there
+      is not necessarily a one-to-one correspondence between file
+      position and memory position. This is equivalent to an
+      <literal>.org</literal> directive followed by an <literal>.include</literal>.
+      With the introduction of the <literal>.org</literal> directive this one is
+      less useful (and in most cases, any <literal>.org</literal> statement
+      you use will actually be at the top of the <literal>.include</literal>d
+      file).</para></listitem>
+    </itemizedlist>
+  </section>  
+</appendix>

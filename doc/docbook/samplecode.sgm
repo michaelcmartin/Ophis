@@ -1,0 +1,749 @@
+<appendix>
+  <title>Example Programs</title>
+  <para>
+    This Appendix collects all the programs referred to in the course
+    of this manual.
+  </para>
+  <section id="tutor1-src">
+    <title id="tutor1-fname"><filename>tutor1.oph</filename></title>
+<programlisting>
+.word $0801
+.org  $0801
+
+        .word next, 10          ; Next line and current line number
+        .byte $9e," 2064",0     ; SYS 2064
+next:   .word 0                 ; End of program
+
+.advance 2064
+
+        ldx #0
+loop:   lda hello, x
+        beq done
+        jsr $ffd2
+        inx
+        bne loop
+done:   rts
+
+hello:  .byte "HELLO, WORLD!", 0
+</programlisting>
+  </section>
+  <section id="tutor2-src">
+    <title id="tutor2-fname"><filename>tutor2.oph</filename></title>
+<programlisting>
+.word $0801
+.org  $0801
+
+.scope
+        .word _next, 10         ; Next line and current line number
+        .byte $9e," 2064",0     ; SYS 2064
+_next:  .word 0                 ; End of program
+.scend
+
+.advance 2064
+
+.alias chrout $ffd2
+
+        ldx #0
+*       lda hello, x
+        beq +
+        jsr chrout
+        inx
+        bne -
+*       rts
+
+hello:  .byte "HELLO, WORLD!", 0
+</programlisting>
+  </section>
+  <section id="c64-1-src">
+    <title id="c64-1-fname"><filename>c64-1.oph</filename></title>
+<programlisting>
+.word $0801
+.org  $0801
+
+.scope
+        .word _next, 10         ; Next line and current line number
+        .byte $9e," 2064",0     ; SYS 2064
+_next:  .word 0                 ; End of program
+.scend
+
+.advance 2064
+
+.require "kernal.oph"
+</programlisting>
+  </section>
+  <section id="kernal-src">
+    <title id="kernal-fname"><filename>kernal.oph</filename></title>
+<programlisting>
+; KERNAL routine aliases (C64)
+
+.alias acptr  $ffa5
+.alias chkin  $ffc6
+.alias chkout $ffc9
+.alias chrin  $ffcf
+.alias chrout $ffd2
+.alias ciout  $ffa8
+.alias cint   $ff81
+.alias clall  $ffe7
+.alias close  $ffc3
+.alias clrchn $ffcc
+.alias getin  $ffe4
+.alias iobase $fff3
+.alias ioinit $ff84
+.alias listen $ffb1
+.alias load   $ffd5
+.alias membot $ff9c
+.alias memtop $ff99
+.alias open   $ffc0
+.alias plot   $fff0
+.alias ramtas $ff87
+.alias rdtim  $ffde
+.alias readst $ffb7
+.alias restor $ff8a
+.alias save   $ffd8
+.alias scnkey $ff9f
+.alias screen $ffed
+.alias second $ff93
+.alias setlfs $ffba
+.alias setmsg $ff90
+.alias setnam $ffbd
+.alias settim $ffdb
+.alias settmo $ffa2
+.alias stop   $ffe1
+.alias talk   $ffb4
+.alias tksa   $ff96
+.alias udtim  $ffea
+.alias unlsn  $ffae
+.alias untlk  $ffab
+.alias vector $ff8d
+
+; Character codes for the colors.
+.alias color'0 144
+.alias color'1 5
+.alias color'2 28
+.alias color'3 159
+.alias color'4 156
+.alias color'5 30
+.alias color'6 31
+.alias color'7 158
+.alias color'8 129
+.alias color'9 149
+.alias color'10 150
+.alias color'11 151
+.alias color'12 152
+.alias color'13 153
+.alias color'14 154
+.alias color'15 155
+
+; ...and reverse video
+.alias reverse'on 18
+.alias reverse'off 146
+
+; ...and character set
+.alias upper'case 142
+.alias lower'case 14
+</programlisting>
+  </section>
+  <section id="tutor3-src">
+    <title id="tutor3-fname"><filename>tutor3.oph</filename></title>
+<programlisting>
+.include "c64-1.oph"
+
+.macro print
+        ldx #0
+_loop:  lda _1, x
+        beq _done
+        jsr chrout
+        inx
+        bne _loop
+_done:
+.macend
+
+.macro greet
+        `print hello1
+        `print _1
+        `print hello2
+.macend
+
+        lda #147
+        jsr chrout
+        `greet target1
+        `greet target2
+        `greet target3
+        `greet target4
+        `greet target5
+        `greet target6
+        `greet target7
+        `greet target8
+        `greet target9
+        `greet target10
+        rts
+
+hello1: .byte "HELLO, ",0
+hello2: .byte "!", 13, 0
+
+target1:  .byte "PROGRAMMER", 0
+target2:  .byte "ROOM", 0
+target3:  .byte "BUILDING", 0
+target4:  .byte "NEIGHBORHOOD", 0
+target5:  .byte "CITY", 0
+target6:  .byte "NATION", 0
+target7:  .byte "WORLD", 0
+target8:  .byte "SOLAR SYSTEM", 0
+target9:  .byte "GALAXY", 0
+target10: .byte "UNIVERSE", 0
+</programlisting>
+  </section>
+  <section id="tutor4a-src">
+    <title id="tutor4a-fname"><filename>tutor4a.oph</filename></title>
+<programlisting>
+.include "c64-1.oph"
+
+.macro print
+        ldx #0
+_loop:  lda _1, x
+        beq _done
+        jsr chrout
+        inx
+        bne _loop
+_done:
+.macend
+
+.macro greet
+        lda #30
+        jsr delay
+        `print hello1
+        `print _1
+        `print hello2
+.macend
+
+        lda #147
+        jsr chrout
+        `greet target1
+        `greet target2
+        `greet target3
+        `greet target4
+        `greet target5
+        `greet target6
+        `greet target7
+        `greet target8
+        `greet target9
+        `greet target10
+        rts
+
+hello1: .byte "HELLO, ",0
+hello2: .byte "!", 13, 0
+
+target1:  .byte "PROGRAMMER", 0
+target2:  .byte "ROOM", 0
+target3:  .byte "BUILDING", 0
+target4:  .byte "NEIGHBORHOOD", 0
+target5:  .byte "CITY", 0
+target6:  .byte "NATION", 0
+target7:  .byte "WORLD", 0
+target8:  .byte "SOLAR SYSTEM", 0
+target9:  .byte "GALAXY", 0
+target10: .byte "UNIVERSE", 0
+
+; DELAY routine.  Executes 2,560*(A) NOP statements.
+delay:  tax
+        ldy #00
+*       nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        iny
+        bne -
+        dex
+        bne -
+        rts
+</programlisting>
+  </section>
+  <section id="tutor4b-src">
+    <title id="tutor4b-fname"><filename>tutor4b.oph</filename></title>
+<programlisting>
+.include "c64-1.oph"
+
+.macro print
+        ldx #0
+_loop:  lda _1, x
+        beq _done
+        jsr chrout
+        inx
+        bne _loop
+_done:
+.macend
+
+.macro greet
+        lda #30
+        jsr delay
+        `print hello1
+        `print _1
+        `print hello2
+.macend
+
+        lda #147
+        jsr chrout
+        lda #lower'case
+        jsr chrout
+        `greet target1
+        `greet target2
+        `greet target3
+        `greet target4
+        `greet target5
+        `greet target6
+        `greet target7
+        `greet target8
+        `greet target9
+        `greet target10
+        rts
+
+hello1: .byte "Hello, ",0
+hello2: .byte "!", 13, 0
+
+target1:  .byte "programmer", 0
+target2:  .byte "room", 0
+target3:  .byte "building", 0
+target4:  .byte "neighborhood", 0
+target5:  .byte "city", 0
+target6:  .byte "nation", 0
+target7:  .byte "world", 0
+target8:  .byte "Solar System", 0
+target9:  .byte "Galaxy", 0
+target10: .byte "Universe", 0
+
+; DELAY routine.  Executes 2,560*(A) NOP statements.
+delay:  tax
+        ldy #00
+*       nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        iny
+        bne -
+        dex
+        bne -   
+        rts
+</programlisting>
+  </section>
+  <section id="tutor4c-src">
+    <title id="tutor4c-fname"><filename>tutor4c.oph</filename></title>
+<programlisting>
+.include "c64-1.oph"
+
+.macro print
+        ldx #0
+_loop:  lda _1, x
+        beq _done
+        jsr chrout
+        inx
+        bne _loop
+_done:
+.macend
+
+.macro greet
+        lda #30
+        jsr delay
+        `print hello1
+        `print _1
+        `print hello2
+.macend
+
+        lda #147
+        jsr chrout
+        lda #lower'case
+        jsr chrout
+        `greet target1
+        `greet target2
+        `greet target3
+        `greet target4
+        `greet target5
+        `greet target6
+        `greet target7
+        `greet target8
+        `greet target9
+        `greet target10
+        rts
+
+.charmap 'A, "abcdefghijklmnopqrstuvwxyz"
+.charmap 'a, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+hello1: .byte "Hello, ",0
+hello2: .byte "!", 13, 0
+
+target1:  .byte "programmer", 0
+target2:  .byte "room", 0
+target3:  .byte "building", 0
+target4:  .byte "neighborhood", 0
+target5:  .byte "city", 0
+target6:  .byte "nation", 0
+target7:  .byte "world", 0
+target8:  .byte "Solar System", 0
+target9:  .byte "Galaxy", 0
+target10: .byte "Universe", 0
+
+; DELAY routine.  Executes 2,560*(A) NOP statements.
+delay:  tax
+        ldy #00
+*       nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        nop
+        iny
+        bne -
+        dex
+        bne -
+        rts
+</programlisting>
+  </section>
+  <section id="tutor5-src">
+    <title id="tutor5-fname"><filename>tutor5.oph</filename></title>
+<programlisting>
+.include "c64-1.oph"
+
+.data
+.org $C000
+.text
+
+.macro print
+        ldx #0
+_loop:  lda _1, x
+        beq _done
+        jsr chrout
+        inx
+        bne _loop
+_done:
+.macend
+
+.macro greet
+        lda #30
+        jsr delay
+        `print hello1
+        `print _1
+        `print hello2
+.macend
+
+        lda #147
+        jsr chrout
+        `greet target1
+        `greet target2
+        `greet target3
+        `greet target4
+        `greet target5
+        `greet target6
+        `greet target7
+        `greet target8
+        `greet target9
+        `greet target10
+        rts
+
+hello1: .byte "HELLO, ",0
+hello2: .byte "!", 13, 0
+
+target1:  .byte "PROGRAMMER", 0
+target2:  .byte "ROOM", 0
+target3:  .byte "BUILDING", 0
+target4:  .byte "NEIGHBORHOOD", 0
+target5:  .byte "CITY", 0
+target6:  .byte "NATION", 0
+target7:  .byte "WORLD", 0
+target8:  .byte "SOLAR SYSTEM", 0
+target9:  .byte "GALAXY", 0
+target10: .byte "UNIVERSE", 0
+
+; DELAY routine.  Takes values from the Accumulator and pauses
+; for that many jiffies (1/60th of a second).
+.scope
+.data
+.space _tmp 1
+.space _target 1
+
+.text
+
+delay:  sta _tmp        ; save argument (rdtim destroys it)
+        jsr rdtim
+        clc
+        adc _tmp        ; add current time to get target
+        sta _target
+*       jsr rdtim
+        cmp _target
+        bmi -           ; Buzz until target reached
+        rts
+.scend
+
+.checkpc $A000
+.data
+.checkpc $D000
+</programlisting>
+  </section>
+  <section id="tutor6-src">
+    <title id="tutor6-fname"><filename>tutor6.oph</filename></title>
+<programlisting>
+.include "c64-1.oph"
+
+.data
+.org $C000
+.space cache 2
+.text
+
+.macro print
+        lda #<_1
+        ldx #>_1
+        jsr printstr
+.macend
+
+.macro greet
+        lda #30
+        jsr delay
+        `print hello1
+        `print _1
+        `print hello2
+.macend
+
+        ; Save the zero page locations that PRINTSTR uses.
+        lda $10
+        sta cache
+        lda $11
+        sta cache+1
+
+        lda #147
+        jsr chrout
+        `greet target1
+        `greet target2
+        `greet target3
+        `greet target4
+        `greet target5
+        `greet target6
+        `greet target7
+        `greet target8
+        `greet target9
+        `greet target10
+
+        ; Restore the zero page values printstr uses.
+        lda cache
+        sta $10
+        lda cache+1
+        sta $11
+
+        rts
+
+hello1: .byte "HELLO, ",0
+hello2: .byte "!", 13, 0
+
+target1:  .byte "PROGRAMMER", 0
+target2:  .byte "ROOM", 0
+target3:  .byte "BUILDING", 0
+target4:  .byte "NEIGHBORHOOD", 0
+target5:  .byte "CITY", 0
+target6:  .byte "NATION", 0
+target7:  .byte "WORLD", 0
+target8:  .byte "SOLAR SYSTEM", 0
+target9:  .byte "GALAXY", 0
+target10: .byte "UNIVERSE", 0
+
+; DELAY routine.  Takes values from the Accumulator and pauses
+; for that many jiffies (1/60th of a second).
+.scope
+.data
+.space _tmp 1
+.space _target 1
+
+.text
+
+delay:  sta _tmp        ; save argument (rdtim destroys it)
+        jsr rdtim
+        clc
+        adc _tmp        ; add current time to get target
+        sta _target
+*       jsr rdtim
+        cmp _target
+        bmi -           ; Buzz until target reached
+        rts
+.scend
+
+; PRINTSTR routine.  Accumulator stores the low byte of the address,
+; X register stores the high byte.  Destroys the values of $10 and
+; $11.
+
+.scope
+printstr:
+        sta $10
+        stx $11
+        ldy #$00
+_lp:    lda ($10),y
+        beq _done
+        jsr chrout
+        iny
+        bne _lp
+_done:  rts
+.scend
+
+.checkpc $A000
+.data
+.checkpc $D000
+</programlisting>
+  </section>
+  <section id="c64-2-src">
+    <title id="c64-2-fname"><filename>c64-2.oph</filename></title>
+<programlisting>
+.word $0801
+.org  $0801
+
+.scope
+        .word _next, 10         ; Next line and current line number
+        .byte $9e," 2064",0     ; SYS 2064
+_next:  .word 0                 ; End of program
+.scend
+
+.advance $0810
+
+.require "kernal.oph"
+
+.data zp
+.org $0002
+
+.text
+
+.scope
+        ; Cache BASIC's zero page at top of available RAM.
+        ldx #$7E
+*       lda $01, x
+        sta $CF81, x
+        dex
+        bne -
+
+        jsr _main
+
+        ; Restore BASIC's zero page and return control.
+
+        ldx #$7E
+*       lda $CF81, x
+        sta $01, x
+        dex
+        bne -
+        rts
+
+_main:
+        ; Program follows...
+.scend
+</programlisting>
+  </section>
+  <section id="tutor7-src">
+    <title id="tutor7-fname"><filename>tutor7.oph</filename></title>
+<programlisting>
+.include "c64-2.oph"
+
+.data
+.org $C000
+.text
+
+.macro print
+        lda #<_1
+        ldx #>_1
+        jsr printstr
+.macend
+
+.macro greet
+        lda #30
+        jsr delay
+        `print hello1
+        `print _1
+        `print hello2
+.macend
+
+        lda #147
+        jsr chrout
+        `greet target1
+        `greet target2
+        `greet target3
+        `greet target4
+        `greet target5
+        `greet target6
+        `greet target7
+        `greet target8
+        `greet target9
+        `greet target10
+
+        rts
+
+hello1: .byte "HELLO, ",0
+hello2: .byte "!", 13, 0
+
+target1:  .byte "PROGRAMMER", 0
+target2:  .byte "ROOM", 0
+target3:  .byte "BUILDING", 0
+target4:  .byte "NEIGHBORHOOD", 0
+target5:  .byte "CITY", 0
+target6:  .byte "NATION", 0
+target7:  .byte "WORLD", 0
+target8:  .byte "SOLAR SYSTEM", 0
+target9:  .byte "GALAXY", 0
+target10: .byte "UNIVERSE", 0
+
+; DELAY routine.  Takes values from the Accumulator and pauses
+; for that many jiffies (1/60th of a second).
+.scope
+.data
+.space _tmp 1
+.space _target 1
+
+.text
+
+delay:  sta _tmp        ; save argument (rdtim destroys it)
+        jsr rdtim
+        clc
+        adc _tmp        ; add current time to get target
+        sta _target
+*       jsr rdtim
+        cmp _target
+        bmi -           ; Buzz until target reached
+        rts
+.scend
+
+; PRINTSTR routine.  Accumulator stores the low byte of the address,
+; X register stores the high byte.  Destroys the values of $10 and
+; $11.
+
+.scope
+.data zp
+.space _ptr 2
+.text
+printstr:
+        sta _ptr
+        stx _ptr+1
+        ldy #$00
+_lp:    lda (_ptr),y
+        beq _done
+        jsr chrout
+        iny
+        bne _lp
+_done:  rts
+.scend
+
+.checkpc $A000
+
+.data
+.checkpc $D000
+
+.data zp
+.checkpc $80
+</programlisting>
+  </section>
+</appendix>

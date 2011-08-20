@@ -1,0 +1,75 @@
+.include "c64-1.oph"
+
+.data
+.org $C000
+.text
+
+.macro print
+	ldx #0
+_loop:	lda _1, x
+	beq _done
+	jsr chrout
+	inx
+	bne _loop
+_done:
+.macend
+
+.macro greet
+	lda #30
+	jsr delay
+	`print hello1
+	`print _1
+	`print hello2
+.macend
+
+	lda #147
+	jsr chrout
+	`greet target1
+	`greet target2
+	`greet target3
+	`greet target4
+	`greet target5
+	`greet target6
+	`greet target7
+	`greet target8
+	`greet target9
+	`greet target10
+	rts
+
+hello1: .byte "HELLO, ",0
+hello2: .byte "!", 13, 0
+
+target1:  .byte "PROGRAMMER", 0
+target2:  .byte "ROOM", 0
+target3:  .byte "BUILDING", 0
+target4:  .byte "NEIGHBORHOOD", 0
+target5:  .byte "CITY", 0
+target6:  .byte "NATION", 0
+target7:  .byte "WORLD", 0
+target8:  .byte "SOLAR SYSTEM", 0
+target9:  .byte "GALAXY", 0
+target10: .byte "UNIVERSE", 0
+
+; DELAY routine.  Takes values from the Accumulator and pauses
+; for that many jiffies (1/60th of a second).
+.scope
+.data
+.space _tmp 1
+.space _target 1
+
+.text
+
+delay:	sta _tmp	; save argument (rdtim destroys it)
+	jsr rdtim
+	clc
+	adc _tmp	; add current time to get target
+	sta _target
+*	jsr rdtim
+	cmp _target
+	bmi -		; Buzz until target reached
+	rts
+.scend
+
+.checkpc $A000
+.data
+.checkpc $D000

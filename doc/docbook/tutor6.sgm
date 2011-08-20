@@ -1,0 +1,118 @@
+<chapter>
+  <title>Expressions</title>
+
+  <para>
+    Ophis permits a reasonably rich set of arithmetic operations to be
+    done at assemble time.  So far, all of our arguments and values
+    have either been constants or label names.  In this chapter, we
+    will modify the <literal>print</literal> macro so that it calls a
+    subroutine to do the actual printing.  This will shrink the final
+    code size a fair bit.
+  </para>
+
+  <para>
+    Here's our printing routine.  It's fairly straightforward.
+  </para>
+
+<programlisting>
+; PRINTSTR routine.  Accumulator stores the low byte of the address,
+; X register stores the high byte.  Destroys the values of $10 and
+; $11.
+
+.scope
+printstr:
+        sta $10
+        stx $11
+        ldy #$00
+_lp:    lda ($10), y
+        beq _done
+        jsr chrout
+        iny
+        bne _lp
+_done:  rts
+.scend
+</programlisting>
+
+  <para>
+    However, now we are faced with the problem of what to do with
+    the <literal>print</literal> macro.  We need to take a 16-bit
+    value and store it in two 8-bit registers.  We can use
+    the <literal>&lt;</literal> and <literal>&gt;</literal> operators
+    to take the low or high byte of a word, respectively.
+    The <literal>print</literal> macro becomes:
+  </para>
+
+  <programlisting>
+.macro print
+        lda #&lt;_1
+        ldx #&gt;_1
+        jsr printstr
+.macend
+</programlisting>
+
+  <para>
+    Also, since BASIC uses the locations $10 and $11, we should really
+    cache them at the start of the program and restore them at the
+    end:
+  </para>
+
+  <programlisting>
+.data
+.org $C000
+.space cache 2
+.text
+
+        ; Save the zero page locations that printstr uses.
+        lda $10
+        sta cache
+        lda $11
+        sta cache+1
+
+        ; ... main program goes here ...
+
+        ; Restore the zero page values printstr uses.
+        lda cache
+        sta $10
+        lda cache+1
+        sta $11
+</programlisting>
+
+  <para>
+    Note that we only have to name <literal>cache</literal> once, but
+    can use addition to refer to any offset from it.
+  </para>
+
+  <para>
+    Ophis supports following operations, with the following precedence
+    levels (higher entries bind more tightly):
+  </para>
+
+  <table frame="all">
+    <title>Ophis Operators</title>
+    <tgroup cols='2'>
+      <thead>
+        <row>
+          <entry align="center">Operators</entry>
+          <entry align="center">Description</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row><entry><literal>[ ]</literal></entry><entry>Parenthesized expressions</entry></row>
+        <row><entry><literal>&lt; &gt;</literal></entry><entry>Byte selection (low, high)</entry></row>
+        <row><entry><literal>* /</literal></entry><entry>Multiply, divide</entry></row>
+        <row><entry><literal>+ -</literal></entry><entry>Add, subtract</entry></row>
+        <row><entry><literal>| &amp; ^</literal></entry><entry>Bitwise OR, AND, XOR</entry></row>
+      </tbody>
+    </tgroup>
+  </table>
+  <para>
+    Note that brackets, not parentheses, are used to group arithmetic
+    operations.  This is because parentheses are used for the indirect
+    addressing modes, and it makes parsing much easier.
+  </para>
+
+  <para>
+    The code for this version of the code is
+    in <xref linkend="tutor6-src" endterm="tutor6-fname">.
+  </para>
+</chapter>

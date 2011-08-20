@@ -1,0 +1,157 @@
+; Test file for base 6502 opcode compliance
+; This odd little source file uses every addressing mode
+; of every opcode, and uses the opcode itself as the argument
+; to each instruction that takes one.  The resulting binary's
+; bytes are thus in strictly increasing numerical order.
+
+	BRK
+	ORA	($01, X)
+	ORA	$05
+	ASL	$06
+	PHP
+	ORA	#$09
+	ASL 
+	ORA	$0D0D 
+	ASL	$0E0E 
+	BPL	^+$12 
+	ORA	($11), Y 
+	ORA	$15, X 
+	ASL	$16, X
+	CLC
+	ORA	$1919, Y
+	ORA	$1D1D, X
+	ASL	$1E1E, X
+	JSR	$2020 
+	AND	($21, X) 
+	BIT	$24 
+	AND	$25 
+	ROL	$26 
+	PLP 
+	AND	#$29 
+	ROL 
+	BIT	$2C2C 
+	AND	$2D2D 
+	ROL	$2E2E 
+	BMI	^+$32 
+	AND	($31), Y
+	AND	$35, X
+	ROL	$36, X
+	SEC 
+	AND	$3939, Y
+	AND	$3D3D, X
+	ROL	$3E3E, X
+	RTI
+	EOR	($41, X)
+	EOR	$45
+	LSR	$46 
+	PHA
+	EOR	#$49
+	LSR 
+	JMP	$4C4C
+	EOR	$4D4D
+	LSR	$4E4E
+	BVC	^+$52
+	EOR	($51), Y
+	EOR	$55, X
+	LSR	$56, X
+	CLI 
+	EOR	$5959, Y
+	EOR	$5D5D, X
+	LSR	$5E5E, X
+	RTS 
+	ADC	($61, X)
+	ADC	$65 
+	ROR	$66 
+	PLA 
+	ADC	#$69 
+	ROR 
+	JMP	($6C6C) 
+	ADC	$6D6D 
+	ROR	$6E6E 
+	BVS	^+$72 
+	ADC	($71), Y
+	ADC	$75, X 
+	ROR	$76, X 
+	SEI 
+	ADC	$7979, Y
+	ADC	$7D7D, X
+	ROR	$7E7E, X
+	STA	($81, X)
+	STY	$84
+	STA	$85
+	STX	$86
+	DEY
+	TXA
+	STY	$8C8C
+	STA	$8D8D
+	STX	$8E8E
+	BCC	^-$6E
+	STA	($91), Y
+	STY	$94, X
+	STA	$95, X
+	STX	$96, Y
+	TYA
+	STA	$9999, Y
+	TXS
+	STA	$9D9D, X
+	LDY	#$A0
+	LDA	($A1, X)
+	LDX	#$A2
+	LDY	$A4
+	LDA	$A5
+	LDX	$A6
+	TAY
+	LDA	#$A9
+	TAX
+	LDY	$ACAC
+	LDA	$ADAD
+	LDX	$AEAE
+	BCS	^-$4e
+	LDA	($B1), Y
+	LDY	$B4, X
+	LDA	$B5, X
+	LDX	$B6, Y
+	CLV
+	LDA	$B9B9,Y
+	TSX
+	LDY	$BCBC, X
+	LDA	$BDBD, X
+	LDX	$BEBE, Y
+	CPY	#$C0
+	CMP	($C1, X)
+	CPY	$C4
+	CMP	$C5
+	DEC	$C6
+	INY
+	CMP	#$C9
+	DEX
+	CPY	$CCCC
+	CMP	$CDCD
+	DEC	$CECE
+	BNE	^-$2E
+	CMP	($D1), Y
+	CMP	$D5, X
+	DEC	$D6, X
+	CLD
+	CMP	$D9D9, Y
+	CMP	$DDDD, X
+	DEC	$DEDE, X
+	CPX	#$E0
+	SBC	($E1, X)
+	CPX	$E4
+	SBC	$E5
+	INC	$E6
+	INX
+	SBC	#$E9
+	NOP
+	CPX	$ECEC
+	SBC	$EDED
+	INC	$EEEE
+	BEQ	^-$0E
+	SBC	($F1), Y
+	SBC	$F5, X
+	INC	$F6, X
+	SED
+	SBC	$F9F9, Y
+	SBC	$FDFD, X
+	INC	$FEFE, X

@@ -1,0 +1,373 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Memory Model</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Ophis Command Reference"
+HREF="a505.html"><LINK
+REL="PREVIOUS"
+TITLE="Compound Arguments"
+HREF="x620.html"><LINK
+REL="NEXT"
+TITLE="Macros"
+HREF="x692.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x620.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Ophis Command Reference</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x692.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN647"
+>Memory Model</A
+></H1
+><P
+>        In order to properly compute the locations of labels and the
+        like, Ophis must keep track of where assembled code will
+        actually be sitting in memory, and it strives to do this in a
+        way that is independent both of the target file and of the
+        target machine.
+      </P
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN650"
+>Basic PC tracking</A
+></H2
+><P
+>          The primary technique Ophis uses is <I
+CLASS="EMPHASIS"
+>program counter
+          tracking</I
+>. As it assembles the code, it keeps
+          track of a virtual program counter, and uses that to
+          determine where the labels should go.
+        </P
+><P
+>          In the absence of an <TT
+CLASS="LITERAL"
+>.org</TT
+> directive, it
+          assumes a starting PC of zero. <TT
+CLASS="LITERAL"
+>.org</TT
+>
+          is a simple directive, setting the PC to the value
+          that <TT
+CLASS="LITERAL"
+>.org</TT
+> specifies. In the simplest
+          case, one <TT
+CLASS="LITERAL"
+>.org</TT
+> directive appears at the
+          beginning of the code and sets the location for the rest of
+          the code, which is one contiguous block.
+        </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN659"
+>Basic Segmentation simulation</A
+></H2
+><P
+>           However, this isn't always practical. Often one wishes to
+           have a region of memory reserved for data without actually
+           mapping that memory to the file. On some systems (typically
+           cartridge-based systems where ROM and RAM are seperate, and
+           the target file only specifies the ROM image) this is
+           mandatory. In order to access these variables symbolically,
+           it's necessary to put the values into the label lookup
+           table.
+         </P
+><P
+>           It is possible, but inconvenient, to do this
+           with <TT
+CLASS="LITERAL"
+>.alias</TT
+>, assigning a specific
+           memory location to each variable. This requires careful
+           coordination through your code, and makes creating reusable
+           libraries all but impossible.
+         </P
+><P
+>           A better approach is to reserve a section at the beginning
+           or end of your program, put an <TT
+CLASS="LITERAL"
+>.org</TT
+>
+           directive in, then use the <TT
+CLASS="LITERAL"
+>.space</TT
+>
+           directive to divide up the data area.  This is still a bit
+           inconvenient, though, because all variables must be
+           assigned all at once. What we'd really like is to keep
+           multiple PC counters, one for data and one for code.
+         </P
+><P
+>           The <TT
+CLASS="LITERAL"
+>.text</TT
+>
+           and <TT
+CLASS="LITERAL"
+>.data</TT
+> directives do this.  Each
+           has its own PC that starts at zero, and you can switch
+           between the two at any point without corrupting the other's
+           counter. In this way each function can have
+           a <TT
+CLASS="LITERAL"
+>.data</TT
+> section (filled
+           with <TT
+CLASS="LITERAL"
+>.space</TT
+> commands) and
+           a <TT
+CLASS="LITERAL"
+>.text</TT
+> section (that contains the
+           actual code). This lets our library routines be almost
+           completely self-contained - we can have one source file
+           that could be <TT
+CLASS="LITERAL"
+>.included</TT
+> by multiple
+           projects without getting in anything's way.
+         </P
+><P
+>           However, any given program may have its own ideas about
+           where data and code go, and it's good to ensure with
+           a <TT
+CLASS="LITERAL"
+>.checkpc</TT
+> at the end of your code
+           that you haven't accidentally overwritten code with data or
+           vice versa. If your <TT
+CLASS="LITERAL"
+>.data</TT
+>
+           segment <I
+CLASS="EMPHASIS"
+>did</I
+> start at zero, it's
+           probably wise to make sure you aren't smashing the stack,
+           too (which is sitting in the region from $0100 to
+           $01FF).
+         </P
+><P
+>           If you write code with no segment-defining statements in
+           it, the default segment
+           is <TT
+CLASS="LITERAL"
+>text</TT
+>.
+         </P
+><P
+>           The <TT
+CLASS="LITERAL"
+>data</TT
+> segment is designed only
+           for organizing labels. As such, errors will be flagged if
+           you attempt to actually output information into
+           a <TT
+CLASS="LITERAL"
+>data</TT
+> segment.
+         </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN683"
+>General Segmentation Simulation</A
+></H2
+><P
+>           One text and data segment each is usually sufficient, but
+           for the cases where it is not, Ophis allows for user-defined
+           segments. Putting a label
+           after <TT
+CLASS="LITERAL"
+>.text</TT
+>
+           or <TT
+CLASS="LITERAL"
+>.data</TT
+> produces a new segment with
+           the specified name.
+         </P
+><P
+>           Say, for example, that we have access to the RAM at the low
+           end of the address space, but want to reserve the zero page
+           for truly critical variables, and use the rest of RAM for
+           everything else. Let's also assume that this is a 6510
+           chip, and locations $00 and $01 are reserved for the I/O
+           port. We could start our program off with:
+         </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.data
+.org $200
+.data zp
+.org $2
+.text
+.org $800</PRE
+></TD
+></TR
+></TABLE
+><P
+>           And, to be safe, we would probably want to end our code
+           with checks to make sure we aren't overwriting anything:
+         </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.data
+.checkpc $800
+.data zp
+.checkpc $100</PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x620.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x692.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Compound Arguments</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="a505.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Macros</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
