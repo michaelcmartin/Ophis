@@ -1,0 +1,3 @@
+#!/bin/sh
+
+python $HOME/checkout/git/Ophis/src/ophismain.py $*
