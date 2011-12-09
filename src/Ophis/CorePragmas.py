@@ -43,9 +43,13 @@ def pragmaIncbin(ppt, line, result):
 	filename = line.expect("STRING").value
 	line.expect("EOL")
 	if type(filename)==str:
-		f = file(filename, "rb")
-		bytes = f.read()
-		f.close()
+		try:
+			f = file(filename, "rb")
+			bytes = f.read()
+			f.close()
+		except IOError:
+			Err.log ("Could not read "+filename)
+			return
 		bytes = [IR.ConstantExpr(ord(x)) for x in bytes]
 		result.append(IR.Node(ppt, "Byte", *bytes))
 
@@ -72,9 +76,13 @@ def pragmaCharmapbin(ppt, line, result):
 	filename = line.expect("STRING").value
 	line.expect("EOL")
 	if type(filename)==str:
-		f = file(filename, "rb")
-		bytes = f.read()
-		f.close()
+		try:
+			f = file(filename, "rb")
+			bytes = f.read()
+			f.close()
+		except IOError:
+			Err.log ("Could not read "+filename)
+			return
 		if len(bytes)==256:
 			currentcharmap = bytes
 		else:
