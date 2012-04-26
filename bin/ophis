@@ -1,3 +1,10 @@
-#!/bin/sh
+#!/usr/bin/env python
 
-python $HOME/checkout/git/Ophis/src/ophismain.py $*
+from os.path import realpath, dirname, join
+from sys import argv, path
+
+path.insert(0, join(dirname(realpath(argv[0])), '..', 'src'))
+
+import Ophis.Main
+
+Ophis.Main.run_ophis()
