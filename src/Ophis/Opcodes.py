@@ -1,28 +1,28 @@
 """Opcodes file.
 
-	Tables for the assembly of 6502-family instructions, mapping
-	opcodes and addressing modes to binary instructions."""
+    Tables for the assembly of 6502-family instructions, mapping
+    opcodes and addressing modes to binary instructions."""
 
-# Copyright 2002 Michael C. Martin.
-# You may use, modify, and distribute this file under the BSD
-# license: See LICENSE.txt for details.
+# Copyright 2002-2012 Michael C. Martin and additional contributors.
+# You may use, modify, and distribute this file under the MIT
+# license: See README for details.
 
 # Names of addressing modes
 modes = ["Implied",         #  0
-	 "Immediate",       #  1
-	 "Zero Page",       #  2
-	 "Zero Page, X",    #  3
-	 "Zero Page, Y",    #  4
-	 "Absolute",        #  5
-	 "Absolute, X",     #  6
-	 "Absolute, Y",     #  7
-	 "(Absolute)",      #  8
+     "Immediate",       #  1
+     "Zero Page",       #  2
+     "Zero Page, X",    #  3
+     "Zero Page, Y",    #  4
+     "Absolute",        #  5
+     "Absolute, X",     #  6
+     "Absolute, Y",     #  7
+     "(Absolute)",      #  8
          "(Absolute, X)",   #  9
          "(Absolute), Y",   # 10
          "(Zero Page)",     # 11
-	 "(Zero Page, X)",  # 12
-	 "(Zero Page), Y",  # 13
-	 "Relative"]        # 14
+     "(Zero Page, X)",  # 12
+     "(Zero Page), Y",  # 13
+     "Relative"]        # 14
 
 # Lengths of the argument
 lengths = [0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1]

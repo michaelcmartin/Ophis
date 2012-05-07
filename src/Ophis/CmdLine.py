@@ -9,9 +9,9 @@
 
     6510 compatibility and deprecation are handled in Ophis.Main."""
 
-# Copyright 2002 Michael C. Martin.
-# You may use, modify, and distribute this file under the BSD
-# license: See LICENSE.txt for details.
+# Copyright 2002-2012 Michael C. Martin and additional contributors.
+# You may use, modify, and distribute this file under the MIT
+# license: See README for details.
 
 verbose = 1;
 
