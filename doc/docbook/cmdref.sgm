@@ -447,32 +447,5 @@
       macro definition intends to read.  A shorthand for <literal>.invoke</literal>
       is the name of the macro to invoke, backquoted.</para></listitem>
          </itemizedlist>
-         <para>
-           The following directives are deprecated, added for
-           compatibility with the old Perl
-           assembler <command>P65</command>. Use
-           the <literal>-d</literal> option to Ophis to enable
-           them.
-         </para>
-    <itemizedlist>
-      <listitem><para><literal>.ascii</literal>: Equivalent to <literal>.byte</literal>,
-      which didn't used to be able to handle strings.</para></listitem>
-      <listitem><para><literal>.code</literal>: Equivalent to <literal>.text</literal>.</para></listitem>
-      <listitem><para><literal>.segment</literal>: Equivalent to <literal>.text</literal>,
-      from when there was no distinction between <literal>.text</literal> and
-      <literal>.data</literal> segments.</para></listitem>
-      <listitem><para><literal>.address</literal>: Equivalent to
-      <literal>.word</literal>.</para></listitem>
-      <listitem><para><literal>.link</literal> <emphasis>filename address</emphasis>: Assembles
-      the file specified as if it began at the address specified.
-      This is generally for use in <quote>top-level</quote> files, where there
-      is not necessarily a one-to-one correspondence between file
-      position and memory position. This is equivalent to an
-      <literal>.org</literal> directive followed by an <literal>.include</literal>.
-      With the introduction of the <literal>.org</literal> directive this one is
-      less useful (and in most cases, any <literal>.org</literal> statement
-      you use will actually be at the top of the <literal>.include</literal>d
-      file).</para></listitem>
-    </itemizedlist>
   </section>  
 </appendix>

@@ -11,7 +11,6 @@ import sys
 import Ophis.Frontend
 import Ophis.IR
 import Ophis.CorePragmas
-import Ophis.OldPragmas
 import Ophis.Passes
 import Ophis.Errors as Err
 import Ophis.Environment
@@ -27,7 +26,6 @@ def usage():
     print "Options:"
     print "\t-6510 Allow 6510 undocumented opcodes"
     print "\t-65c02 Enable 65c02 extensions"
-    print "\t-d Allow deprecated pragmas"
     print "\t-v n Set verbosity to n (0-4, 1=default)"
     sys.exit(1)
 
@@ -87,8 +85,6 @@ def run_ophis():
                 chip_extension = Ophis.Opcodes.undocops
             elif x == '-65c02':
                 chip_extension = Ophis.Opcodes.c02extensions
-            elif x == '-d':
-                p65_compatibility_mode = 1
             else:
                 print "FATAL: Unknown option "+x
                 usage()
@@ -109,9 +105,6 @@ def run_ophis():
         usage()
 
     Ophis.Frontend.pragma_modules.append(Ophis.CorePragmas)
-
-    if p65_compatibility_mode:
-        Ophis.Frontend.pragma_modules.append(Ophis.OldPragmas)
 
     if chip_extension is not None:
         Ophis.Opcodes.opcodes.update(chip_extension)
