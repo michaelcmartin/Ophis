@@ -39,7 +39,7 @@ def SequenceNode(ppt, nodelist):
     return Node(ppt, "SEQUENCE", *nodelist)
 
 class Expr:
-    """Base class for P65 expressions
+    """Base class for Ophis expressions
     All expressions have a field called "data" and a boolean field
     called "hardcoded".  An expression is hardcoded if it has no
     symbolic values in it."""

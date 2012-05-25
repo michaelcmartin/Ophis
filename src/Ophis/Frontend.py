@@ -307,7 +307,7 @@ def parse_line(ppt, lexemelist):
     return IR.SequenceNode(ppt, result)
 
 def parse_file(ppt, filename):
-    "Loads a .P65 source file, and returns an IR list."
+    "Loads an Ophis source file, and returns an IR list."
     Err.currentpoint = ppt
     if Cmd.verbose > 0: print "Loading "+filename
     try:

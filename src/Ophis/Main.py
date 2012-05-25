@@ -40,6 +40,7 @@ def run_all(infile, outfile):
     l_basic = Ophis.Passes.UpdateLabels()
     l = Ophis.Passes.FixPoint("label update", [l_basic], lambda: l_basic.changed == 0)
     c = Ophis.Passes.Collapse()
+    b = Ophis.Passes.ExtendBranches()
     a = Ophis.Passes.Assembler()
 
     passes = []
@@ -47,7 +48,7 @@ def run_all(infile, outfile):
     passes.append(Ophis.Passes.FixPoint("macro expansion", [m], lambda: m.changed == 0))
     passes.append(Ophis.Passes.FixPoint("label initialization", [i], lambda: i.changed == 0))
     passes.extend([Ophis.Passes.CircularityCheck(), Ophis.Passes.CheckExprs(), Ophis.Passes.EasyModes()])
-    passes.append(Ophis.Passes.FixPoint("instruction selection", [l, c], lambda: c.collapsed == 0))
+    passes.append(Ophis.Passes.FixPoint("instruction selection", [l, c, b], lambda: c.collapsed == 0 and b.expanded == 0))
     passes.extend([Ophis.Passes.NormalizeModes(), Ophis.Passes.UpdateLabels(), a])
 
     for p in passes: p.go(z, env)

@@ -1,0 +1,54 @@
+.text
+.org $0800
+early:
+     bmi +
+     jmp late
+*    bpl +
+     jmp late
+*    bvs +
+     jmp late
+*    bvc +
+     jmp late
+*    bcs +
+     jmp late
+*    bcc +
+     jmp late
+*    beq +
+     jmp late
+*    bne +
+     jmp late
+*    bpl early
+     bmi early
+     bvc early
+     bvs early
+     bcc early
+     bcs early
+     bne early
+     beq early
+.advance $0900
+late:
+     bpl late
+     bmi late
+     bvc late
+     bvs late
+     bcc late
+     bcs late
+     bne late
+     beq late
+     bmi +
+     jmp early
+*    bpl +
+     jmp early
+*    bvs +
+     jmp early
+*    bvc +
+     jmp early
+*    bcs +
+     jmp early
+*    bcc +
+     jmp early
+*    beq +
+     jmp early
+*    bne +
+     jmp early
+*

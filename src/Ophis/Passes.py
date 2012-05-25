@@ -227,11 +227,9 @@ class EasyModes(Pass):
     def visitUnknown(self, node, env):
         pass
 
-class UpdateLabels(Pass):
-    "Computes the new values for all entries in the symbol table"
-    name = "Label Update Pass"
-    def prePass(self):
-        self.changed = 0
+class PCTracker(Pass):
+    "Superclass for passes that need an accurate program counter."
+    name = "**BUG** PC Tracker Superpass used directly"
     def visitSetPC(self, node, env): env.setPC(node.data[0].value(env))
     def visitAdvance(self, node, env): env.setPC(node.data[0].value(env))
     def visitImplied(self, node, env): env.incPC(1)
@@ -256,17 +254,24 @@ class UpdateLabels(Pass):
     def visitPointerX(self, node, env): env.incPC(3)
     def visitPointerY(self, node, env): env.incPC(3)
     def visitCheckPC(self, node, env): pass
+    def visitLabel(self, node, env): pass
+    def visitByte(self, node, env): env.incPC(len(node.data))
+    def visitWord(self, node, env): env.incPC(len(node.data)*2)
+    def visitDword(self, node, env): env.incPC(len(node.data)*4)
+    def visitWordBE(self, node, env): env.incPC(len(node.data)*2)
+    def visitDwordBE(self, node, env): env.incPC(len(node.data)*4)
+
+class UpdateLabels(PCTracker):
+    "Computes the new values for all entries in the symbol table"
+    name = "Label Update Pass"
+    def prePass(self):
+        self.changed = 0
     def visitLabel(self, node, env):
         (label, val) = node.data
         old = env[label]
         env[label] = val.value(env)
         if old != env[label]:
             self.changed = 1
-    def visitByte(self, node, env): env.incPC(len(node.data))
-    def visitWord(self, node, env): env.incPC(len(node.data)*2)
-    def visitDword(self, node, env): env.incPC(len(node.data)*4)
-    def visitWordBE(self, node, env): env.incPC(len(node.data)*2)
-    def visitDwordBE(self, node, env): env.incPC(len(node.data)*4)
 
 class Collapse(Pass):
     """Selects as many zero-page instructions to convert as 
@@ -344,6 +349,65 @@ def collapse_y_ind(node, env):
     else:
         return 0
 
+class ExtendBranches(PCTracker):
+    """Eliminates any branch instructions that would end up going past
+    the 128-byte range, and replaces them with a branch-jump
+    pair. Also tracks how many elements where changed this pass."""
+    name = "Branch Expansion Pass"
+    reversed = { 'bcc': 'bcs',
+                 'bcs': 'bcc',
+                 'beq': 'bne',
+                 'bmi': 'bpl',
+                 'bne': 'beq',
+                 'bpl': 'bmi',
+                 'bvc': 'bvs',
+                 'bvs': 'bvc',
+                 # 65c02 ones. 'bra' is special, though, having no inverse
+                 'bbr0': 'bbs0',
+                 'bbs0': 'bbr0',
+                 'bbr1': 'bbs1',
+                 'bbs1': 'bbr1',
+                 'bbr2': 'bbs2',
+                 'bbs2': 'bbr2',
+                 'bbr3': 'bbs3',
+                 'bbs3': 'bbr3',
+                 'bbr4': 'bbs4',
+                 'bbs4': 'bbr4',
+                 'bbr5': 'bbs5',
+                 'bbs5': 'bbr5',
+                 'bbr6': 'bbs6',
+                 'bbs6': 'bbr6',
+                 'bbr7': 'bbs7',
+                 'bbs7': 'bbr7'
+                 }
+    def prePass(self):
+        self.expanded = 0
+    def visitRelative(self, node, env):
+        (opcode, expr) = node.data
+        arg = expr.value(env)
+        arg = arg-(env.getPC()+2)
+        if arg < -128 or arg > 127:
+            if opcode == 'bra':
+                # If BRA - BRanch Always - is out of range, it's a JMP.
+                node.data = ('jmp', expr)
+                node.nodetype = "Absolute"
+                if Cmd.verbose > 0:
+                    print str(node.ppt) + ": WARNING: bra out of range, replacing with jmp"
+            else:
+                # Otherwise, we replace it with a 'macro' of sorts by hand:
+                # $branch LOC -> $reversed_branch ^+5; JMP LOC
+                # We don't use temp labels here because labels need to have been fixed
+                # in place by this point, and JMP is always 3 bytes long.
+                expansion = [IR.Node(node.ppt, "Relative", ExtendBranches.reversed[opcode], IR.SequenceExpr([IR.PCExpr(), "+", IR.ConstantExpr(5)])),
+                             IR.Node(node.ppt, "Absolute", 'jmp', expr)]
+                node.nodetype='SEQUENCE'
+                node.data = expansion
+                if Cmd.verbose > 0:
+                    print str(node.ppt) + ": WARNING: "+opcode+" out of range, replacing with "+ExtendBranches.reversed[opcode] +"/jmp combo"
+            self.expanded += 1
+            node.accept(self, env)
+        else:
+            env.incPC(2)
 
 class NormalizeModes(Pass):
     """Eliminates the intermediate "Memory" and "Pointer" nodes,
