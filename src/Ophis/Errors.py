@@ -7,6 +7,8 @@
 # You may use, modify, and distribute this file under the MIT
 # license: See README for details.
 
+import sys
+
 count = 0
 currentpoint = "<Top Level>"
 
@@ -15,10 +17,10 @@ def log(err):
 the global error count."""
     global count
     count = count+1
-    print currentpoint+": "+err
+    print>>sys.stderr, currentpoint+": "+err
 
 def report():
     "Print out the number of errors."
-    if count == 0: print "No errors"
-    elif count == 1: print "1 error"
-    else: print str(count)+" errors"
+    if count == 0: print>>sys.stderr, "No errors"
+    elif count == 1: print>>sys.stderr, "1 error"
+    else: print>>sys.stderr, str(count)+" errors"

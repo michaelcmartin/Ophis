@@ -20,13 +20,13 @@ import Ophis.Opcodes
 
 def usage():
     "Prints a usage message and quits."
-    print "Usage:"
-    print "\tOphis [options] infile outfile"
-    print ""
-    print "Options:"
-    print "\t-6510 Allow 6510 undocumented opcodes"
-    print "\t-65c02 Enable 65c02 extensions"
-    print "\t-v n Set verbosity to n (0-4, 1=default)"
+    print>>sys.stderr, "Usage:"
+    print>>sys.stderr, "\tOphis [options] infile outfile"
+    print>>sys.stderr, ""
+    print>>sys.stderr, "Options:"
+    print>>sys.stderr, "\t-6510 Allow 6510 undocumented opcodes"
+    print>>sys.stderr, "\t-65c02 Enable 65c02 extensions"
+    print>>sys.stderr, "\t-v n Set verbosity to n (0-4, 1=default)"
     sys.exit(1)
 
 def run_all(infile, outfile):
@@ -55,10 +55,16 @@ def run_all(infile, outfile):
 
     if Err.count == 0:
         try:
-            output = file(outfile, 'wb')
+            if outfile == '-':
+                output = sys.stdout
+            else:
+                output = file(outfile, 'wb')
             output.write("".join(map(chr, a.output)))
+            output.flush()
+            if outfile != '-':
+                output.close()
         except IOError:
-            print "Could not write to "+outfile
+            print>>sys.stderr, "Could not write to "+outfile
     else:
         Err.report()
 
@@ -77,9 +83,9 @@ def run_ophis():
                 Ophis.CmdLine.verbose = int(x)
                 reading_arg = 0
             except ValueError:
-                print "FATAL: Non-integer passed as argument to -v"
+                print>>sys.stderr, "FATAL: Non-integer passed as argument to -v"
                 usage()
-        elif x[0] == '-':
+        elif x[0] == '-' and x != '-':
             if x == '-v':
                 reading_arg = 1
             elif x == '-6510':
@@ -87,22 +93,22 @@ def run_ophis():
             elif x == '-65c02':
                 chip_extension = Ophis.Opcodes.c02extensions
             else:
-                print "FATAL: Unknown option "+x
+                print>>sys.stderr, "FATAL: Unknown option "+x
                 usage()
         elif infile == None:
             infile = x
         elif outfile == None:
             outfile = x
         else:
-            print "FATAL: Too many files specified"
+            print>>sys.stderr, "FATAL: Too many files specified"
             usage()
 
     if infile is None:
-        print "FATAL: No files specified"
+        print>>sys.stderr, "FATAL: No files specified"
         usage()
 
     if outfile is None:
-        print "FATAL: No output file specified"
+        print>>sys.stderr, "FATAL: No output file specified"
         usage()
 
     Ophis.Frontend.pragma_modules.append(Ophis.CorePragmas)

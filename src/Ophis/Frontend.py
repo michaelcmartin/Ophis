@@ -6,6 +6,7 @@ import Ophis.Errors as Err
 import Ophis.Opcodes as Ops
 import Ophis.IR as IR
 import Ophis.CmdLine as Cmd
+import sys
 import os
 
 # Copyright 2002-2012 Michael C. Martin and additional contributors.
@@ -309,11 +310,18 @@ def parse_line(ppt, lexemelist):
 def parse_file(ppt, filename):
     "Loads an Ophis source file, and returns an IR list."
     Err.currentpoint = ppt
-    if Cmd.verbose > 0: print "Loading "+filename
+    if Cmd.verbose > 0:
+        if filename != '-':
+            print>>sys.stderr, "Loading "+filename
+        else:
+            print>>sys.stderr, "Loading from standard input"
     try:
-        f = file(filename)
-        linelist = f.readlines()
-        f.close()
+        if filename != '-':
+            f = file(filename)
+            linelist = f.readlines()
+            f.close()
+        else:
+            linelist = sys.stdin.readlines()
         pptlist = ["%s:%d" % (filename, i+1) for i in range(len(linelist))]
         lexlist = map(lex, pptlist, linelist)
         IRlist = map(parse_line, pptlist, lexlist)

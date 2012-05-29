@@ -61,6 +61,6 @@ def dump():
     global macros
     for mac in macros:
         body = macros[mac]
-        print "Macro: "+mac
-        for node in body: print node
-        print ""
+        print>>sys.stderr, "Macro: "+mac
+        for node in body: print>>sys.stderr, node
+        print>>sys.stderr, ""
