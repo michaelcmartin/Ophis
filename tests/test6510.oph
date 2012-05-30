@@ -13,6 +13,7 @@
 ; opcodes - see testbase.oph for those.
 
 	SLO	($03, X)
+	NOP	$04
 	SLO	$07
 	ANC	#$0B
 	SLO	$0F0F

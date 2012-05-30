@@ -2,7 +2,7 @@
   01: ORA - (Zero Page, X)
   02: 
   03: SLO - (Zero Page, X)
-  04: 
+  04: NOP - Zero Page 
   05: ORA - Zero Page
   06: ASL - Zero Page
   07: SLO - Zero Page
