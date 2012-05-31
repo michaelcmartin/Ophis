@@ -1,7 +1,9 @@
-; This data file just dumps out $00-$0F repeatedly with different forms.
-
+; This data file just dumps out $00-$0F repeatedly with different forms,
+; bracketed by $00s and then $60s.
+.advance $10, ^
 .byte 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 .word 256, $0302, $0504, $0706, $0908, $0b0a, $0d0c, $0f0e
 .dword $03020100, $07060504, $0b0a0908, $0f0e0d0c
 .wordbe 1, $0203, $0405, $0607, $0809, $0a0b, $0c0d, $0e0f
 .dwordbe $010203, $04050607, $08090a0b, $0c0d0e0f
+.advance $70, ^

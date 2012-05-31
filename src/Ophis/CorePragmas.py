@@ -94,8 +94,13 @@ def pragmaOrg(ppt, line, result):
 def pragmaAdvance(ppt, line, result):
     "Outputs filler until reaching the target PC"
     newPC = FE.parse_expr(line)
+    if str(line.lookahead(0)) == ",":
+        line.pop()
+        fillexpr = FE.parse_expr(line)
+    else:
+        fillexpr = IR.ConstantExpr(0)
     line.expect("EOL")
-    result.append(IR.Node(ppt, "Advance", newPC))
+    result.append(IR.Node(ppt, "Advance", newPC, fillexpr))
 
 def pragmaCheckpc(ppt, line, result):
     "Enforces that the PC has not exceeded a certain point"

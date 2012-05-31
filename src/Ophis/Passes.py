@@ -575,7 +575,6 @@ class Assembler(Pass):
         if (pc > target):
             Err.log("Attempted to .advance backwards: $%x to $%x" % (pc, target))
         else:
-            zero = IR.ConstantExpr(0)
-            for i in xrange(target-pc): self.outputbyte(zero, env)
+            for i in xrange(target-pc): self.outputbyte(node.data[1], env)
             self.filler += target-pc
         env.setPC(target)
