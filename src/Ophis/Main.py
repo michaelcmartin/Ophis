@@ -1,7 +1,7 @@
 """Main controller routines for the Ophis assembler.
 
     When invoked as main, interprets its command line and goes from there.
-    Otherwise, use run_all to interpret a file set."""
+    Otherwise, use run_ophis(cmdline-list) to use it inside a script."""
 
 # Copyright 2002-2012 Michael C. Martin and additional contributors.
 # You may use, modify, and distribute this file under the MIT
@@ -16,18 +16,6 @@ import Ophis.Errors as Err
 import Ophis.Environment
 import Ophis.CmdLine
 import Ophis.Opcodes
-
-
-def usage():
-    "Prints a usage message and quits."
-    print>>sys.stderr, "Usage:"
-    print>>sys.stderr, "\tOphis [options] infile outfile"
-    print>>sys.stderr, ""
-    print>>sys.stderr, "Options:"
-    print>>sys.stderr, "\t-6510 Allow 6510 undocumented opcodes"
-    print>>sys.stderr, "\t-65c02 Enable 65c02 extensions"
-    print>>sys.stderr, "\t-v n Set verbosity to n (0-4, 1=default)"
-    sys.exit(1)
 
 def run_all(infile, outfile):
     "Transforms the source infile to a binary outfile."
@@ -69,56 +57,17 @@ def run_all(infile, outfile):
     else:
         Err.report()
 
-def run_ophis():
-    infile = None
-    outfile = None
-
-    p65_compatibility_mode = 0
-    chip_extension = None
-
-    reading_arg = 0
-
-    for x in sys.argv[1:]:
-        if reading_arg:
-            try:
-                Ophis.CmdLine.verbose = int(x)
-                reading_arg = 0
-            except ValueError:
-                print>>sys.stderr, "FATAL: Non-integer passed as argument to -v"
-                usage()
-        elif x[0] == '-' and x != '-':
-            if x == '-v':
-                reading_arg = 1
-            elif x == '-6510':
-                chip_extension = Ophis.Opcodes.undocops
-            elif x == '-65c02':
-                chip_extension = Ophis.Opcodes.c02extensions
-            else:
-                print>>sys.stderr, "FATAL: Unknown option "+x
-                usage()
-        elif infile == None:
-            infile = x
-        elif outfile == None:
-            outfile = x
-        else:
-            print>>sys.stderr, "FATAL: Too many files specified"
-            usage()
-
-    if infile is None:
-        print>>sys.stderr, "FATAL: No files specified"
-        usage()
-
-    if outfile is None:
-        print>>sys.stderr, "FATAL: No output file specified"
-        usage()
-
+def run_ophis(args):
+    Ophis.CmdLine.parse_args(args)
     Ophis.Frontend.pragma_modules.append(Ophis.CorePragmas)
 
-    if chip_extension is not None:
-        Ophis.Opcodes.opcodes.update(chip_extension)
+    if Ophis.CmdLine.enable_undoc_ops:
+        Ophis.Opcodes.opcodes.update(Ophis.Opcodes.undocops)
+    elif Ophis.CmdLine.enable_65c02_exts:
+        Ophis.Opcodes.opcodes.update(Ophis.Opcodes.c02extensions)
 
     Ophis.CorePragmas.reset()
-    run_all(infile, outfile)
+    run_all(Ophis.CmdLine.infile, Ophis.CmdLine.outfile)
 
 if __name__ == '__main__':
-    run_ophis()
+    run_ophis(sys.argv[1:])

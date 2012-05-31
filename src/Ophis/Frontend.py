@@ -310,7 +310,7 @@ def parse_line(ppt, lexemelist):
 def parse_file(ppt, filename):
     "Loads an Ophis source file, and returns an IR list."
     Err.currentpoint = ppt
-    if Cmd.verbose > 0:
+    if Cmd.print_loaded_files:
         if filename != '-':
             print>>sys.stderr, "Loading "+filename
         else:

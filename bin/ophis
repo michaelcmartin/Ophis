@@ -7,4 +7,4 @@ path.insert(0, join(dirname(realpath(argv[0])), '..', 'src'))
 
 import Ophis.Main
 
-Ophis.Main.run_ophis()
+Ophis.Main.run_ophis(argv[1:])

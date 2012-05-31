@@ -1,4 +1,5 @@
 #!/usr/local/bin/python
+import sys
 import Ophis.Main
 
-Ophis.Main.run_ophis()
+Ophis.Main.run_ophis(sys.argv[1:])

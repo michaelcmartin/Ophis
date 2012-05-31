@@ -54,16 +54,16 @@ class Pass:
         """Prepares the environment and runs this pass, possibly 
         printing debugging information."""
         if Err.count == 0:
-            if Cmd.verbose > 1: print>>sys.stderr, "Running: "+self.name
+            if Cmd.print_pass: print>>sys.stderr, "Running: "+self.name
             env.reset()
             self.prePass()
             node.accept(self, env)
             self.postPass()
             env.reset()
-            if Cmd.verbose > 3:
+            if Cmd.print_labels:
                 print>>sys.stderr, "Current labels:"
                 print>>sys.stderr, env
-            if Cmd.verbose > 2: 
+            if Cmd.print_ir:
                 print>>sys.stderr, "Current IR:"
                 print>>sys.stderr, node
 
@@ -83,7 +83,7 @@ class FixPoint:
                 p.go(node, env)
             if Err.count != 0: break
             if self.fixpoint(): break 
-            if Cmd.verbose > 1: print>>sys.stderr, "Fixpoint failed, looping back"
+            if Cmd.print_pass: print>>sys.stderr, "Fixpoint failed, looping back"
         else:
             Err.log("Can't make %s converge!  Maybe there's a recursive dependency somewhere?" % self.name)
 
@@ -96,7 +96,7 @@ class DefineMacros(Pass):
     def postPass(self):
         if self.inDef:
             Err.log("Unmatched .macro")
-        elif Cmd.verbose > 2:
+        elif Cmd.print_ir:
             print>>sys.stderr, "Macro definitions:"
             Macro.dump()
     def visitMacroBegin(self, node, env):
@@ -392,7 +392,7 @@ class ExtendBranches(PCTracker):
                 # If BRA - BRanch Always - is out of range, it's a JMP.
                 node.data = ('jmp', expr)
                 node.nodetype = "Absolute"
-                if Cmd.verbose > 0:
+                if Cmd.warn_on_branch_extend:
                     print>>sys.stderr, str(node.ppt) + ": WARNING: bra out of range, replacing with jmp"
             else:
                 # Otherwise, we replace it with a 'macro' of sorts by hand:
@@ -403,7 +403,7 @@ class ExtendBranches(PCTracker):
                              IR.Node(node.ppt, "Absolute", 'jmp', expr)]
                 node.nodetype='SEQUENCE'
                 node.data = expansion
-                if Cmd.verbose > 0:
+                if Cmd.warn_on_branch_extend:
                     print>>sys.stderr, str(node.ppt) + ": WARNING: "+opcode+" out of range, replacing with "+ExtendBranches.reversed[opcode] +"/jmp combo"
             self.expanded += 1
             node.accept(self, env)
@@ -435,7 +435,7 @@ class Assembler(Pass):
         self.filler = 0
 
     def postPass(self):
-        if Cmd.verbose > 0 and Err.count == 0:
+        if Cmd.print_summary and Err.count == 0:
             print>>sys.stderr, "Assembly complete: %s bytes output (%s code, %s data, %s filler)" \
                 % (len(self.output), self.code, self.data, self.filler)
 
