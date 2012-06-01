@@ -153,19 +153,19 @@ next:   .word 0              ; End of program
            Labels are defined by putting their name, then a colon, as
            seen in the definition of <literal>next</literal>.
         </para></listitem>
-        <listitem><para> 
+        <listitem><para>
            Instead of putting in the hex codes for the string part of
            the BASIC code, we included the string directly.  Each
            character in the string becomes one byte.
         </para></listitem>
-        <listitem><para> 
+        <listitem><para>
           Instead of adding the buffer ourselves, we
           used <literal>.advance</literal>, which outputs zeros until
           the specified address is reached.  Attempting
           to <literal>.advance</literal> backwards produces an
           assemble-time error.
         </para></listitem>
-        <listitem><para> 
+        <listitem><para>
           It has comments that explain what the data are for.  The
           semicolon is the comment marker; everything from a semicolon
           to the end of the line is ignored.
@@ -263,9 +263,9 @@ hello:  .byte "HELLO, WORLD!", 0
           <row>
             <entry align="center">Option</entry>
             <entry align="center">Effect</entry>
-          </row> 
+          </row>
         </thead>
-        <tbody>                          
+        <tbody>
           <row><entry><option>-6510</option></entry><entry>Allows the 6510 undocumented opcodes as listed in the VICE documentation.</entry></row>
           <row><entry><option>-65c02</option></entry><entry>Allows opcodes and addressing modes added by the 65C02.</entry></row>
           <row><entry><option>-v 0</option></entry><entry>Quiet operation.  Only reports errors.</entry></row>

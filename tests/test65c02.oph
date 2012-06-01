@@ -25,7 +25,7 @@
 	AND	($32)		;  32: AND - (Zero Page)
 	BIT	$34, X		;  34: BIT - Zero Page, X
 	RMB3	$37		;  37: RMB3 - Zero Page
-	DEA			;  3A: DEA - Implied 
+	DEA			;  3A: DEA - Implied
 	DEC			;  3A: DEC - Implied
 	BIT	$3C3C,X		;  3C: BIT - Absolute, X
 	BBR3	^+$41		;  3F: BBR3 - Relative

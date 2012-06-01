@@ -10,43 +10,43 @@
 	ASL	$06
 	PHP
 	ORA	#$09
-	ASL 
-	ORA	$0D0D 
-	ASL	$0E0E 
-	BPL	^+$12 
-	ORA	($11), Y 
-	ORA	$15, X 
+	ASL
+	ORA	$0D0D
+	ASL	$0E0E
+	BPL	^+$12
+	ORA	($11), Y
+	ORA	$15, X
 	ASL	$16, X
 	CLC
 	ORA	$1919, Y
 	ORA	$1D1D, X
 	ASL	$1E1E, X
-	JSR	$2020 
-	AND	($21, X) 
-	BIT	$24 
-	AND	$25 
-	ROL	$26 
-	PLP 
-	AND	#$29 
-	ROL 
-	BIT	$2C2C 
-	AND	$2D2D 
-	ROL	$2E2E 
-	BMI	^+$32 
+	JSR	$2020
+	AND	($21, X)
+	BIT	$24
+	AND	$25
+	ROL	$26
+	PLP
+	AND	#$29
+	ROL
+	BIT	$2C2C
+	AND	$2D2D
+	ROL	$2E2E
+	BMI	^+$32
 	AND	($31), Y
 	AND	$35, X
 	ROL	$36, X
-	SEC 
+	SEC
 	AND	$3939, Y
 	AND	$3D3D, X
 	ROL	$3E3E, X
 	RTI
 	EOR	($41, X)
 	EOR	$45
-	LSR	$46 
+	LSR	$46
 	PHA
 	EOR	#$49
-	LSR 
+	LSR
 	JMP	$4C4C
 	EOR	$4D4D
 	LSR	$4E4E
@@ -54,25 +54,25 @@
 	EOR	($51), Y
 	EOR	$55, X
 	LSR	$56, X
-	CLI 
+	CLI
 	EOR	$5959, Y
 	EOR	$5D5D, X
 	LSR	$5E5E, X
-	RTS 
+	RTS
 	ADC	($61, X)
-	ADC	$65 
-	ROR	$66 
-	PLA 
-	ADC	#$69 
-	ROR 
-	JMP	($6C6C) 
-	ADC	$6D6D 
-	ROR	$6E6E 
-	BVS	^+$72 
+	ADC	$65
+	ROR	$66
+	PLA
+	ADC	#$69
+	ROR
+	JMP	($6C6C)
+	ADC	$6D6D
+	ROR	$6E6E
+	BVS	^+$72
 	ADC	($71), Y
-	ADC	$75, X 
-	ROR	$76, X 
-	SEI 
+	ADC	$75, X
+	ROR	$76, X
+	SEI
 	ADC	$7979, Y
 	ADC	$7D7D, X
 	ROR	$7E7E, X

@@ -17,6 +17,7 @@ import Ophis.Environment
 import Ophis.CmdLine
 import Ophis.Opcodes
 
+
 def run_all(infile, outfile):
     "Transforms the source infile to a binary outfile."
     Err.count = 0
@@ -26,21 +27,31 @@ def run_all(infile, outfile):
     m = Ophis.Passes.ExpandMacros()
     i = Ophis.Passes.InitLabels()
     l_basic = Ophis.Passes.UpdateLabels()
-    l = Ophis.Passes.FixPoint("label update", [l_basic], lambda: l_basic.changed == 0)
+    l = Ophis.Passes.FixPoint("label update", [l_basic],
+                              lambda: not l_basic.changed)
     c_basic = Ophis.Passes.Collapse()
-    c = Ophis.Passes.FixPoint("instruction selection 1", [l, c_basic], lambda: c_basic.collapsed == 0)
+    c = Ophis.Passes.FixPoint("instruction selection 1", [l, c_basic],
+                              lambda: not c_basic.changed)
     b = Ophis.Passes.ExtendBranches()
     a = Ophis.Passes.Assembler()
 
     passes = []
     passes.append(Ophis.Passes.DefineMacros())
-    passes.append(Ophis.Passes.FixPoint("macro expansion", [m], lambda: m.changed == 0))
-    passes.append(Ophis.Passes.FixPoint("label initialization", [i], lambda: i.changed == 0))
-    passes.extend([Ophis.Passes.CircularityCheck(), Ophis.Passes.CheckExprs(), Ophis.Passes.EasyModes()])
-    passes.append(Ophis.Passes.FixPoint("instruction selection 2", [c, b], lambda: b.expanded == 0))
-    passes.extend([Ophis.Passes.NormalizeModes(), Ophis.Passes.UpdateLabels(), a])
+    passes.append(Ophis.Passes.FixPoint("macro expansion", [m],
+                                        lambda: not m.changed))
+    passes.append(Ophis.Passes.FixPoint("label initialization", [i],
+                                        lambda: not i.changed))
+    passes.extend([Ophis.Passes.CircularityCheck(),
+                   Ophis.Passes.CheckExprs(),
+                   Ophis.Passes.EasyModes()])
+    passes.append(Ophis.Passes.FixPoint("instruction selection 2", [c, b],
+                                        lambda: not b.changed))
+    passes.extend([Ophis.Passes.NormalizeModes(),
+                   Ophis.Passes.UpdateLabels(),
+                   a])
 
-    for p in passes: p.go(z, env)
+    for p in passes:
+        p.go(z, env)
 
     if Err.count == 0:
         try:
@@ -53,9 +64,10 @@ def run_all(infile, outfile):
             if outfile != '-':
                 output.close()
         except IOError:
-            print>>sys.stderr, "Could not write to "+outfile
+            print>>sys.stderr, "Could not write to " + outfile
     else:
         Err.report()
+
 
 def run_ophis(args):
     Ophis.CmdLine.parse_args(args)
@@ -68,6 +80,7 @@ def run_ophis(args):
 
     Ophis.CorePragmas.reset()
     run_all(Ophis.CmdLine.infile, Ophis.CmdLine.outfile)
+
 
 if __name__ == '__main__':
     run_ophis(sys.argv[1:])

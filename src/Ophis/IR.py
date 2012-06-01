@@ -9,6 +9,7 @@
 
 import Ophis.Errors as Err
 
+
 class Node(object):
     """The default IR Node
     Instances of Node always have the three fields ppt(Program Point),
@@ -17,26 +18,34 @@ class Node(object):
         self.ppt = ppt
         self.nodetype = nodetype
         self.data = list(data)
+
     def accept(self, asmpass, env=None):
         """Implements the Visitor pattern for an assembler pass.
-        Calls the routine 'asmpass.visitTYPE(self, env)' where 
+        Calls the routine 'asmpass.visitTYPE(self, env)' where
         TYPE is the value of self.nodetype."""
         Err.currentpoint = self.ppt
-        routine = getattr(asmpass, "visit"+self.nodetype, asmpass.visitUnknown)
+        routine = getattr(asmpass, "visit" + self.nodetype,
+                          asmpass.visitUnknown)
         routine(self, env)
+
     def __str__(self):
         if self.nodetype != "SEQUENCE":
-            return str(self.ppt)+": "+self.nodetype+" - "+" ".join(map(str, self.data))
+            return str(self.ppt) + ": " + self.nodetype + " - " + \
+                   " ".join(map(str, self.data))
         else:
             return "\n".join(map(str, self.data))
+
     def __repr__(self):
         args = [self.ppt, self.nodetype] + self.data
         return "Node(" + ", ".join(map(repr, args)) + ")"
 
+
 NullNode = Node("<none>", "None")
+
 
 def SequenceNode(ppt, nodelist):
     return Node(ppt, "SEQUENCE", *nodelist)
+
 
 class Expr(object):
     """Base class for Ophis expressions
@@ -45,77 +54,101 @@ class Expr(object):
     symbolic values in it."""
     def __init__(self, data):
         self.data = data
-        self.hardcoded = 0
+        self.hardcoded = False
+
     def __str__(self):
-        return "<UNKNOWN: "+`self.data`+">"
-    def valid(self, env=None, PCvalid=0): 
+        return "<UNKNOWN: " + repr(self.data) + ">"
+
+    def valid(self, env=None, PCvalid=False):
         """Returns true if the the expression can be successfully
         evaluated in the specified environment."""
-        return 0
+        return False
+
     def value(self, env=None):
         "Evaluates this expression in the given environment."
         return None
+
 
 class ConstantExpr(Expr):
     "Represents a numeric constant"
     def __init__(self, data):
         self.data = data
-        self.hardcoded = 1
+        self.hardcoded = True
+
     def __str__(self):
         return str(self.data)
-    def valid(self, env=None, PCvalid=0): 
-        return 1
+
+    def valid(self, env=None, PCvalid=False):
+        return True
+
     def value(self, env=None):
         return self.data
+
 
 class LabelExpr(Expr):
     "Represents a symbolic constant"
     def __init__(self, data):
         self.data = data
-        self.hardcoded = 0
+        self.hardcoded = False
+
     def __str__(self):
         return self.data
-    def valid(self, env=None, PCvalid=0): 
+
+    def valid(self, env=None, PCvalid=False):
         return (env is not None) and self.data in env
+
     def value(self, env=None):
         return env[self.data]
+
 
 class PCExpr(Expr):
     "Represents the current program counter: ^"
     def __init__(self):
-        self.hardcoded = 0
+        self.hardcoded = False
+
     def __str__(self):
         return "^"
-    def valid(self, env=None, PCvalid=0):
+
+    def valid(self, env=None, PCvalid=False):
         return env is not None and PCvalid
+
     def value(self, env=None):
         return env.getPC()
+
 
 class HighByteExpr(Expr):
     "Represents the expression >{data}"
     def __init__(self, data):
         self.data = data
         self.hardcoded = data.hardcoded
+
     def __str__(self):
-        return ">"+str(self.data)
-    def valid(self, env=None, PCvalid=0):
+        return ">" + str(self.data)
+
+    def valid(self, env=None, PCvalid=False):
         return self.data.valid(env, PCvalid)
+
     def value(self, env=None):
         val = self.data.value(env)
         return (val >> 8) & 0xff
-    
+
+
 class LowByteExpr(Expr):
     "Represents the expression <{data}"
     def __init__(self, data):
         self.data = data
         self.hardcoded = data.hardcoded
+
     def __str__(self):
-        return "<"+str(self.data)
-    def valid(self, env=None, PCvalid=0):
+        return "<" + str(self.data)
+
+    def valid(self, env=None, PCvalid=False):
         return self.data.valid(env, PCvalid)
+
     def value(self, env=None):
         val = self.data.value(env)
         return val & 0xff
+
 
 class SequenceExpr(Expr):
     """Represents an interleaving of operands (of type Expr) and
@@ -128,20 +161,23 @@ class SequenceExpr(Expr):
         [Expr, str, Expr, str, Expr, str, ... Expr, str, Expr]."""
         self.data = data
         self.operands = [x for x in data if isinstance(x, Expr)]
-        self.operators = [x for x in data if type(x)==str]
+        self.operators = [x for x in data if type(x) == str]
         for i in self.operands:
             if not i.hardcoded:
-                self.hardcoded = 0
+                self.hardcoded = False
                 break
         else:
-            self.hardcoded = 1
+            self.hardcoded = True
+
     def __str__(self):
-        return "["+" ".join(map(str, self.data))+"]"
-    def valid(self, env=None, PCvalid=0):
+        return "[" + " ".join(map(str, self.data)) + "]"
+
+    def valid(self, env=None, PCvalid=False):
         for i in self.operands:
             if not i.valid(env, PCvalid):
-                return 0
-        return 1
+                return False
+        return True
+
     def value(self, env=None):
         subs = map((lambda x: x.value(env)), self.operands)
         result = subs[0]
@@ -150,11 +186,19 @@ class SequenceExpr(Expr):
             result = self.operate(result, op, subs[index])
             index += 1
         return result
+
     def operate(self, start, op, other):
-        if op=="*": return start * other
-        if op=="/": return start // other
-        if op=="+": return start + other
-        if op=="-": return start - other
-        if op=="&": return start & other
-        if op=="|": return start | other
-        if op=="^": return start ^ other
+        if op == "*":
+            return start * other
+        if op == "/":
+            return start // other
+        if op == "+":
+            return start + other
+        if op == "-":
+            return start - other
+        if op == "&":
+            return start & other
+        if op == "|":
+            return start | other
+        if op == "^":
+            return start ^ other

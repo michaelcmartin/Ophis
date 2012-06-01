@@ -249,7 +249,7 @@
 .checkpc $100
 </programlisting>
        </section>
-     </section> 
+     </section>
      <section>
        <title>Macros</title>
        <para>
@@ -400,7 +400,7 @@
       code in and of itself, nor does it overwrite anything that
       previously existed.</emphasis> If you wish to jump ahead in memory,
       use <literal>.advance</literal>.</para></listitem>
-      <listitem><para><literal>.require</literal> <emphasis>filename</emphasis>: Includes the entirety 
+      <listitem><para><literal>.require</literal> <emphasis>filename</emphasis>: Includes the entirety
       of the file specified at that point in the program.  Unlike <literal>.include</literal>,
       however, code included with <literal>.require</literal> will only be inserted once.
       The <literal>.require</literal> directive is useful for ensuring that certain code libraries
@@ -447,5 +447,5 @@
       macro definition intends to read.  A shorthand for <literal>.invoke</literal>
       is the name of the macro to invoke, backquoted.</para></listitem>
          </itemizedlist>
-  </section>  
+  </section>
 </appendix>

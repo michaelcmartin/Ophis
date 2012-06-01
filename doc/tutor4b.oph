@@ -65,7 +65,7 @@ delay:	tax
 	bne -
 	dex
 	bne -
-	
-	
+
+
 	rts
 

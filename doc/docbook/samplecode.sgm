@@ -333,7 +333,7 @@ delay:  tax
         iny
         bne -
         dex
-        bne -   
+        bne -
         rts
 </programlisting>
   </section>

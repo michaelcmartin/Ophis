@@ -1,8 +1,8 @@
   00: BRK - Implied
   01: ORA - (Zero Page, X)
-  02: 
+  02:
   03: SLO - (Zero Page, X)
-  04: NOP - Zero Page 
+  04: NOP - Zero Page
   05: ORA - Zero Page
   06: ASL - Zero Page
   07: SLO - Zero Page
@@ -10,29 +10,29 @@
   09: ORA - Immediate
   0A: ASL - Implied
   0B: ANC - Immediate
-  0C: 
+  0C:
   0D: ORA - Absolute
   0E: ASL - Absolute
   0F: SLO - Absolute
   10: BPL - Relative
   11: ORA - (Zero Page), Y
-  12: 
+  12:
   13: SLO - (Zero Page), Y
-  14: 
+  14:
   15: ORA - Zero Page, X
   16: ASL - Zero Page, X
   17: SLO - Zero Page, X
   18: CLC - Implied
   19: ORA - Absolute, Y
-  1A: 
+  1A:
   1B: SLO - Absolute, Y
-  1C: 
+  1C:
   1D: ORA - Absolute, X
   1E: ASL - Absolute, X
   1F: SLO - Absolute, X
   20: JSR - Absolute
   21: AND - (Zero Page, X)
-  22: 
+  22:
   23: RLA - (Zero Page, X)
   24: BIT - Zero Page
   25: AND - Zero Page
@@ -41,32 +41,32 @@
   28: PLP - Implied
   29: AND - Immediate
   2A: ROL - Implied
-  2B: 
+  2B:
   2C: BIT - Absolute
   2D: AND - Absolute
   2E: ROL - Absolute
   2F: RLA - Absolute
   30: BMI - Relative
   31: AND - (Zero Page), Y
-  32: 
+  32:
   33: RLA - (Zero Page), Y
-  34: 
+  34:
   35: AND - Zero Page, X
   36: ROL - Zero Page, X
   37: RLA - Zero Page, X
   38: SEC - Implied
   39: AND - Absolute, Y
-  3A: 
+  3A:
   3B: RLA - Absolute, Y
-  3C: 
+  3C:
   3D: AND - Absolute, X
   3E: ROL - Absolute, X
   3F: RLA - Absolute, X
   40: RTI - Implied
   41: EOR - (Zero Page, X)
-  42: 
+  42:
   43: SRE - (Zero Page, X)
-  44: 
+  44:
   45: EOR - Zero Page
   46: LSR - Zero Page
   47: SRE - Zero Page
@@ -80,25 +80,25 @@
   4F: SRE - Absolute
   50: BVC - Relative
   51: EOR - (Zero Page), Y
-  52: 
+  52:
   53: SRE - (Zero Page), Y
-  54: 
+  54:
   55: EOR - Zero Page, X
   56: LSR - Zero Page, X
   57: SRE - Zero Page, X
   58: CLI - Implied
   59: EOR - Absolute, Y
-  5A: 
+  5A:
   5B: SRE - Absolute, Y
-  5C: 
+  5C:
   5D: EOR - Absolute, X
   5E: LSR - Absolute, X
   5F: SRE - Absolute, X
   60: RTS - Implied
   61: ADC - (Zero Page, X)
-  62: 
+  62:
   63: RRA - (Zero Page, X)
-  64: 
+  64:
   65: ADC - Zero Page
   66: ROR - Zero Page
   67: RRA - Zero Page
@@ -112,30 +112,30 @@
   6F: RRA - Absolute
   70: BVS - Relative
   71: ADC - (Zero Page), Y
-  72: 
+  72:
   73: RRA - (Zero Page), Y
-  74: 
+  74:
   75: ADC - Zero Page, X
   76: ROR - Zero Page, X
   77: RRA - Zero Page, X
   78: SEI - Implied
   79: ADC - Absolute, Y
-  7A: 
+  7A:
   7B: RRA - Absolute, Y
-  7C: 
+  7C:
   7D: ADC - Absolute, X
   7E: ROR - Absolute, X
   7F: RRA - Absolute, X
-  80: 
+  80:
   81: STA - (Zero Page, X)
-  82: 
+  82:
   83: SAX - (Zero Page, X)
   84: STY - Zero Page
   85: STA - Zero Page
   86: STX - Zero Page
   87: SAX - Zero Page
   88: DEY - Implied
-  89: 
+  89:
   8A: TXA - Implied
   8B: ANE - Immediate
   8C: STY - Absolute
@@ -144,7 +144,7 @@
   8F: SAX - Absolute
   90: BCC - Relative
   91: STA - (Zero Page), Y
-  92: 
+  92:
   93: SHA - (Zero Page), Y
   94: STY - Zero Page, X
   95: STA - Zero Page, X
@@ -154,7 +154,7 @@
   99: STA - Absolute, Y
   9A: TXS - Implied
   9B: SHS - Absolute, Y
-  9C: 
+  9C:
   9D: STA - Absolute, X
   9E: SHX - Absolute, Y
   9F: SHA - Absolute, Y
@@ -176,7 +176,7 @@
   AF: LAX - Absolute
   B0: BCS - Relative
   B1: LDA - (Zero Page), Y
-  B2: 
+  B2:
   B3: LAX - (Zero Page), Y
   B4: LDY - Zero Page, X
   B5: LDA - Zero Page, X
@@ -192,7 +192,7 @@
   BF: LAX - Absolute, Y
   C0: CPY - Immediate
   C1: CMP - (Zero Page, X)
-  C2: 
+  C2:
   C3: DCP - (Zero Page, X)
   C4: CPY - Zero Page
   C5: CMP - Zero Page
@@ -208,23 +208,23 @@
   CF: DCP - Absolute
   D0: BNE - Relative
   D1: CMP - (Zero Page), Y
-  D2: 
+  D2:
   D3: DCP - (Zero Page), Y
-  D4: 
+  D4:
   D5: CMP - Zero Page, X
   D6: DEC - Zero Page, X
   D7: DCP - Zero Page, X
   D8: CLD - Implied
   D9: CMP - Absolute, Y
-  DA: 
+  DA:
   DB: DCP - Absolute, Y
-  DC: 
+  DC:
   DD: CMP - Absolute, X
   DE: DEC - Absolute, X
   DF: DCP - Absolute, X
   E0: CPX - Immediate
   E1: SBC - (Zero Page, X)
-  E2: 
+  E2:
   E3: ISB - (Zero Page, X)
   E4: CPX - Zero Page
   E5: SBC - Zero Page
@@ -233,24 +233,24 @@
   E8: INX - Implied
   E9: SBC - Immediate
   EA: NOP - Implied
-  EB: 
+  EB:
   EC: CPX - Absolute
   ED: SBC - Absolute
   EE: INC - Absolute
   EF: ISB - Absolute
   F0: BEQ - Relative
   F1: SBC - (Zero Page), Y
-  F2: 
+  F2:
   F3: ISB - (Zero Page), Y
-  F4: 
+  F4:
   F5: SBC - Zero Page, X
   F6: INC - Zero Page, X
   F7: ISB - Zero Page, X
   F8: SED - Implied
   F9: SBC - Absolute, Y
-  FA: 
+  FA:
   FB: ISB - Absolute, Y
-  FC: 
+  FC:
   FD: SBC - Absolute, X
   FE: INC - Absolute, X
   FF: ISB - Absolute, X

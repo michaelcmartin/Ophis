@@ -10,10 +10,12 @@ normmap = ''.join([bits[x] for x in norm])
 ivrsmap = ''.join([bits[x] for x in ivrs])
 blnkmap = ''.join([bits[x] for x in blnk])
 
+
 def dumpfile(n, m):
     f = file(n, 'wb')
     f.write(m)
     f.close()
+
 
 dumpfile('a2normal.map', normmap)
 dumpfile('a2inverse.map', ivrsmap)
