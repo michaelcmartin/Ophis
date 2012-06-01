@@ -72,5 +72,3 @@ def parse_args(raw_args):
     print_pass            = options.verbose > 2  # dd
     print_ir              = options.verbose > 3  # ddd
     print_labels          = options.verbose > 4  # dddd
-
-    parser.destroy()
