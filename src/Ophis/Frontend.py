@@ -13,7 +13,7 @@ import os
 # You may use, modify, and distribute this file under the MIT
 # license: See README for details.
 
-class Lexeme:
+class Lexeme(object):
     "Class for lexer tokens.  Used by lexer and parser."
     def __init__(self, type="UNKNOWN", value=None):
         self.type = type.upper()
@@ -137,7 +137,7 @@ def lex(point, line):
     add_EOL()
     return result
 
-class ParseLine:
+class ParseLine(object):
     "Maintains the parse state of a line of code.  Enables arbitrary lookahead."
     def __init__(self, lexemes):
         self.lexemes = lexemes

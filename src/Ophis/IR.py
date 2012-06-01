@@ -9,7 +9,7 @@
 
 import Ophis.Errors as Err
 
-class Node:
+class Node(object):
     """The default IR Node
     Instances of Node always have the three fields ppt(Program Point),
     nodetype(a string), and data (a list)."""
@@ -38,7 +38,7 @@ NullNode = Node("<none>", "None")
 def SequenceNode(ppt, nodelist):
     return Node(ppt, "SEQUENCE", *nodelist)
 
-class Expr:
+class Expr(object):
     """Base class for Ophis expressions
     All expressions have a field called "data" and a boolean field
     called "hardcoded".  An expression is hardcoded if it has no

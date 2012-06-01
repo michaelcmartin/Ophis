@@ -20,7 +20,7 @@ import Ophis.Macro as Macro
 
 # The passes themselves
 
-class Pass:
+class Pass(object):
     """Superclass for all assembler passes.  Automatically handles IR
     types that modify the environent's structure, and by default
     raises an error on anything else.  Override visitUnknown in your
@@ -67,7 +67,7 @@ class Pass:
                 print>>sys.stderr, "Current IR:"
                 print>>sys.stderr, node
 
-class FixPoint:
+class FixPoint(object):
     """A specialized class that is not a pass but can be run like one.
     This class takes a list of passes and a "fixpoint" function."""
     def __init__(self, name, passes, fixpoint):

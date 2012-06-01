@@ -9,7 +9,7 @@
 
 import Ophis.Errors as Err
 
-class Environment:
+class Environment(object):
     """Environment class.
     Controls the various scopes and global abstract execution variables."""
     def __init__(self):
