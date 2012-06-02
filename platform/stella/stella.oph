@@ -1,0 +1,127 @@
+; Register mnemonics for the Atari 2600 VCS
+;
+; Taken from the "Stella Programming Guide", at
+; http://www.alienbill.com/2600/101/docs/stella.html
+
+; Writable TIA addresses
+
+.alias	VSYNC	$00	; vertical sync set-clear
+.alias	VBLANK	$01	; vertical blank set-clear
+.alias	WSYNC	$02	; wait for leading edge of horizontal blank
+.alias	RSYNC	$03	; reset horizontal sync counter
+.alias	NUSIZ0	$04	; number-size player-missile 0
+.alias	NUSIZ1	$05	; number-size player-missile 1
+.alias	COLUP0	$06	; color-lum player 0
+.alias	COLUP1	$07	; color-lum player 1
+.alias	COLUPF	$08	; color-lum playfield
+.alias	COLUBK	$09	; color-lum background
+.alias	CTRLPF	$0A	; control playfield ball size and collisions
+.alias	REFP0	$0B	; reflect player 0
+.alias	REFP1	$0C	; reflect player 1
+.alias	PF0	$0D	; playfield register byte 0
+.alias	PF1	$0E	; playfield register byte 1
+.alias	PF2	$0F	; playfield register byte 2
+.alias	RESP0	$10	; reset player 0
+.alias	RESP1	$11	; reset player 1
+.alias	RESM0	$12	; reset missile 0
+.alias	RESM1	$13	; reset missile 1
+.alias	RESBL	$14	; reset ball
+.alias	AUDC0	$15	; audio control 0
+.alias	AUDC1	$16	; audio control 1
+.alias	AUDF0	$17	; audio frequency 0
+.alias	AUDF1	$18	; audio frequency 1
+.alias	AUDV0	$19	; audio volume 0
+.alias	AUDV1	$1A	; audio volume 1
+.alias	GRP0	$1B	; Graphics player 0
+.alias	GRP1	$1C	; Graphics player 1
+.alias	ENAM0	$1D	; Graphics enable missile 0
+.alias	ENAM1	$1E	; Graphics enable missile 1
+.alias	ENABL	$1F	; Graphics enable ball
+.alias	HMP0	$20	; horizontal motion player 0
+.alias	HMP1	$21	; horizontal motion player 1
+.alias	HMM0	$22	; horizontal motion missile 0
+.alias	HMM1	$23	; horizontal motion missile 1
+.alias	HMBL	$24	; horizontal motion ball
+.alias	VDELP0	$25	; vertical delay player 0
+.alias	VDELP1	$26	; vertical delay player 1
+.alias	VDELBL	$27	; vertical delay ball
+.alias	RESMP0	$28	; reset missile 0 to player 0
+.alias	RESMP1	$29	; reset missile 1 to player 1
+.alias	HMOVE	$2A	; apply horizontal motion
+.alias	HMCLR	$2B	; clear horizontal motion registers
+.alias	CXCLR	$2C	; clear collision latches
+
+; Readable TIA addresses
+
+.alias	CXM0P	$00	; read collision missile 0 players
+.alias	CXM1P	$01	; read collision missile 1 players
+.alias	CXP0FB	$02	; read collision player 0 playfield/ball
+.alias	CXP1FB	$03	; read collision player 1 playfield/ball
+.alias	CXM0FB	$04	; read collision missile 0 playfield/ball
+.alias	CXM1FB	$05	; read collision missile 1 playfield/ball
+.alias	CXBLPF	$06	; read collision ball playfield
+.alias	CXPPMM	$07	; read collision player/player missile/missile
+.alias	INPT0	$08	; read pot port
+.alias	INPT1	$09	; read pot port
+.alias	INPT2	$0A	; read pot port
+.alias	INPT3	$0B	; read pot port
+.alias	INPT4	$0C	; read input
+.alias	INPT5	$0D	; read input
+
+; PIA addresses
+
+.alias	SWCHA	$280	; Port A data register (read/write)
+.alias	SWACNT	$281	; Port A data direction register (0=input, 1=output)
+.alias	SWCHB	$282	; Port B - console switches (read-only)
+.alias	SWBCNT	$283	; Port B data direction register (hardwired to 0)
+.alias	INTIM	$284	; Timer output (read only)
+.alias	TIM1T	$294	; Set 1-clock interval (838 nsec/interval)
+.alias	TIM8T	$295	; Set 8-clock interval (6.7 usec/interval)
+.alias	TIM64T	$296	; Set 64-clock interval (53.6 usec/interval
+.alias	T1024T	$297	; Set 1025-clock interval (858.2 usec/interval)
+
+; These macros are adapted from DASM's old macro.h. Credit and description are
+; replicated from there.
+
+;-------------------------------------------------------------------------------
+; VERTICAL_SYNC
+; Original author: Manuel Polik
+; Inserts the code required for a proper 3 scanline
+; vertical sync sequence
+;
+; Note: Alters the accumulator
+;
+; IN:
+; OUT: A = 1
+
+.macro	vertical'sync
+	lda	#$02
+	sta	WSYNC
+	sta	VSYNC
+	sta	WSYNC
+	sta	WSYNC
+	lsr
+	sta	WSYNC
+	sta	VSYNC
+.macend
+
+;-------------------------------------------------------------------------------
+; CLEAN_START
+; Original author: Andrew Davie
+; Standardised start-up code, clears stack, all TIA registers and RAM to 0
+; Sets stack pointer to $FF, and all registers to 0
+; Sets decimal mode off, sets interrupt flag (kind of un-necessary)
+; Use as very first section of code on boot (ie: at reset)
+; Code written to minimise total ROM usage - uses weird 6502 knowledge :)
+.macro	clean'start
+	sei
+	cld
+	ldx	#$00
+	txa
+	tay
+_clear'stack:
+	dex
+	txs
+	pha
+	bne	_clear'stack
+.macend

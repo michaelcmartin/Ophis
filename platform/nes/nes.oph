@@ -1,0 +1,15 @@
+; NES-related headers. Unlike the C64 and Stella developers, there is
+; no standard nomenclature for these registers. It's not uncommon to
+; see them hardcoded.
+
+; PPU registers have reasonably standard names, at least.
+
+.alias	PPUCTRL		$2000	; PPU Control Register #1
+.alias	PPUMASK		$2001	; PPU Control Register #2
+.alias	PPUSTATUS	$2002	; PPU Status Register
+.alias	OAMADDR		$2003	; SPR-RAM Address Register
+.alias	OAMDATA		$2004	; SPR-RAM I/O Register
+.alias	PPUSCROLL	$2005	; VRAM Address Register #1 (Panning control)
+.alias	PPUADDR		$2006	; VRAM Address Register #2 (Direct Address control)
+.alias	PPUDATA		$2007	; VRAM I/O Register
+.alias	OAMDMA		$4014	; Sprite DMA Register

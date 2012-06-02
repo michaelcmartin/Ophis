@@ -1,0 +1,12 @@
+.include "../c64_0.oph"
+.include "../c64kernal.oph"
+
+	ldy	#$00
+*	lda	text, y
+	beq	+
+	jsr	chrout
+	iny
+	bne	-
+*	rts
+
+text:	.byte "HELLO, C64 WORLD!", 13, 0
