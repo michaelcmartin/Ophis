@@ -1,0 +1,145 @@
+.require "../stella.oph"
+
+.data
+.org	$0080
+.space	col'0	1
+.space	col'1	1
+.space	temp	1
+.space	counter	1
+
+.text
+.org	$FF00
+
+reset:	`clean'start
+
+	; Initialize the player sprites.
+
+	; We're going to use quad-sized players for our
+	; letters. With 160 color clocks, and letters
+	; twenty clocks wide, and a 68 color clock HBLANK,
+	; we want to place the two letters at color clock
+	; 68+80-20-2 = 126 and 68+80+2 = 150. Those
+	; translate to cycle counts 42 and 50.
+
+	; While we wait, we set up our sprites to be
+	; quad-sized and initialize the independent
+	; color-counters for each sprite.
+
+	sta	WSYNC	; 3
+	lda	#$07	; 5
+	sta	NUSIZ0	; 7
+	sta	NUSIZ1	; 10
+	lda	#$20	; 13
+	ldy	#5	; 15
+*	dey
+	bne	-	; 20-25-30-35-39
+	sta	RESP0	; 42 - color clock 126
+	sta	col'0	; 45
+	eor	#$80	; 47
+	sta	RESP1	; 50 - color clock 150
+	sta	col'1
+	sta	temp
+
+frame:	`vertical'sync
+	lda	#43
+	sta	TIM64T
+
+	; Advance the color bars once every fourth frame.
+	inc	counter
+	lda	#$03
+	bit	counter
+	bne	+
+	inc	col'0
+	dec	col'1
+
+	; Wait for VBLANK to finish, then turn off the VBLANK signal.
+*	lda	INTIM
+	bne	-
+	sta	WSYNC
+	sta	VBLANK
+
+	; Kernel. 78 blank lines on each side of
+	; a 36-line letter. The 'letter kernel' is a 4-line
+	; kernel at the top level, and expects .A and .X
+	; to have the player 0 and 1 colors at the start.
+	; We set those during the top wait, because why not.
+	lda	col'0
+	ldx	col'1
+
+	; Wait 78 lines for vertical placement...
+	ldy	#78
+*	sta	WSYNC
+	dey
+	bne	-
+
+	; And draw the letter. This is a 4-line kernel, but
+	; the colors update every line. To keep that working
+	; we need to juggle the registers a bit. The accumulator
+	; _starts_ with P0's color, but it's needed to load the
+	; graphics, so we stash it in TEMP first.
+	ldy	#9
+*	sta	COLUP0
+	stx	COLUP1
+	sta	temp
+	lda	hgr-1, y
+	sta	GRP0
+	lda	igr-1, y
+	sta	GRP1
+
+	; Now, to make the lines update cleanly, we want a fast
+	; incrementer, but with two counters, we need to stash
+	; away .Y. Fortunately, the accumulator was just trashed
+	; by the graphics loads and so is available for this.
+	tya
+	ldy	temp
+	inx
+	iny
+	sta	WSYNC	; Go through three more lines,
+	sty	COLUP0	; updating the colors and bumping
+	stx	COLUP1	; the counters.
+	inx
+	iny
+	sta	WSYNC
+	sty	COLUP0
+	stx	COLUP1
+	inx
+	iny
+	sta	WSYNC
+	sty	COLUP0
+	stx	COLUP1
+	inx		; .X is only touched here, so we
+	iny		; can keep it around, but .Y is
+	sty	temp	; our line count. Use temp again
+	tay		; to trade back .A and .Y, which
+	lda	temp	; also preps .A for the color write
+	sta	WSYNC	; at the top of the whole 4-line
+	dey		; loop.
+	bne	-
+
+	; Clear out the player graphics,,,
+	lda	#$00
+	sta	GRP0
+	sta	GRP1
+
+	; Wait 78 lines for the rest of the screen...
+	ldy	#78
+*	sta	WSYNC
+	dey
+	bne	-
+
+	; Turn on VBLANK, do 30 lines of Overscan
+	lda	#$02
+	sta	VBLANK
+	ldy	#30
+*	sta	WSYNC
+	dey
+	bne	-
+	jmp	frame	; And the frame is done, back to VSYNC.
+
+	; Graphics for the letters.
+hgr:	.byte	$88,$88,$88,$88,$f8,$88,$88,$88,$88
+igr:	.byte	$f8,$20,$20,$20,$20,$20,$20,$20,$f8
+
+	; Interrupt vectors.
+.advance $FFFA
+	.word	reset, reset, reset
