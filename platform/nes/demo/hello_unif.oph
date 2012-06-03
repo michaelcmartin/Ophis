@@ -1,0 +1,24 @@
+.byte "UNIF"
+.dword 7
+.advance $20
+.byte "MAPR"
+.dword ++-+
+*
+.byte "NES-NROM-256",0
+*
+.byte "NAME"
+.dword ++-+
+*
+.byte "Ophis Hello World Demo",0
+*
+.byte "PRG0"
+.dword $4000
+.include "hello_prg.oph"
+
+.byte "MIRR"
+.dword 1
+.byte 0
+
+.byte "CHR0"
+.dword $2000
+.include "hello_chr.oph"

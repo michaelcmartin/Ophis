@@ -1,0 +1,162 @@
+;; PRG-ROM for our NES demo program.
+
+.alias	sprites	$200	; Keep our OAM DMA here.
+
+.data
+.org	$0000
+.space	count	1
+.space	palette 32
+
+.text
+.org	$C000
+
+reset:	sei
+	cld
+	; Wait two VBLANKs.
+*	lda	$2002
+	bpl	-
+*	lda	$2002
+	bpl	-
+
+	; Disable all graphics.
+	lda	#$00
+	sta	$2000
+	sta	$2001
+
+	; Mask out sound IRQs.
+	lda	#$40
+	sta	$4017
+
+	; Clear out RAM.
+	lda	#$00
+	ldx	#$00
+*	sta	$000,x
+	sta	$100,x
+	sta	$200,x
+	sta	$300,x
+	sta	$400,x
+	sta	$500,x
+	sta	$600,x
+	sta	$700,x
+	inx
+	bne	-
+
+	; Reset the stack pointer.
+	ldx	#$FF
+	txs
+
+	; Clear the name tables.
+	lda	#$24
+	sta	$2006
+	ldy	#$00
+	sty	$2006
+	ldx	#$08
+	lda	#0
+	ldy	#0
+*	sta	$2007
+	iny
+	bne	-
+	dex
+	bne	-
+
+	; Load the palette from later on in the ROM.
+	lda	#$3F
+	ldx	#$00
+	sta	$2006
+	stx	$2006
+*	lda	palette'rom,x
+	sta	palette,x
+	sta	$2007
+	inx
+	cpx	#$20
+	bne	-
+
+	; Load the proper sprite data into place.
+	ldx	#$00
+*	lda	graphics,x
+	sta	sprites,x
+	inx
+	bne	-
+
+	lda	#$1E
+	sta	count	; Update twice a second
+
+	; Un-scroll everything, just to be safe.
+	lda	#$00
+	sta	$2006
+	sta	$2006
+	sta	$2005
+	sta	$2005
+	; Re-enable the displays.
+	lda	#$80
+	sta	$2000
+	lda	#$1E
+	sta	$2001
+
+	; FINALLY. We've set up the system. From here on it's all up to
+	; the NMI interrupt to handle things.
+	cli
+*	jmp	-
+
+vblank:	; Refresh the SPR-RAM.
+	lda	#$02
+	sta	$4014
+
+	; Time to update the palette?
+	dec	count
+	bne	irq	; If not, done.
+
+	lda	#$1E
+	sta	count	; Update twice a second
+
+	; Update those parts of the palette that aren't transparent.
+	ldx	#$11
+*	txa
+	and	#$03
+	beq	+	; Don't update transparents
+	jsr	bump'palette
+*	inx
+	cpx	#$20
+	bne	--
+
+	; Now re-blast that palette to VRAM.
+	lda	#$3F
+	ldx	#$00
+	sta	$2006
+	stx	$2006
+*	lda	palette,x
+	sta	$2007
+	inx
+	cpx	#$20
+	bne	-
+
+	; And reset the name tables.
+	lda	#$00
+	sta	$2006
+	sta	$2006
+	sta	$2005
+	sta	$2005
+
+irq:	rti
+
+bump'palette:
+	inc	palette,x
+	lda	palette,x
+	and	#$0F
+	sec
+	sbc	#$0D
+	bpl	bump'palette
+	rts
+
+palette'rom:
+	.byte $0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d
+	.byte $0d,$01,$02,$03,$0d,$04,$05,$06,$0d,$07,$08,$09,$0d,$0a,$0b,$0c
+
+graphics:
+	.byte $70,$01,$00,$6c,$70,$02,$00,$74,$70,$03,$00,$7c,$70,$04,$01,$84
+	.byte $70,$05,$01,$8c
+	.byte $78,$06,$01,$6c,$78,$07,$02,$74,$78,$08,$02,$7c,$78,$03,$02,$84
+	.byte $78,$09,$03,$8c
+
+.advance $FFFA
+	.word vblank, reset, irq

@@ -1,0 +1,20 @@
+;; NES "Hello World" character tables
+
+;; We spell out "Hello World" and we make sure that the colors are
+;; different so our palette shift works.
+
+.text
+.org	$0000
+.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+.byte	$c6,$c6,$c6,$fe,$c6,$c6,$c6,$00,$00,$00,$00,$00,$00,$00,$00,$00	; H (color 1) #1
+.byte	$00,$00,$00,$00,$00,$00,$00,$00,$fe,$c0,$c0,$fc,$c0,$c0,$fe,$00	; E (color 2) #2
+.byte	$60,$60,$60,$60,$60,$60,$7e,$00,$60,$60,$60,$60,$60,$60,$7e,$00	; L (color 3) #3
+.byte	$60,$60,$60,$60,$60,$60,$7e,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; L (color 1) #4
+.byte	$00,$00,$00,$00,$00,$00,$00,$00,$7c,$c6,$c6,$c6,$c6,$c6,$7c,$00 ; O (color 2) #5
+.byte	$c6,$c6,$d6,$fe,$fe,$ee,$c6,$00,$c6,$c6,$d6,$fe,$fe,$ee,$c6,$00 ; W (color 3) #6
+.byte	$7c,$c6,$c6,$c6,$c6,$c6,$7c,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; O (color 1) #7
+.byte	$00,$00,$00,$00,$00,$00,$00,$00,$fc,$c6,$c6,$fc,$d8,$cc,$c6,$00 ; R (color 2) #8
+									; L (color 3) #3
+.byte	$f8,$cc,$c6,$c6,$c6,$cc,$f8,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; D (color 1) #9
+
+.advance $2000	; Fill in the rest of the CHR-ROM chip.
