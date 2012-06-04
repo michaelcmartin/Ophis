@@ -53,26 +53,43 @@ def pragmaRequire(ppt, line, result):
 def pragmaIncbin(ppt, line, result):
     "Includes a binary file"
     filename = line.expect("STRING").value
-    offset = 0
-    size = -1
+    offset = IR.ConstantExpr(0)
+    size = None
     if str(line.lookahead(0)) == ",":
         line.pop()
-        offset = line.expect("NUM").value
+        offset = FE.parse_expr(line)
         if str(line.lookahead(0)) == ",":
             line.pop()
-            size = line.expect("NUM").value
+            size = FE.parse_expr(line)
     line.expect("EOL")
     if type(filename) == str:
         try:
             f = file(os.path.join(FE.context_directory, filename), "rb")
-            f.seek(offset)
-            bytes = f.read(size)
+            if offset.hardcoded and (size is None or size.hardcoded):
+                # We know how big it will be, we can just use the values.
+                if size is None:
+                    size = IR.ConstantExpr(-1)
+                f.seek(offset.value())
+                bytes = f.read(size.value())
+                bytes = [IR.ConstantExpr(ord(x)) for x in bytes]
+                result.append(IR.Node(ppt, "Byte", *bytes))
+            else:
+                # offset or length could change based on label placement.
+                # This seems like an unbelievably bad idea, but since we
+                # don't have constant prop it will happen for any symbolic
+                # alias. Don't use symbolic aliases when extracting tiny
+                # pieces out of humongous files, I guess.
+                bytes = f.read()
+                bytes = [IR.ConstantExpr(ord(x)) for x in bytes]
+                if size is None:
+                    size = IR.SequenceExpr([IR.ConstantExpr(len(bytes)),
+                                            "-",
+                                            offset])
+                result.append(IR.Node(ppt, "ByteRange", offset, size, *bytes))
             f.close()
         except IOError:
             Err.log("Could not read " + filename)
             return
-        bytes = [IR.ConstantExpr(ord(x)) for x in bytes]
-        result.append(IR.Node(ppt, "Byte", *bytes))
 
 
 def pragmaCharmap(ppt, line, result):

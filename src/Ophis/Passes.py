@@ -366,6 +366,10 @@ class PCTracker(Pass):
     def visitByte(self, node, env):
         env.incPC(len(node.data))
 
+    def visitByteRange(self, node, env):
+        if node.data[1].valid(env):
+            env.incPC(node.data[1].value(env))
+
     def visitWord(self, node, env):
         env.incPC(len(node.data) * 2)
 
@@ -743,6 +747,19 @@ class Assembler(Pass):
             self.outputbyte(expr, env)
         env.incPC(len(node.data))
         self.data += len(node.data)
+
+    def visitByteRange(self, node, env):
+        offset = node.data[0].value(env) + 2
+        length = node.data[1].value(env)
+        if offset < 2:
+            Err.log("Negative offset in .incbin")
+        elif offset + length > len(node.data):
+            Err.log("File too small for .incbin subrange")
+        else:
+            for expr in node.data[offset:(offset + length)]:
+                self.outputbyte(expr, env)
+            env.incPC(length)
+            self.data += length
 
     def visitWord(self, node, env):
         for expr in node.data:
