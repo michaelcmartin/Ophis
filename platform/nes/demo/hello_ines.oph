@@ -1,5 +1,7 @@
 ; iNES header
 .byte $4e,$45,$53,$1a,$01,$01,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 
+.outfile "hello.nes"
+
 .include "hello_prg.oph"
 .include "hello_chr.oph"

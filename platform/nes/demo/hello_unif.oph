@@ -1,3 +1,4 @@
+.outfile "hello.unf"
 .byte "UNIF"
 .dword 7
 .advance $20

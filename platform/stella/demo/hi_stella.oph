@@ -1,4 +1,5 @@
 .require "../stella.oph"
+.outfile "hi_stella.bin"
 
 .data
 .org	$0080

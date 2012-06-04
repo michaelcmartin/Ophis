@@ -6,6 +6,7 @@
 # You may use, modify, and distribute this file under the MIT
 # license: See README for details.
 
+import Ophis.CmdLine
 import Ophis.IR as IR
 import Ophis.Frontend as FE
 import Ophis.Errors as Err
@@ -19,6 +20,14 @@ def reset():
     global loadedfiles, currentcharmap, basecharmap
     loadedfiles = {}
     currentcharmap = basecharmap
+
+
+def pragmaOutfile(ppt, line, result):
+    "Sets the output file if it hasn't already been set"
+    filename = line.expect("STRING").value
+    line.expect("EOL")
+    if type(filename) == str and Ophis.CmdLine.outfile is None:
+        Ophis.CmdLine.outfile = filename
 
 
 def pragmaInclude(ppt, line, result):
@@ -46,7 +55,7 @@ def pragmaIncbin(ppt, line, result):
     line.expect("EOL")
     if type(filename) == str:
         try:
-            f = file(filename, "rb")
+            f = file(os.path.join(FE.context_directory, filename), "rb")
             bytes = f.read()
             f.close()
         except IOError:
@@ -82,7 +91,7 @@ def pragmaCharmapbin(ppt, line, result):
     line.expect("EOL")
     if type(filename) == str:
         try:
-            f = file(filename, "rb")
+            f = file(os.path.join(FE.context_directory, filename), "rb")
             bytes = f.read()
             f.close()
         except IOError:

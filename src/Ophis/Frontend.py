@@ -8,6 +8,7 @@ import Ophis.IR as IR
 import Ophis.CmdLine as Cmd
 import sys
 import os
+import os.path
 
 # Copyright 2002-2012 Michael C. Martin and additional contributors.
 # You may use, modify, and distribute this file under the MIT
@@ -346,9 +347,14 @@ def parse_line(ppt, lexemelist):
     return IR.SequenceNode(ppt, result)
 
 
+context_directory = None
+
+
 def parse_file(ppt, filename):
     "Loads an Ophis source file, and returns an IR list."
+    global context_directory
     Err.currentpoint = ppt
+    old_context = context_directory
     if Cmd.print_loaded_files:
         if filename != '-':
             print>>sys.stderr, "Loading " + filename
@@ -356,18 +362,24 @@ def parse_file(ppt, filename):
             print>>sys.stderr, "Loading from standard input"
     try:
         if filename != '-':
+            if context_directory is not None:
+                filename = os.path.join(context_directory, filename)
             f = file(filename)
             linelist = f.readlines()
             f.close()
+            context_directory = os.path.abspath(os.path.dirname(filename))
         else:
+            context_directory = os.getcwd()
             linelist = sys.stdin.readlines()
         pptlist = ["%s:%d" % (filename, i + 1) for i in range(len(linelist))]
         lexlist = map(lex, pptlist, linelist)
         IRlist = map(parse_line, pptlist, lexlist)
         IRlist = [node for node in IRlist if node is not IR.NullNode]
+        context_directory = old_context
         return IR.SequenceNode(ppt, IRlist)
     except IOError:
         Err.log("Could not read " + filename)
+        context_directory = old_context
         return IR.NullNode
 
 

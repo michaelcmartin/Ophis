@@ -18,10 +18,10 @@ import Ophis.CmdLine
 import Ophis.Opcodes
 
 
-def run_all(infiles, outfile):
+def run_all():
     "Transforms the source infiles to a binary outfile."
     Err.count = 0
-    z = Ophis.Frontend.parse(infiles)
+    z = Ophis.Frontend.parse(Ophis.CmdLine.infiles)
     env = Ophis.Environment.Environment()
 
     m = Ophis.Passes.ExpandMacros()
@@ -55,6 +55,7 @@ def run_all(infiles, outfile):
 
     if Err.count == 0:
         try:
+            outfile = Ophis.CmdLine.outfile
             if outfile == '-':
                 output = sys.stdout
             elif outfile is None:
@@ -81,7 +82,7 @@ def run_ophis(args):
         Ophis.Opcodes.opcodes.update(Ophis.Opcodes.c02extensions)
 
     Ophis.CorePragmas.reset()
-    run_all(Ophis.CmdLine.infiles, Ophis.CmdLine.outfile)
+    run_all()
 
 
 if __name__ == '__main__':

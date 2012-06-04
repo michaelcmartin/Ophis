@@ -1,6 +1,8 @@
 .include "../c64_0.oph"
 .include "../c64kernal.oph"
 
+.outfile "hello.prg"
+
 	ldy	#$00
 *	lda	text, y
 	beq	+
