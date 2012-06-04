@@ -36,6 +36,8 @@ def pragmaInclude(ppt, line, result):
     filename = line.expect("STRING").value
     line.expect("EOL")
     if type(filename) == str:
+        global loadedfiles
+        loadedfiles[filename] = True
         result.append(FE.parse_file(ppt, filename))
 
 
