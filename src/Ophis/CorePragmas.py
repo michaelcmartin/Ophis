@@ -52,11 +52,20 @@ def pragmaRequire(ppt, line, result):
 def pragmaIncbin(ppt, line, result):
     "Includes a binary file"
     filename = line.expect("STRING").value
+    offset = 0
+    size = -1
+    if str(line.lookahead(0)) == ",":
+        line.pop()
+        offset = line.expect("NUM").value
+        if str(line.lookahead(0)) == ",":
+            line.pop()
+            size = line.expect("NUM").value
     line.expect("EOL")
     if type(filename) == str:
         try:
             f = file(os.path.join(FE.context_directory, filename), "rb")
-            bytes = f.read()
+            f.seek(offset)
+            bytes = f.read(size)
             f.close()
         except IOError:
             Err.log("Could not read " + filename)
