@@ -10,6 +10,7 @@ import Ophis.CmdLine
 import Ophis.IR as IR
 import Ophis.Frontend as FE
 import Ophis.Errors as Err
+import os.path
 
 loadedfiles = {}
 basecharmap = "".join([chr(x) for x in range(256)])
