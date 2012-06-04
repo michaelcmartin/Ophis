@@ -371,9 +371,12 @@ def parse_file(ppt, filename):
         return IR.NullNode
 
 
-def parse(filename):
+def parse(filenames):
     """Top level parsing routine, taking a source file name
-    and returning an IR list."""
+    list and returning an IR list."""
     global templabelcount
     templabelcount = 0
-    return parse_file("<Top Level>", filename)
+    nodes = [parse_file("<Top Level>", f) for f in filenames]
+    if len(nodes) == 1:
+        return nodes[0]
+    return IR.SequenceNode("<Top level>", nodes)

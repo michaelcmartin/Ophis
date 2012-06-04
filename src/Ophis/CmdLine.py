@@ -19,7 +19,7 @@ print_pass = False
 print_ir = False
 print_labels = False
 
-infile = None
+infiles = None
 outfile = None
 
 
@@ -30,11 +30,14 @@ def parse_args(raw_args):
     global warn_on_branch_extend
     global print_summary, print_loaded_files
     global print_pass, print_ir, print_labels
-    global infile, outfile
+    global infiles, outfile
 
     parser = optparse.OptionParser(
         usage="Usage: %prog [options] srcfile outfile",
         version="Ophis 6502 cross-assembler, version 2.0")
+
+    parser.add_option("-o", default=None, dest="outfile",
+                      help="Output filename (default 'ophis.bin')")
 
     ingrp = optparse.OptionGroup(parser, "Input options")
     ingrp.add_option("-u", "--undoc", action="store_true", default=False,
@@ -66,17 +69,13 @@ def parse_args(raw_args):
 
     (options, args) = parser.parse_args(raw_args)
 
-    if len(args) > 2:
-        parser.error("Too many files specified")
-    if len(args) == 1:
-        parser.error("No output file specified")
     if len(args) == 0:
-        parser.error("No files specified")
+        parser.error("No input files specified")
     if options.c02 and options.undoc:
         parser.error("--undoc and --65c02 are mutually exclusive")
 
-    infile = args[0]
-    outfile = args[1]
+    infiles = args
+    outfile = options.outfile
     enable_collapse = options.enable_collapse
     enable_branch_extend = options.enable_branch_extend
     enable_undoc_ops = options.undoc
