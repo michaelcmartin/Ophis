@@ -6,7 +6,6 @@ import optparse
 # You may use, modify, and distribute this file under the MIT
 # license: See README for details.
 
-enable_collapse = True
 enable_branch_extend = True
 enable_undoc_ops = False
 enable_65c02_exts = False
@@ -56,9 +55,6 @@ def parse_args(raw_args):
                       default=True, help="Do not print warnings")
 
     bingrp = optparse.OptionGroup(parser, "Compilation options")
-    bingrp.add_option("--no-collapse", action="store_false",
-                      dest="enable_collapse", default="True",
-                      help="Disable zero-page collapse pass")
     bingrp.add_option("--no-branch-extend", action="store_false",
                       dest="enable_branch_extend", default="True",
                       help="Disable branch-extension pass")
@@ -76,7 +72,6 @@ def parse_args(raw_args):
 
     infiles = args
     outfile = options.outfile
-    enable_collapse = options.enable_collapse
     enable_branch_extend = options.enable_branch_extend
     enable_undoc_ops = options.undoc
     enable_65c02_exts = options.c02

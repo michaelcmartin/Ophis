@@ -29,10 +29,20 @@ def run_all():
     l_basic = Ophis.Passes.UpdateLabels()
     l = Ophis.Passes.FixPoint("label update", [l_basic],
                               lambda: not l_basic.changed)
+
+    # The instruction selector is a bunch of fixpoints, and which
+    # passes run depends on the command line options a bit.
     c_basic = Ophis.Passes.Collapse()
     c = Ophis.Passes.FixPoint("instruction selection 1", [l, c_basic],
                               lambda: not c_basic.changed)
-    b = Ophis.Passes.ExtendBranches()
+
+    if Ophis.CmdLine.enable_branch_extend:
+        b = Ophis.Passes.ExtendBranches()
+        instruction_select = Ophis.Passes.FixPoint("instruction selection 2",
+                                                   [c, b],
+                                                   lambda: not b.changed)
+    else:
+        instruction_select = c
     a = Ophis.Passes.Assembler()
 
     passes = []
@@ -44,8 +54,7 @@ def run_all():
     passes.extend([Ophis.Passes.CircularityCheck(),
                    Ophis.Passes.CheckExprs(),
                    Ophis.Passes.EasyModes()])
-    passes.append(Ophis.Passes.FixPoint("instruction selection 2", [c, b],
-                                        lambda: not b.changed))
+    passes.append(instruction_select)
     passes.extend([Ophis.Passes.NormalizeModes(),
                    Ophis.Passes.UpdateLabels(),
                    a])
