@@ -129,6 +129,8 @@ def lex(point, line):
             add_token(value)
             value = ""
             break
+        elif c == '.' and value != "":
+            value = value + c
         elif c.isspace():
             add_token(value)
             value = ""
