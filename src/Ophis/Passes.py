@@ -398,7 +398,7 @@ class UpdateLabels(PCTracker):
             self.changed = True
 
 
-class Collapse(Pass):
+class Collapse(PCTracker):
     "Selects as many zero-page instructions to convert as possible."
     name = "Instruction Collapse Pass"
 
@@ -407,24 +407,58 @@ class Collapse(Pass):
 
     def visitMemory(self, node, env):
         self.changed |= collapse_no_index(node, env)
+        PCTracker.visitMemory(self, node, env)
 
     def visitMemoryX(self, node, env):
         self.changed |= collapse_x(node, env)
+        PCTracker.visitMemoryX(self, node, env)
 
     def visitMemoryY(self, node, env):
         self.changed |= collapse_y(node, env)
+        PCTracker.visitMemoryY(self, node, env)
 
     def visitPointer(self, node, env):
         self.changed |= collapse_no_index_ind(node, env)
+        PCTracker.visitPointer(self, node, env)
 
     def visitPointerX(self, node, env):
         self.changed |= collapse_x_ind(node, env)
+        PCTracker.visitPointerX(self, node, env)
 
     def visitPointerY(self, node, env):
         self.changed |= collapse_y_ind(node, env)
+        PCTracker.visitPointerY(self, node, env)
 
-    def visitUnknown(self, node, env):
-        pass
+    # Previously zero-paged elements may end up un-zero-paged by
+    # the branch extension pass. Force them to Absolute equivalents
+    # if this happens.
+
+    def visitZeroPage(self, node, env):
+        if node.data[1].value(env) >= 0x100:
+            if Ops.opcodes[node.data[0]][5] is not None:
+                node.nodetype = "Absolute"
+                PCTracker.visitAbsolute(self, node, env)
+                self.changed = True
+                return
+        PCTracker.visitZeroPage(self, node, env)
+
+    def visitZeroPageX(self, node, env):
+        if node.data[1].value(env) >= 0x100:
+            if Ops.opcodes[node.data[0]][6] is not None:
+                node.nodetype = "AbsoluteX"
+                PCTracker.visitAbsoluteX(self, node, env)
+                self.changed = True
+                return
+        PCTracker.visitZeroPageX(self, node, env)
+
+    def visitZeroPageY(self, node, env):
+        if node.data[1].value(env) >= 0x100:
+            if Ops.opcodes[node.data[0]][7] is not None:
+                node.nodetype = "AbsoluteY"
+                PCTracker.visitAbsoluteY(self, node, env)
+                self.changed = True
+                return
+        PCTracker.visitZeroPageY(self, node, env)
 
 
 def collapse_no_index(node, env):
