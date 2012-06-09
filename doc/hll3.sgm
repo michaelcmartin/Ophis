@@ -1,0 +1,297 @@
+<chapter id="hll3">
+<title>Pointers and Indirection</title>
+
+<para>
+  The basics of pointers versus cursors (or, at the 6502 assembler
+  level, the indirect indexed addressing mode versus the absolute
+  indexed ones) were covered in <xref linkend="hll2"> This essay seeks
+  to explain the uses of the indirect modes, and how to implement
+  pointer operations with them.  It does <emphasis>not</emphasis> seek to explain
+  why you'd want to use pointers for something to begin with; for a
+  tutorial on proper pointer usage, consult any decent C textbook.
+</para>
+
+<section>
+  <title>The absolute basics</title>
+
+  <para>
+    A pointer is a variable holding the address of a memory location.
+    Memory locations take 16 bits to represent on the 6502: thus, we
+    need two bytes to hold it.  Any decent assembler will have ways of
+    taking the high and low bytes of an address; use these to acquire
+    the raw values you need.  The 6502 chip does not have any
+    simple <quote>pure</quote> indirect modes (except
+    for <literal>JMP</literal>, which is a matter for a later essay);
+    all are indexed, and they're indexed different ways depending on
+    which index register you use.
+  </para>
+
+  <section>
+    <title>The simplest example</title>
+
+    <para>
+      When doing a simple, direct dereference (that is, something
+      equivalent to the C code <literal>c=*b;</literal>) the code
+      looks like this:
+    </para>
+
+<programlisting>
+        ldy #0
+        lda (b), y
+        sta c
+</programlisting>
+
+    <para>
+      Even with this simple example, there are several important
+      things to notice.
+    </para>
+
+    <itemizedlist>
+      <listitem>
+        <para>
+          The variable <literal>b</literal> <emphasis>must be on the
+            zero page</emphasis>, and furthermore, it <emphasis>cannot
+            be $FF.</emphasis> All your pointer values need to be
+            either stored on the zero page to begin with or copied
+            there before use.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          The <literal>y</literal> in the <literal>lda</literal>
+          statement must be y.  It cannot be x (that's a different
+          form of indirection), and it cannot be a constant.  If
+          you're doing a lot of indirection, be sure to keep your Y
+          register free to handle the indexing on the
+          pointers.
+      </para>
+      </listitem>
+      <listitem>
+        <para>
+          The <literal>b</literal> variable is used alone.  Statements
+          like <literal>lda (b+2), y</literal> are syntactically valid
+          and sometimes even correct: it dereferences the value next
+          to <literal>b</literal> after adding y to the value therein.
+          However, it is almost guaranteed that what you *really*
+          wanted to do was compute <literal>*(b+2)</literal> (that is,
+          take the address of b, add 2 to <emphasis>that</emphasis>,
+          and dereference that value); see the next section for how to
+          do this properly.
+        </para>
+      </listitem>
+    </itemizedlist>
+
+    <para>
+      In nearly all cases, it is the Y-register's version (Indirect
+      Indexed) that you want to use when you're dealing with pointers.
+      Even though either version could be used for this example, we
+      use the Y register to establish this habit.
+    </para>
+  </section>
+</section>
+<section>
+  <title>Pointer arithmetic</title>
+
+  <para>
+    Pointer arithmetic is an obscenely powerful and dangerous
+    technique.  However, it's the most straightforward way to deal
+    with enormous arrays, structs, indexable stacks, and nearly
+    everything you do in C.  (C has no native array or string types
+    primarily because it allows arbitrary pointer arithmetic, which is
+    strong enough to handle all of those without complaint and at
+    blazing speed.  It also allows for all kinds of buffer overrun
+    security holes, but let's face it, who's going to be cracking root
+    on your Apple II?)  There are a number of ways to implement this
+    on the 6502.  We'll deal with them in increasing order of design
+    complexity.
+  </para>
+
+  <section>
+    <title>The straightforward, slow way</title>
+
+    <para>
+      When computing a pointer value, you simply treat the pointer as
+      if it were a 16-bit integer.  Do all the math you need, then
+      when the time comes to dereference it, simply do a direct
+      dereference as above.  This is definitely doable, and it's not
+      difficult.  However, it is costly in both space and time.
+    </para>
+
+    <para>
+      When dealing with arbitrary indices large enough that they won't
+      fit in the Y register, or when creating values that you don't
+      intend to dereference (such as subtracting two pointers to find
+      the length of a string), this is also the only truly usable
+      technique.
+    </para>
+  </section>
+  <section>
+    <title>The clever fast way</title>
+
+    <para>
+      But wait, you say.  Often when we compute a value, at least one
+      of the operations is going to be an addition, and we're almost
+      certain to have that value be less than 256!  Surely we may save
+      ourselves an operation by loading that value into the Y register
+      and having the load operation itself perform the final
+      addition!
+    </para>
+
+    <para>
+      Very good.  This is the fastest technique, and sometimes it's
+      even the most readable.  These cases usually involve repeated
+      reading of various fields from a structure or record.  The base
+      pointer always points to the base of the structure (or the top
+      of the local variable list, or what have you) and the Y register
+      takes values that index into that structure.  This lets you keep
+      the pointer variable in memory largely static and requires no
+      explicit arithmetic instructions at all.
+    </para>
+
+    <para>
+      However, this technique is highly opaque and should always be
+      well documented, indicating exactly what you think you're
+      pointing at.  Then, when you get garbage results, you can
+      compare your comments and the resulting Y values with the actual
+      definition of the structure to see who's screwing up.
+    </para>
+
+    <para>
+      For a case where we still need to do arithmetic, consider the
+      classic case of needing to clear out a large chunk of memory.
+      The following code fills the 4KB of memory between $C000 and
+      $D000 with zeroes:
+    </para>
+
+<programlisting>
+        lda #$C0        ; Store #$C000 in mem (low byte first)
+        sta mem+1
+        lda #$00
+        sta mem
+        ldx #$04        ; x holds number of times to execute outer loop
+        tay             ; accumulator and y are both 0
+loop:   sta (mem), y
+        iny
+        bne loop        ; Inner loop ends when y wraps around to 0
+        inc mem+1       ; "Carry" from the iny to the core pointer
+        dex             ; Decrement outer loop count, quit if done
+        bne loop
+</programlisting>
+
+    <para>
+      Used carefully, proper use of the Y register can make your code
+      smaller, faster, <emphasis>and</emphasis> more readable.  Used
+      carelessly it can make your code an unreadable, unmaintainable
+      mess.  Use it wisely, and with care, and it will be your
+      greatest ally in writing flexible code.
+    </para>
+  </section>
+</section>
+<section>
+  <title>What about Indexed Indirect?</title>
+
+  <para>
+    This essay has concerned itself almost exclusively with the
+    Indirect Indexed&mdash;or (Indirect), Y&mdash;mode.  What about Indexed
+    Indirect&mdash;(Indirect, X)?  This is a <emphasis>much</emphasis>
+    less useful mode than the Y register's version.  While the Y
+    register indirection lets you implement pointers and arrays in
+    full generality, the X register is useful for pretty much only one
+    application: lookup tables for single byte values.
+  </para>
+
+  <para>
+    Even coming up with a motivating example for this is difficult,
+    but here goes.  Suppose you have multiple, widely disparate
+    sections of memory that you're watching for signals.  The
+    following routine takes a resource index in the accumulator and
+    returns the status byte for the corresponding resource.
+  </para>
+
+<programlisting>
+; This data is sitting on the zero page somewhere
+resource_status_table: .word resource0_status, resource1_status,
+                       .word resource2_status, resource3_status,
+                       ; etc. etc. etc.
+
+; This is the actual program code
+.text
+getstatus:
+        clc   ; Multiply argument by 2 before putting it in X, so that it
+        asl   ; produces a value that's properly word-indexed
+        tax
+        lda (resource_status_table, x)
+        rts
+</programlisting>
+
+  <para>
+    Why having a routine such as this is better than just having the
+    calling routine access resourceN_status itself as an absolute
+    memory load is left as an exercise for the reader.  That aside,
+    this code fragment does serve as a reminder that when indexing an
+    array of anything other than bytes, you must multiply your index
+    by the size of the objects you want to index.  C does this
+    automatically&mdash;assembler does not.  Stay sharp.
+  </para>
+</section>
+<section>
+  <title>Comparison with the other indexed forms</title>
+
+  <para>
+    Pointers are slow.  It sounds odd saying this, when C is the
+    fastest language around on modern machines precisely because of
+    its powerful and extensive use of pointers.  However, modern
+    architectures are designed to be optimized for C-style code (as an
+    example, the x86 architecture allows statements like <literal>mov
+    eax, [bs+bx+4*di]</literal> as a single instruction), while the
+    6502 is not.  An (Indirect, Y) operation can take up to 6 cycles
+    to complete just on its own, while the preparation of that command
+    costs additional time <emphasis>and</emphasis> scribbles over a
+    bunch of registers, meaning memory operations to save the values
+    and yet more time spent.  The simple code given at the beginning
+    of this essay&mdash;loading <literal>*b</literal> into the
+    accumulator&mdash;takes 7 cycles, not counting the 6 it takes to
+    load b with the appropriate value to begin with.  If b is known to
+    contain a specific value, we can write a single Absolute mode
+    instruction to load its value, which takes only 4 cycles and also
+    preserves the value in the Y register.  Clearly, Absolute mode
+    should be used whenever possible.
+  </para>
+
+  <para>
+    One might be tempted to use self-modifying code to solve this
+    problem.  This actually doesn't pay off near enough for the hassle
+    it generates; for self-modifying code, the address must be
+    generated, then stored in the instruction, and then the data must
+    be loaded.  Cost: 16 cycles for 2 immediate loads, 2 absolute
+    stores, and 1 absolute load.  For the straight pointer
+    dereference, we generate the address, store it in the pointer,
+    clear the index, then dereference that.  Cost: 17 cycles for 3
+    immediate loads, 2 zero page stores, and 1 indexed indirect load.
+    Furthermore, unlike in the self-modifying case, loops where simple
+    arithmetic is being continuously performed only require repeating
+    the final load instruction, which allows for much greater time
+    savings over an equivalent self-modifying loop.
+  </para>
+
+  <para>
+    (This point is also completely moot for NES programmers or anyone
+    else whose programs are sitting in ROM, because programs stored on
+    a ROM cannot modify themselves.)
+  </para>
+</section>
+<section>
+  <title>Conclusion</title>
+
+  <para>
+    That's pretty much it for pointers.  Though they tend to make
+    programs hairy, and learning how to properly deal with pointers is
+    what separates real C programmers from the novices, the basic
+    mechanics of them are not complex.  With pointers you can do
+    efficient passing of large structures, pass-by-reference,
+    complicated return values, and dynamic memory management&mdash;and
+    now these wondrous toys may be added to your assembler programs,
+    too (assuming you have that kind of space to play with).
+  </para>
+</section>
+</chapter>

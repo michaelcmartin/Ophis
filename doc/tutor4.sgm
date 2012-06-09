@@ -64,11 +64,11 @@ target10: .byte "Universe", 0
     and lowercase are reversed, so we have messages
     like <computeroutput>hELLO, sOLAR sYSTEM!</computeroutput>.  For
     the specific case of PETSCII, we can just fix our strings, but
-    that's less of an option if we're writing for the Apple II's
-    character set, or targeting a game console that puts its letters
-    in arbitrary locations.  We need to remap how strings are turned
-    into byte values.  The <literal>.charmap</literal>
-    and <literal>.charmapbin</literal> directives do what we need.
+    that's less of an option if we're writing for a game console that
+    puts its letters in arbitrary locations.  We need to remap how
+    strings are turned into byte values.
+    The <literal>.charmap</literal> and <literal>.charmapbin</literal>
+    directives do what we need.
   </para>
 
   <para>
@@ -102,9 +102,6 @@ target10: .byte "Universe", 0
     specifies an external file, 256 bytes long, that is loaded in at
     that point.  A binary character map for the Commodore 64 is
     provided with the sample programs
-    as <filename>petscii.map</filename>. There are also three
-    files, <filename>a2normal.map</filename>, <filename>a2inverse.map</filename>,
-    and <filename>a2blink.map</filename> that handle the Apple II's
-    very nonstandard character encodings.
+    as <filename>petscii.map</filename>.
   </para>
 </chapter>

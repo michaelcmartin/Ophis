@@ -9,21 +9,60 @@
   <!ENTITY samplecode SYSTEM "samplecode.sgm">
   <!ENTITY pre1 SYSTEM "preface.sgm">
   <!ENTITY cmdref SYSTEM "cmdref.sgm">
+  <!ENTITY hll1 SYSTEM "hll1.sgm">
+  <!ENTITY hll2 SYSTEM "hll2.sgm">
+  <!ENTITY hll3 SYSTEM "hll3.sgm">
+  <!ENTITY hll4 SYSTEM "hll4.sgm">
+  <!ENTITY hll5 SYSTEM "hll5.sgm">
 ]>
 <book>
   <bookinfo>
     <title>Programming with Ophis</title>
     <author><firstname>Michael</firstname><surname>Martin</surname></author>
-    <copyright><year>2006-7</year><holder>Michael Martin</holder></copyright>
+    <copyright><year>2006-2012</year><holder>Michael Martin</holder></copyright>
   </bookinfo>
   &pre1;
-  &part1;
-  &part2;
-  &part3;
-  &part4;
-  &part5;
-  &part6;
-  &part7;
+  <part label="I">
+    <title>Using the Ophis Assembler</title>
+    <partintro>
+      <para>
+        The chapters in Part 1 are a tutorial guiding you through the
+        features and programming model of the Ophis assembler. It uses
+        the Commodore 64 as its target platform.
+      </para>
+      <para>
+        This is not a tutorial on 6502 assembly language; those are
+        available elsewhere.
+      </para>
+    </partintro>
+    &part1;
+    &part2;
+    &part3;
+    &part4;
+    &part5;
+    &part6;
+    &part7;
+  </part>
+  <part label="II">
+    <title>To HLL and Back</title>
+    <partintro>
+      <para>
+        This is a compilation of an essay series I wrote from
+        2002-2005 explaining how to apply HLL constructs from
+        high-level languages in your assembly language projects.
+      </para>
+      <para>
+        The examples have been updated and modernized for Ophis 2, and
+        while the examples all target the Commodore 64, they are more
+        generally applicable.
+      </para>
+    </partintro>
+    &hll1;
+    &hll2;
+    &hll3;
+    &hll4;
+    &hll5;
+  </part>
   &samplecode;
   &cmdref;
 </book>

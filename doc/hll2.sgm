@@ -1,0 +1,880 @@
+<chapter id="hll2">
+<title>Structured Programming</title>
+
+<para>
+  This essay discusses the machine language equivalents of the
+  basic <quote>structured programming</quote> concepts that are part
+  of the <quote>imperative</quote> family of programming languages:
+  if/then/else, for/next, while loops, and procedures.  It also
+  discusses basic use of variables, as well as arrays, multi-byte data
+  types (records), and sub-byte data types (bitfields).  It closes by
+  hand-compiling pseudo-code for an insertion sort on linked lists
+  into assembler.  A complete Commodore 64 application is included as
+  a sample with this essay.
+</para>
+
+<section>
+  <title>Control constructs</title>
+  <section>
+    <title>Branches: <literal>if x then y else z</literal></title>
+
+    <para>
+      This is almost the most basic control construct.
+      The <emphasis>most</emphasis> basic is <literal>if x then
+      y</literal>, which is a simple branch instruction
+      (bcc/bcs/beq/bmi/bne/bpl/bvc/bvs) past the <quote>then</quote>
+      clause if the conditional is false:
+    </para>
+
+<programlisting>
+   iny
+   bne no'overflow
+   inx
+no'overflow:
+   ;; rest of code
+</programlisting>
+
+    <para>
+      This increments the value of the y register, and if it just
+      wrapped back around to zero, it increments the x register too.
+      It is basically equivalent to the C statement <literal>if
+      ((++y)==0) ++x;</literal>.  We need a few more labels to handle
+      else clauses as well.
+    </para>
+
+<programlisting>
+   ;; Computation of the conditional expression.
+   ;; We assume for the sake of the example that
+   ;; we want to execute the THEN clause if the
+   ;; zero bit is set, otherwise the ELSE
+   ;; clause.  This will happen after a CMP,
+   ;; which is the most common kind of 'if'
+   ;; statement anyway.
+
+   BNE else'clause
+
+   ;; THEN clause code goes here.
+
+   JMP end'of'if'stmt
+else'clause:
+
+   ;; ELSE clause code goes here.
+
+end'of'if'stmt:
+   ;; ... rest of code.
+</programlisting>
+  </section>
+  <section>
+    <title>Free loops: <literal>while x do y</literal></title>
+
+    <para>
+      A <emphasis>free loop</emphasis> is one that might execute any
+      number of times.  These are basically just a combination
+      of <literal>if</literal> and <literal>goto</literal>.  For
+      a <quote>while x do y</quote> loop, that executes zero or more
+      times, you'd have code like this...
+    </para>
+
+<programlisting>
+loop'begin:
+   ;; ... computation of condition, setting zero
+   ;;     bit if loop is finished...
+   beq loop'done
+   ;; ... loop body goes here
+   jmp loop'begin
+loop'done:
+   ;; ... rest of program.
+</programlisting>
+
+    <para>
+      If you want to ensure that the loop body executes at least once
+      (do y while x), just move the test to the end.
+    </para>
+
+<programlisting>
+loop'begin:
+   ;; ... loop body goes here
+   ;; ... computation of condition, setting zero
+   ;;     bit if loop is finished...
+   bne loop'begin
+   ;; ... rest of program.
+</programlisting>
+
+    <para>
+      The choice of zero bit is kind of arbitrary here.  If the
+      condition involves the carry bit, or overflow, or negative, then
+      replace the beq with bcs/bvs/bmi appropriately.
+    </para>
+  </section>
+  <section>
+    <title>Bounded loops: <literal>for i = x to y do z</literal></title>
+
+    <para>
+      A special case of loops is one where you know exactly how many
+      times you're going through it&mdash;this is called
+      a <emphasis>bounded</emphasis> loop.  Suppose you're copying 16
+      bytes from $C000 to $D000.  The C code for that would look
+      something like this:
+    </para>
+
+<programlisting>
+   int *a = 0xC000;
+   int *b = 0xD000;
+   int i;
+   for (i = 0; i < 16; i++) { a[i] = b[i]; }
+</programlisting>
+
+    <para>
+      C doesn't directly support bounded loops;
+      its <literal>for</literal> statement is just <quote>syntactic
+      sugar</quote> for a while statement.  However, we can take
+      advantage of special purpose machine instructions to get very
+      straightforward code:
+    </para>
+
+<programlisting>
+   ldx #$00
+loop:
+   lda $c000, x
+   sta $d000, x
+   inx
+   cpx #$10
+   bmi loop
+</programlisting>
+
+    <para>
+      However, remember that every arithmetic operation,
+      including <literal>inx</literal> and <literal>dex</literal>,
+      sets the various flags, including the Zero bit.  That means that
+      if we can make our computation <emphasis>end</emphasis> when the
+      counter hits zero, we can shave off some bytes:
+    </para>
+
+<programlisting>
+   ldx #$10
+loop:
+   lda #$bfff, x
+   sta #$cfff, x
+   dex
+   bne loop
+</programlisting>
+
+    <para>
+      Notice that we had to change the addresses we're indexing from,
+      because x takes a slightly different range of values.  The space
+      savings is small here, and it's become slightly more unclear.
+      (It also hasn't actually saved any time, because the lda and sta
+      instructions are crossing a page boundary where they weren't
+      before&mdash;but if the start or end arrays began at $b020 or
+      something this wouldn't be an issue.)  This tends to work better
+      when the precise value of the counter isn't used in the
+      computation&mdash;so let us consider the NES, which uses memory
+      location $2007 as a port to its video memory.  Suppose we wish
+      to jam 4,096 copies of the hex value $20 into the video memory.
+      We can write this <emphasis>very</emphasis> cleanly, using the X
+      and Y registers as indices in a nested loop.
+    </para>
+
+<programlisting>
+   ldx #$10
+   ldy #$00
+   lda #$20
+loop:
+   sta $2007
+   iny
+   bne loop
+   dex
+   bne loop
+</programlisting>
+
+    <para>
+      Work through this code.  Convince yourself that
+      the <literal>sta</literal> is executed exactly 16*256 = 4096
+      times.
+    </para>
+
+    <para>
+      This is an example of a <emphasis>nested</emphasis> loop: a loop
+      inside a loop.  Since our internal loop didn't need the X or Y
+      registers, we got to use both of them, which is nice, because
+      they have special incrementing and decrementing instructions.
+      The accumulator lacks these instructions, so it is a poor choice
+      to use for index variables.  If you have a bounded loop and
+      don't have access to registers, use memory locations
+      instead:
+    </para>
+
+<programlisting>
+   lda #$10
+   sta counter  ; loop 16 times
+loop:
+   ;; Do stuff that trashes all the registers
+   dec counter
+   bne loop
+</programlisting>
+
+    <para>
+      That's it!  These are the basic control constructs for using
+      inside of procedures.  Before talking about how to organize
+      procedures, I'll briefly cover the way the 6502 handles its
+      stack, because stacks and procedures are very tightly
+      intertwined.
+    </para>
+  </section>
+</section>
+
+<section>
+  <title>The stack</title>
+
+  <para>
+    The 6502 has an onboard stack in page 1.  You can modify the stack
+    pointer by storing values in X register and
+    using <literal>txs</literal>; an <quote>empty</quote> stack is
+    value $FF.  Going into a procedure pushes the address of the next
+    instruction onto the stack, and RTS pops that value off and jumps
+    there.  (Well, not precisely.  JSR actually pushes a value that's
+    one instruction short, and RTS loads the value, increases it by
+    one, and THEN jumps there.  But that's only an issue if you're
+    using RTS to implement jump tables.)  On an interrupt, the next
+    instruction's address is pushed on the stack, then the process
+    flags, and it jumps to the handler.  The return from interrupt
+    restores the flags and the PC, just as if nothing had
+    happened.
+  </para>
+
+  <para>
+    The stack only has 256 possible entries; since addresses take two
+    bytes to store, that means that if you call something that calls
+    something that calls something that (etc., etc., 129 times), your
+    computation will fail.  This can happen faster if you save
+    registers or memory values on the stack (see below).
+  </para>
+</section>
+<section>
+  <title>Procedures and register saving</title>
+
+  <para>
+    All programming languages are designed around the concept of
+    procedures.<footnote><para>Yes, all of them. Functional languages
+    just let you do more things with them, logic programming has
+    implicit calls to query procedures, and
+    object-oriented <quote>methods</quote> are just normal procedures
+    that take one extra argument in secret.</para></footnote>
+    Procedures let you break a computation up into different parts,
+    then use them independently.  However, compilers do a lot of work
+    for you behind the scenes to let you think this.  Consider the
+    following assembler code.  How many times does the loop
+    execute?
+  </para>
+
+<programlisting>
+loop: ldx #$10 jsr do'stuff dex bne loop
+</programlisting>
+
+  <para>
+    The correct answer is <quote>I don't know, but
+    it <emphasis>should</emphasis> be 16.</quote> The reason we don't
+    know is because we're assuming here that
+    the <literal>do'stuff</literal> routine doesn't change the value
+    of the X register.  If it does, than all sorts of chaos could
+    result.  For major routines that aren't called often but are
+    called in places where the register state is important, you should
+    store the old registers on the stack with code like this:
+  </para>
+
+<programlisting>
+do'stuff:
+   pha
+   txa
+   pha
+   tya
+   pha
+
+   ;; Rest of do'stuff goes here
+
+   pla
+   tay
+   pla
+   tax
+   pla
+   rts
+</programlisting>
+
+  <para>
+    (Remember, the last item pushed onto the stack is the first one
+    pulled off, so you have to restore them in reverse order.)  That's
+    three more bytes on the stack, so you don't want to do this if you
+    don't absolutely have to.  If <literal>do'stuff</literal>
+    actually <emphasis>doesn't</emphasis> touch X, there's no need to
+    save and restore the value.  This technique is
+    called <emphasis>callee-save</emphasis>.
+  </para>
+
+  <para>
+    The reverse technique is called <emphasis>caller-save</emphasis>
+    and pushes important registers onto the stack before the routine
+    is called, then restores them afterwards.  Each technique has its
+    advantages and disadvantages.  The best way to handle it in your
+    own code is to mark at the top of each routine which registers
+    need to be saved by the caller.  (It's also useful to note things
+    like how it takes arguments and how it returns values.)
+  </para>
+</section>
+<section>
+  <title>Variables</title>
+
+  <para>
+    Variables come in several flavors.
+  </para>
+
+  <section>
+    <title>Global variables</title>
+
+    <para>
+      Global variables are variables that can be reached from any
+      point in the program.  Since the 6502 has no memory protection,
+      these are easy to declare.  Take some random chunk of unused
+      memory and declare it to be the global variables area.  All
+      reasonable assemblers have commands that let you give a symbolic
+      name to a memory location&mdash;you can use this to give your
+      globals names.
+    </para>
+  </section>
+
+  <section>
+    <title>Local variables</title>
+
+    <para>
+      All modern languages have some concept of <quote>local
+      variables</quote>, which are data values unique to that
+      invocation of that procedure.  In modern architecures, this data
+      is stored into and read directly off of the stack.  The 6502
+      doesn't really let you do this cleanly; I'll discuss ways of
+      handling it in a later essay.  If you're implementing a system
+      from scratch, you can design your memory model to not require
+      such extreme measures.  There are three basic techniques.
+    </para>
+
+    <section>
+      <title>Treat local variables like registers</title>
+      <para>
+        This means that any memory location you use, you save on the
+        stack and restore afterwards.  This
+        can <emphasis>really</emphasis> eat up stack space, and it's
+        really slow, it's often pointless, and it has a tendency to
+        overflow the stack.  I can't recommend it.  But it does let
+        you do recursion right, if you don't need to save much memory
+        and you aren't recursing very deep.
+      </para>
+    </section>
+    <section>
+      <title>Procedure-based memory allocation</title>
+      <para>
+        With this technique, you give each procedure its own little
+        chunk of memory for use with its data.  All the variables are
+        still, technically, globals; a
+        routine <emphasis>could</emphasis> interfere with another's,
+        but the discipline of <quote>only mess with real globals, and
+        your own locals</quote> is very, very easy to maintain.
+      </para>
+
+      <para>
+        This has many advantages.  It's <emphasis>very</emphasis>
+        fast, both to write and to run, because loading a variable is
+        an Absolute or Zero Page instruction.  Also, any procedure may
+        call any other procedure, as long as it doesn't wind up
+        calling itself at some point.
+      </para>
+
+      <para>
+        It has two major disadvantages.  First, if many routines need
+        a lot of space, it can consume more memory than it should.
+        Also, this technique can require significant assembler
+        support&mdash;you must ensure that no procedure's local
+        variables are defined in the same place as any other
+        procedure, and it essentially requires a full symbolic linker
+        to do right.  Ophis includes commands for <emphasis>memory
+        segmentation simulation</emphasis> that automate most of this
+        task, and make writing general libraries feasible.
+      </para>
+    </section>
+    <section>
+      <title>Partition-based memory allocation</title>
+
+      <para>
+        It's not <emphasis>really</emphasis> necessary that no
+        procedure overwrite memory used by any other procedure.  It's
+        only required that procedures don't write on the memory that
+        their <emphasis>callers</emphasis> use.  Suppose that your
+        program is organized into a bunch of procedures, and each fall
+        into one of three sets:
+      </para>
+
+      <itemizedlist>
+        <listitem><para>Procedures in set A don't call anyone.</para></listitem>
+        <listitem><para>Procedures in set B only call procedures in set A.</para></listitem>
+        <listitem><para>Procedures in set C only call procedures in sets A or B.</para></listitem>
+      </itemizedlist>
+
+      <para>
+        Now, each <emphasis>set</emphasis> can be given its own chunk
+        of memory, and we can be absolutely sure that no procedures
+        overwrite each other.  Even if every procedure in set C uses
+        the <emphasis>same</emphasis> memory location, they'll never
+        step on each other, because there's no way to get to any other
+        routine in set C <emphasis>from</emphasis> any routine in set
+        C.
+      </para>
+
+      <para>
+        This has the same time efficiencies as procedure-based memory
+        allocation, and, given a thoughtful design aimed at using this
+        technique, also can use significantly less memory at run time.
+        It's also requires much less assembler support, as addresses
+        for variables may be assigned by hand without having to worry
+        about those addresses already being used.  However, it does
+        impose a very tight discipline on the design of the overall
+        system, so you'll have to do a lot more work before you start
+        actually writing code.
+      </para>
+    </section>
+  </section>
+  <section>
+    <title>Constants</title>
+
+    <para>
+      Constants are <quote>variables</quote> that don't change.  If
+      you know that the value you're using is not going to change, you
+      should fold it into the code, either as an Immediate operand
+      wherever it's used, or (if it's more complicated than that)
+      as <literal>.byte</literal> commands in between the procedures.
+      This is especially important for ROM-based systems such as the
+      NES; the NES has very little RAM available, so constants should
+      be kept in the more plentiful ROM wherever possible.
+    </para>
+  </section>
+</section>
+
+<section>
+  <title>Data structures</title>
+
+  <para>
+    So far, we've been treating data as a bunch of one-byte values.
+    There really isn't a lot you can do just with bytes.  This section
+    talks about how to deal with larger and smaller elements.
+  </para>
+
+  <section>
+    <title>Arrays</title>
+
+    <para>
+      An <emphasis>array</emphasis> is a bunch of data elements in a
+      row.  An array of bytes is very easy to handle with the 6502
+      chip, because the various indexed addressing modes handle it for
+      you.  Just load the index into the X or Y register and do an
+      absolute indexed load.  In general, these are going to be
+      zero-indexed (that is, a 32-byte array is indexed from 0 to 31.)
+      This code would initialize a byte array with 32 entries to
+      0:
+    </para>
+
+<programlisting>
+   lda #$00
+   tax
+loop:
+   sta array,x
+   inx
+   cpx #$20
+   bne loop
+</programlisting>
+
+    <para>
+      (If you count down to save instructions, remember to adjust the
+      base address so that it's still writing the same memory
+      location.)
+    </para>
+
+    <para>
+      This approach to arrays has some limits.  Primary among them is
+      that we can't have arrays of size larger than 256; we can't fit
+      our index into the index register.  In order to address larger
+      arrays, we need to use the indirect indexed addressing mode.  We
+      use 16-bit addition to add the offset to the base pointer, then
+      set the Y register to 0 and then load the value
+      with <literal>lda (ptr),y</literal>.
+    </para>
+
+    <para>
+      Well, actually, we can do better than that.  Suppose we want to
+      clear out 8K of ram, from $2000 to $4000.  We can use the Y
+      register to hold the low byte of our offset, and only update the
+      high bit when necessary.  That produces the following
+      loop:
+    </para>
+
+<programlisting>
+   lda #$00  ; Set pointer value to base ($2000)
+   sta ptr
+   lda #$20
+   sta ptr+1
+   lda #$00  ; Storing a zero
+   ldx #$20  ; 8,192 ($2000) iterations: high byte
+   ldy #$00  ; low byte.
+loop:
+   sta (ptr),y
+   iny
+   bne loop  ; If we haven't wrapped around, go back
+   inc ptr+1 ; Otherwise update high byte
+   dex       ; bump counter
+   bne loop  ; and continue if we aren't done
+</programlisting>
+
+    <para>
+      This code could be optimized further; the loop prelude in
+      particular loads a lot of redundant values that could be
+      compressed down further:
+    </para>
+
+<programlisting>
+   lda #$00
+   tay
+   ldx #$20
+   sta ptr
+   stx ptr+1
+</programlisting>
+
+    <para>
+      That's not directly relevant to arrays, but these sorts of
+      things are good things to keep in mind when writing your code.
+      Done well, they can make it much smaller and faster; done
+      carelessly, they can force a lot of bizarre dependencies on your
+      code and make it impossible to modify later.
+    </para>
+  </section>
+  <section>
+    <title>Records</title>
+    <para>
+      A <emphasis>record</emphasis> is a collection of values all
+      referred to as one variable.  This has no immediate
+      representation in assembler.  If you have a global variable
+      that's two bytes and a code pointer, this is exactly equivalent
+      to three seperate variables.  You can just put one label in
+      front of it, and refer to the first byte
+      as <literal>label</literal>, the second
+      as <literal>label+1</literal>, and the code pointer
+      a <literal>label+2</literal>.
+    </para>
+
+    <para>
+      This really applies to all data structures that take up more
+      than one byte.  When dealing with the pointer, a 16-bit value,
+      we refer to the low byte as <literal>ptr</literal>
+      (or <literal>label+2</literal>, in the example above), and the
+      high byte as <literal>ptr+1</literal>
+      (or <literal>label+3</literal>).
+    </para>
+
+    <para>
+      Arrays of records are more interesting.  There are two
+      possibilities for these.  The way most high level languages
+      treat it is by keeping the records contiguous.  If you have an
+      array of two sixteen bit integers, then the records are stored
+      in order, one at a time.  The first is in location $1000, the
+      next in $1004, the next in $1008, and so on.  You can do this
+      with the 6502, but you'll probably have to use the indirect
+      indexed mode if you want to be able to iterate
+      conveniently.
+    </para>
+
+    <para>
+      Another, more unusual, but more efficient approach is to keep
+      each byte as a seperate array, just like in the arrays example
+      above.  To illustrate, here's a little bit of code to go through
+      a contiguous array of 16 bit integers, adding their values to
+      some <literal>total</literal> variable:
+    </para>
+
+<programlisting>
+   ldx #$10  ; Number of elements in the array
+   ldy #$00  ; Byte index from array start
+loop:
+   clc
+   lda array, y      ; Low byte
+   adc total
+   sta total
+   lda array+1, y    ; High byte
+   adc total+1
+   sta total+1
+   iny               ; Jump ahead to next entry
+   iny
+   dex               ; Check for loop termination
+   bne loop
+</programlisting>
+
+    <para>
+      And here's the same loop, keeping the high and low bytes in
+      seperate arrays:
+    </para>
+
+<programlisting>
+   ldx #$00
+loop:
+   clc
+   lda lowbyte,x
+   adc total
+   sta total
+   lda highbyte,x
+   adc total+1
+   sta total+1
+   inx
+   cpx #$10
+   bne loop
+</programlisting>
+
+    <para>
+      Which approach is the right one depends on what you're doing.
+      For large arrays, the first approach is better, as you only need
+      to maintain one base pointer.  For smaller arrays, the easier
+      indexing makes the second approach more convenient.
+    </para>
+  </section>
+  <section>
+    <title>Bitfields</title>
+
+    <para>
+      To store values that are smaller than a byte, you can save space
+      by putting multiple values in a byte.  To extract a sub-byte
+      value, use the bitmasking commands:
+    </para>
+
+    <itemizedlist>
+      <listitem><para>To set bits, use the <literal>ORA</literal> command.  <literal>ORA #$0F</literal> sets the lower four bits to 1 and leaves the rest unchanged.</para></listitem>
+      <listitem><para>To clear bits, use the <literal>AND</literal> command.  <literal>AND #$F0</literal> sets the lower four bits to 0 and leaves the rest unchanged.</para></listitem>
+      <listitem><para>To reverse bits, use the <literal>EOR</literal> command.  <literal>EOR #$0F</literal> reverses the lower four bits and leaves the rest unchanged.</para></listitem>
+      <listitem><para>To test if a bit is 0, AND away everything but that bit, then see if the Zero bit was set.  If the bit is in the top two bits of a memory location, you can use the BIT command instead (which stores bit 7 in the Negative bit, and bit 6 in the Overflow bit).</para></listitem>
+    </itemizedlist>
+  </section>
+</section>
+
+<section>
+  <title>A modest example: Insertion sort on linked lists</title>
+
+  <para>
+    To demonstrate these techniques, we will now produce code to
+    perform insertion sort on a linked list.  We'll start by defining
+    our data structure, then defining the routines we want to write,
+    then producing actual code for those routines.  A downloadable
+    version that will run unmodified on a Commodore 64 closes the
+    chapter.
+  </para>
+
+  <section>
+    <title>The data structure</title>
+
+    <para>
+      We don't really want to have to deal with pointers if we can
+      possibly avoid it, but it's hard to do a linked list without
+      them.  Instead of pointers, we will
+      use <emphasis>cursors</emphasis>: small integers that represent
+      the index into the array of values.  This lets us use the
+      many-small-byte-arrays technique for our data.  Furthermore, our
+      random data that we're sorting never has to move, so we may
+      declare it as a constant and only bother with changing the
+      values of <literal>head</literal> and
+      the <literal>next</literal> arrays.  The data record definition
+      looks like this:
+    </para>
+
+<programlisting>
+  head : byte;
+  data : const int[16] = [838, 618, 205, 984, 724, 301, 249, 946,
+                          925,  43, 114, 697, 985, 633, 312,  86];
+  next : byte[16];
+</programlisting>
+
+    <para>
+      Exactly how this gets represented will vary from assembler to
+      assembler.  Ophis does it like this:
+    </para>
+
+<programlisting>
+.data
+.space head 1
+.space next 16
+
+.text
+lb:   .byte &lt;$838,&lt;$618,&lt;$205,&lt;$984,&lt;$724,&lt;$301,&lt;$249,&lt;$946
+      .byte &lt;$925,&lt;$043,&lt;$114,&lt;$697,&lt;$985,&lt;$633,&lt;$312,&lt;$086
+hb:   .byte >$838,>$618,>$205,>$984,>$724,>$301,>$249,>$946
+      .byte >$925,>$043,>$114,>$697,>$985,>$633,>$312,>$086
+</programlisting>
+  </section>
+  <section>
+    <title>Doing an insertion sort</title>
+
+    <para>
+      To do an insertion sort, we clear the list by setting the 'head'
+      value to -1, and then insert each element into the list one at a
+      time, placing each element in its proper order in the list.  We
+      can consider the lb/hb structure alone as an array of 16
+      integers, and just insert each one into the list one at a
+      time.
+    </para>
+
+<programlisting>
+procedure insertion_sort
+  head := -1;
+  for i := 0 to 15 do
+    insert_elt i
+  end
+end
+</programlisting>
+
+    <para>
+      This translates pretty directly.  We'll have insert_elt take its
+      argument in the X register, and loop with that.  However, given
+      that insert_elt is going to be a complex procedure, we'll save
+      the value first.  The assembler code becomes:
+    </para>
+
+<programlisting>
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; insertion'sort:  Sorts the list defined by head, next, hb, lb.
+; Arguments:  None.
+; Modifies:   All registers destroyed, head and next array sorted.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+insertion'sort:
+        lda #$FF        ; Clear list by storing the terminator in 'head'
+        sta head
+        ldx #$0         ; Loop through the lb/hb array, adding each
+insertion'sort'loop:    ; element one at a time
+        txa
+        pha
+        jsr insert_elt
+        pla
+        tax
+        inx
+        cpx #$10
+        bne insertion'sort'loop
+        rts
+</programlisting>
+  </section>
+  <section>
+    <title>Inserting an element</title>
+
+    <para>
+      The pseudocode for inserting an element is a bit more
+      complicated.  If the list is empty, or the value we're inserting
+      goes at the front, then we have to update the value
+      of <literal>head</literal>.  Otherwise, we can iterate through
+      the list until we find the element that our value fits in after
+      (so, the first element whose successor is larger than our
+      value).  Then we update the next pointers directly and exit.
+    </para>
+
+<programlisting>
+procedure insert_elt i
+begin
+   if head = -1 then begin
+      head := i;
+      next[i] := -1;
+      return;
+   end;
+   val := data[i];
+   if val < data[i] then begin
+      next[i] := head;
+      head := i;
+      return;
+   end;
+   current := head;
+   while (next[current] &lt;&gt; -1 and val &lt; data[next[current]]) do
+      current := next[current];
+   end;
+   next[i] := next[current];
+   next[current] := i;
+end;
+</programlisting>
+
+    <para>
+      This produces the following rather hefty chunk of code:
+    </para>
+
+<programlisting>
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; insert_elt: Insert an element into the linked list.  Maintains the
+;             list in sorted, ascending order.  Used by
+;             insertion'sort.
+; Arguments:  X register holds the index of the element to add.
+; Modifies:   All registers destroyed; head and next arrays updated
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+.data
+.space lbtoinsert 1
+.space hbtoinsert 1
+.space indextoinsert 1
+
+.text
+
+insert_elt:
+        ldy head                        ; If the list is empty, make
+        cpy #$FF                        ; head point at it, and return.
+        bne insert_elt'list'not'empty
+        stx head
+        tya
+        sta next,x
+        rts
+insert_elt'list'not'empty:
+        lda lb,x                        ; Cache the data we're inserting
+        sta lbtoinsert
+        lda hb,x
+        sta hbtoinsert
+        stx indextoinsert
+        ldy head                        ; Compare the first value with
+        sec                             ; the data.  If the data must
+        lda lb,y                        ; be inserted at the front...
+        sbc lbtoinsert
+        lda hb,y
+        sbc hbtoinsert
+        bmi insert_elt'not'smallest
+        tya                             ; Set its next pointer to the
+        sta next,x                      ; old head, update the head
+        stx head                        ; pointer, and return.
+        rts
+insert_elt'not'smallest:
+        ldx head
+insert_elt'loop:                        ; At this point, we know that
+        lda next,x                      ; argument > data[X].
+        tay
+        cpy #$FF                        ; if next[X] = #$FF, insert arg at end.
+        beq insert_elt'insert'after'current
+        lda lb,y                        ; Otherwise, compare arg to
+        sec                             ; data[next[X]].  If we insert
+        sbc lbtoinsert                  ; before that...
+        lda hb,y
+        sbc hbtoinsert
+        bmi insert_elt'goto'next
+insert_elt'insert'after'current:        ; Fix up all the next links
+        tya
+        ldy indextoinsert
+        sta next,y
+        tya
+        sta next,x
+        rts                             ; and return.
+insert_elt'goto'next:                   ; Otherwise, let X = next[X]
+        tya                             ; and go looping again.
+        tax
+        jmp insert_elt'loop
+</programlisting>
+  </section>
+  <section>
+    <title>The complete application</title>
+
+    <para>
+      The full application, which deals with interfacing with CBM
+      BASIC and handles console I/O and such, is
+      in <xref linkend="structure-src" endterm="structure-fname">.
+    </para>
+  </section>
+</section>
+</chapter>

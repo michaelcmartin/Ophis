@@ -1,0 +1,218 @@
+<chapter>
+<title>Call Stacks</title>
+
+<para>
+  All our previous work has been assuming FORTRAN-style calling
+  conventions.  In this, all procedure-local variables are actually
+  secretly globals.  This means that a function that calls itself will
+  end up stomping on its previous values, and everything will be
+  hideously scrambled.  Various workarounds for this are covered
+  in <xref linkend="hll2">.  Here, we solve the problem fully.
+</para>
+
+<section>
+  <title>Recursion</title>
+
+  <para>
+    A procedure in C or other similar languages declares a chunk of
+    storage that's unique to that invocation.  This chunk is just
+    large enough to hold the return address and all the local
+    variables, and is called the <emphasis>stack frame</emphasis>.
+    Stack frames are arranged on a <emphasis>call stack</emphasis>;
+    when a function is called, the stack grows with the new frame, and
+    when that function returns, its frame is destroyed.  Once the main
+    function returns, the stack is empty.
+  </para>
+
+  <para>
+    Most modern architectures are designed to let you implement
+    variable access like this directly, without touching the registers
+    at all.  The x86 architecture even dedicates a register to
+    function explicitly as the <emphasis>stack pointer</emphasis>, and
+    then one could read, say, the fifth 16-bit variable into the
+    register AX with the command <literal>MOV AX, [SP+10]</literal>.
+  </para>
+
+  <para>
+    As we saw in <xref linkend="hll3">, the 6502 isn't nearly as
+    convenient.  We'd need to keep the stack pointer somewhere on the
+    zero page, then load the Y register with 10, then load the
+    accumulator with an indexed-indirect call.  This is verbose, keeps
+    trashing our registers, and it's very, very slow.
+  </para>
+
+  <para>
+    So, in the spirit of programmers everywhere, we'll cheat.
+  </para>
+</section>
+<section>
+  <title>Our Goals</title>
+
+  <para>
+    The system we develop should have all of the following
+    characteristics.
+  </para>
+
+  <itemizedlist>
+    <listitem><para>It should be <emphasis>intuitive to program for</emphasis>.  The procedure bodies should be easily readable and writable by humans, even in assembler form.</para></listitem>
+    <listitem><para>It should be <emphasis>efficient</emphasis>.  Variable accesses are very common, so procedures shouldn't cost much to run.</para></listitem>
+    <listitem><para>It should allow <emphasis>multiple arity</emphasis> in both arguments and return values.  We won't require that an unlimited amount of information be passable, but it should allow more than the three bytes the registers give us.</para></listitem>
+    <listitem><para>It should permit <emphasis>tail call elimination</emphasis>, an optimization that will allow certain forms of recursion to actually not grow the stack.</para></listitem>
+  </itemizedlist>
+
+  <para>
+    Here is a system that meets all these properties.
+  </para>
+
+  <itemizedlist>
+    <listitem><para>Reserve two bytes of the zero page for a stack pointer.  At the beginning of the program, set it to the top of memory.</para></listitem>
+    <listitem><para>Divide the remainder of Zero Page into two parts:
+        <itemizedlist>
+          <listitem><para>The <emphasis>scratch space</emphasis>, which is where arguments and return values go, and which may be scrambled by any function call, and</para></listitem>
+          <listitem><para>The <emphasis>local area</emphasis>, which all functions must restore to their initial state once finished.</para></listitem>
+        </itemizedlist>
+    </para></listitem>
+    <listitem><para>Assign to each procedure a <emphasis>frame size</emphasis> S, which is a maximum size on the amount of the local area the procedure can use.  The procedure's variables will sit in the first S bytes of the local area.</para></listitem>
+    <listitem><para>Upon entering the procedure, push the first S bytes of the local area onto the stack; upon exit, pop hose S bytes back on top of the local area.</para></listitem>
+    <listitem><para>While the procedure is running, only touch the local area and the scratch space.</para></listitem>
+  </itemizedlist>
+
+  <para>This meets our design criteria neatly:</para>
+
+  <itemizedlist>
+    <listitem><para>It's as intuitive as such a system will get.  You have to call <literal>init'stack</literal> at the beginning, and you need to ensure that <literal>save'stack</literal> and <literal>restore'stack</literal> are called right.  The procedure's program text can pretend that it's just referring to its own variables, just like with the old style.  If a procedure doesn't call <emphasis>anyone</emphasis>, then it can just do all its work in the scratch space.</para></listitem>
+    <listitem><para>It's efficient; the inside of the procedure is likely to be faster and smaller than its FORTRAN-style counterpart, because all variable references are on the Zero Page.</para></listitem>
+    <listitem><para>Both arguments and return values can be as large as the scratch space.  It's not infinite, but it's probably good enough.</para></listitem>
+    <listitem><para>Tail call elimination is possible; just restore the stack before making the JMP to the tail call target.</para></listitem>
+  </itemizedlist>
+
+  <para>
+    The necessary support code is pretty straightforward.  The stack
+    modification routines take the size of the frame in the
+    accumulator, and while saving the local area, it copies over the
+    corresponding values from the scratch space.  (This is because
+    most functions will be wanting to keep their arguments around
+    across calls.)
+  </para>
+
+<programlisting>
+.scope
+; Stack routines
+.data zp
+.space _sp      $02
+.space _counter $01
+.space fun'args $10
+.space fun'vars $40
+
+.text
+init'stack:
+        lda     #$00
+        sta     _sp
+        lda     #$A0
+        sta     _sp+1
+        rts
+
+save'stack:
+        sta     _counter
+        sec
+        lda     _sp
+        sbc     _counter
+        sta     _sp
+        lda     _sp+1
+        sbc     #$00
+        sta     _sp+1
+        ldy     #$00
+*       lda     fun'vars, y
+        sta     (_sp), y
+        lda     fun'args, y
+        sta     fun'vars, y
+        iny
+        dec     _counter
+        bne -
+        rts
+
+restore'stack:
+        pha
+        sta     _counter
+        ldy     #$00
+*       lda     (_sp), y
+        sta     fun'vars, y
+        iny
+        dec     _counter
+        bne -
+        pla
+        clc
+        adc     _sp
+        sta     _sp
+        lda     _sp+1
+        adc     #$00
+        sta     _sp+1
+        rts
+.scend
+</programlisting>
+</section>
+<section>
+  <title>Example: Fibonnacci Numbers</title>
+
+  <para>
+    About the simplest <quote>interesting</quote> recursive function
+    is the Fibonacci numbers.  The function fib(x) is defined as being
+    1 if x is 0 or 1, and being fib(x-2)+fib(x-1) otherwise.
+  </para>
+
+  <para>
+    Actually expressing it like that directly produces a very
+    inefficient implementation, but it's a simple demonstration of the
+    system.  Here's code for expressing the fib function:
+  </para>
+
+<programlisting>
+.scope
+; Uint16 fib (Uint8 x): compute Xth fibonnaci number.
+; fib(0) = fib(1) = 1.
+; Stack usage: 3.
+
+fib:    lda     #$03
+        jsr     save'stack
+        lda     fun'vars
+        cmp     #$02
+        bcc     _base
+
+        dec     fun'args
+        jsr     fib
+        lda     fun'args
+        sta     fun'vars+1
+        lda     fun'args+1
+        sta     fun'vars+2
+        lda     fun'vars
+        sec
+        sbc     #$02
+        sta     fun'args
+        jsr     fib
+        clc
+        lda     fun'args
+        adc     fun'vars+1
+        sta     fun'args
+        lda     fun'args+1
+        adc     fun'vars+2
+        sta     fun'args+1
+        jmp     _done
+
+_base:  ldy     #$01
+        sty     fun'args
+        dey
+        sty     fun'args+1
+
+_done:  lda     #$03
+        jsr     restore'stack
+        rts
+.scend
+</programlisting>
+
+  <para>
+    The full application, which deals with interfacing with CBM BASIC
+    and handles console I/O and such, is in <xref linkend="fib-src"
+    endterm="fib-fname">.
+  </para>
+</section>
+</chapter>

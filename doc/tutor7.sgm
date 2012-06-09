@@ -48,27 +48,46 @@
       locations $02-$7F are used by the BASIC interpreter, and
       locations $80-$FF are used by the KERNAL.  We don't need the
       BASIC interpreter, though, so we can back up all of $02-$7F at
-      the start of our program and restore it all when we're done:
+      the start of our program and restore it all when we're done.
+    </para>
+
+    <para>
+      In fact, since we're disablng BASIC, we can actually also swap
+      out its ROM entirely and get a contiguous block of RAM from
+      $0002 to $CFFF:
     </para>
 
 <programlisting>
 .scope
-        ; Cache BASIC's zero page at top of available RAM.
-        ldx #$7E
-*       lda $01, x
-        sta $CF81, x
+        ; Cache BASIC zero page at top of available RAM
+        ldx     #$7E
+*       lda     $01, x
+        sta     $CF81, x
         dex
-        bne -
+        bne     -
 
-        jsr _main
+        ; Swap out the BASIC ROM for RAM
+        lda     $01
+        and     #$fe
+        ora     #$06
+        sta     $01
 
-        ; Restore BASIC's zero page and return control.
+        ; Run the real program
+        jsr     _main
 
-        ldx #$7E
-*       lda $CF81, x
-        sta $01, x
+        ; Restore BASIC ROM
+        lda     $01
+        ora     #$07
+        sta     $01
+
+        ; Restore BASIC zero page
+        ldx     #$7E
+*       lda     $CF81, x
+        sta     $01, x
         dex
-        bne -
+        bne     -
+
+        ; Back to BASIC
         rts
 
 _main:
@@ -79,7 +98,9 @@ _main:
 
     <para>
       The new, improved header file is <xref linkend="c64-2-src"
-      endterm="c64-2-fname">.
+      endterm="c64-2-fname">. This,
+      like <filename>c64kernal.oph</filename>, is available for use in
+      your own projects in the <literal>platform/</literal> directory.
     </para>
 
     <para>

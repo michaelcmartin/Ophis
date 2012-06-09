@@ -1,0 +1,232 @@
+.include "../platform/c64_0.oph"
+.require "../platform/c64kernal.oph"
+.outfile "structuredemo.prg"
+
+	jsr print'unsorted
+	jsr insertion'sort
+	jsr print'list
+	rts
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Linked list data: head, next, lb, hb.
+; lb/hb: Low/high bytes of the data array.  These are immutable and
+;        kept with the program text.
+; head:  Array index of the first element in the list, or #$FF if the
+;        list is empty
+; next:  Array of successor indices.  If you've just read element X,
+;        the value of memory location next+X is the index of the
+;        next element.  If next is #$FF, you've reached the end of
+;        the list.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+.data
+.org	$C000
+.space	head	1
+.space	next	16
+
+.text
+lb:   .byte <$838,<$618,<$205,<$984,<$724,<$301,<$249,<$946
+      .byte <$925,<$043,<$114,<$697,<$985,<$633,<$312,<$086
+hb:   .byte >$838,>$618,>$205,>$984,>$724,>$301,>$249,>$946
+      .byte >$925,>$043,>$114,>$697,>$985,>$633,>$312,>$086
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; insertion'sort:  Sorts the list defined by head, next, hb, lb.
+; Arguments:  None.
+; Modifies:   All registers destroyed, head and next array sorted.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+insertion'sort:
+	lda #$FF	; Clear list by storing the terminator in 'head'
+	sta head
+	ldx #$0		; Loop through the lb/hb array, adding each
+insertion'sort'loop:    ; element one at a time
+	txa
+	pha
+	jsr insert_elt
+	pla
+	tax
+	inx
+	cpx #$10
+	bne insertion'sort'loop
+	rts
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; insert_elt: Insert an element into the linked list.  Maintains the
+;             list in sorted, ascending order.  Used by
+;             insertion'sort.
+; Arguments:  X register holds the index of the element to add.
+; Modifies:   All registers destroyed; head and next arrays updated
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+.data
+.space lbtoinsert 1
+.space hbtoinsert 1
+.space indextoinsert 1
+
+.text
+
+insert_elt:
+	ldy head			; If the list is empty, make
+	cpy #$FF			; head point at it, and return.
+	bne insert_elt'list'not'empty
+	stx head
+	tya
+	sta next,x
+	rts
+insert_elt'list'not'empty:
+	lda lb,x			; Cache the data we're inserting
+	sta lbtoinsert
+	lda hb,x
+	sta hbtoinsert
+	stx indextoinsert
+	ldy head			; Compare the first value with
+	sec				; the data.  If the data must
+	lda lb,y			; be inserted at the front...
+	sbc lbtoinsert
+	lda hb,y
+	sbc hbtoinsert
+	bmi insert_elt'not'smallest
+	tya				; Set its next pointer to the
+	sta next,x			; old head, update the head
+	stx head			; pointer, and return.
+	rts
+insert_elt'not'smallest:
+	ldx head
+insert_elt'loop:			; At this point, we know that
+	lda next,x			; argument > data[X].
+	tay
+	cpy #$FF			; if next[X] = #$FF, insert arg at end.
+	beq insert_elt'insert'after'current
+	lda lb,y			; Otherwise, compare arg to
+	sec				; data[next[X]].  If we insert
+	sbc lbtoinsert			; before that...
+	lda hb,y
+	sbc hbtoinsert
+	bmi insert_elt'goto'next
+insert_elt'insert'after'current:	; Fix up all the next links
+	tya
+	ldy indextoinsert
+	sta next,y
+	tya
+	sta next,x
+	rts				; and return.
+insert_elt'goto'next:			; Otherwise, let X = next[X]
+	tya				; and go looping again.
+	tax
+	jmp insert_elt'loop
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; print'unsorted: Steps through the data array and prints each value.
+; Standalone procedure.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+print'unsorted:
+	lda #<unsorted'hdr
+	ldx #>unsorted'hdr
+	jsr put'string
+	ldy #$00
+print'unsorted'loop:
+	lda hb, Y
+	jsr print'hex
+	lda lb, y
+	jsr print'hex
+	lda #$20
+	jsr chrout
+	iny
+	cpy #$10
+	bne print'unsorted'loop
+	lda #$0D
+	jsr chrout
+	rts
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; print'list: Starts at head, and prints out every value in the
+;             linked list.
+; Standalone procedure.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+print'list:
+	lda #<sorted'hdr
+	ldx #>sorted'hdr
+	jsr put'string
+	ldy head
+print'list'loop:
+	cpy #$FF
+	beq print'list'done
+	lda hb, y
+	jsr print'hex
+	lda lb, y
+	jsr print'hex
+	lda #$20
+	jsr chrout
+	lda next, Y
+	tay
+	jmp print'list'loop
+print'list'done:
+	lda #$0d
+	jsr chrout
+	rts
+
+;; String data for the above routines.
+
+unsorted'hdr:
+	.byte 147		; Clear screen first!
+	.byte "UNSORTED DATA:",13,0
+
+sorted'hdr:
+	.byte "SORTED DATA:",13,0
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; print'hex: outputs a two-character hex representation of a one-
+;            byte value.
+; Arguments: Byte to print in accumulator
+; Modifies: .A and .X
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+print'hex:
+	pha
+	clc
+	lsr
+	lsr
+	lsr
+	lsr
+	tax
+	lda hexstr,x
+	jsr chrout
+	pla
+	and #$0F
+	tax
+	lda hexstr,X
+	jsr chrout
+	rts
+
+; Character data array for print'hex.
+hexstr: .byte "0123456789ABCDEF"
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; put'string: outputs a C-style null terminated string with length
+;             less than 256 to the screen.  If 256 bytes are written
+;             without finding a terminator, the routine ends quietly.
+; Arguments: Low byte of string address in .A, high byte in .X
+; Modifies: .A and .Y
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+.data zp
+.space put'string'addr 2
+
+.text
+put'string:
+	sta put'string'addr
+	stx put'string'addr+1
+	ldy #$00
+put'string'loop:
+	lda (put'string'addr),y
+	beq put'string'done
+	jsr chrout
+	iny
+	bne put'string'loop
+put'string'done:
+	rts
+

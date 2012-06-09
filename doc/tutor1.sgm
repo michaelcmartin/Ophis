@@ -256,6 +256,31 @@ hello:  .byte "HELLO, WORLD!", 0
        summary of available command line options.
     </para>
 
+    <para>
+      Ophis takes a list of source files and produces an output file
+      based on assembling each file you give it, in order. You can add
+      a line to your program like this to name the output file:
+    </para>
+
+<programlisting>
+.outfile "hello.prg"
+</programlisting>
+
+    <para>
+      Alternately, you can use the <option>-o</option> option on the
+      command line. This will override any <literal>.outfile</literal>
+      directives. If you don't specify any name, it will put the
+      output into a file named <filename>ophis.bin</filename>.
+    </para>
+
+    <para>
+      If you are using Ophis as part of some larger toolchain, you can
+      also make it run in <emphasis>pipe mode</emphasis>. If you give
+      a dash <option>-</option> as an input file or as the output
+      target, Ophis will use standard input or output for
+      communication.
+    </para>
+
     <table frame="all">
       <title>Ophis Options</title>
       <tgroup cols='2'>
@@ -266,13 +291,11 @@ hello:  .byte "HELLO, WORLD!", 0
           </row>
         </thead>
         <tbody>
-          <row><entry><option>-6510</option></entry><entry>Allows the 6510 undocumented opcodes as listed in the VICE documentation.</entry></row>
-          <row><entry><option>-65c02</option></entry><entry>Allows opcodes and addressing modes added by the 65C02.</entry></row>
-          <row><entry><option>-v 0</option></entry><entry>Quiet operation.  Only reports errors.</entry></row>
-          <row><entry><option>-v 1</option></entry><entry>Default operation.  Reports files as they are loaded, and gives statistics on the final output.</entry></row>
-          <row><entry><option>-v 2</option></entry><entry>Verbose operation.  Names each assembler pass as it runs.</entry></row>
-          <row><entry><option>-v 3</option></entry><entry>Debug operation:  Dumps the entire IR after each pass.</entry></row>
-          <row><entry><option>-v 4</option></entry><entry>Full debug operation:  Dumps the entire IR and symbol table after each pass.</entry></row>
+          <row><entry><option>-o FILE</option></entry><entry>Overrides the default filename for output.</entry></row>
+          <row><entry><option>-u</option></entry><entry>Allows the 6510 undocumented opcodes as listed in the VICE documentation.</entry></row>
+          <row><entry><option>-c</option></entry><entry>Allows opcodes and addressing modes added by the 65C02.</entry></row>
+          <row><entry><option>-q</option></entry><entry>Quiet operation.  Only reports warnings and errors.</entry></row>
+          <row><entry><option>-v</option></entry><entry>Verbose operation.  Reports files as they are loaded.</entry></row>
         </tbody>
       </tgroup>
     </table>
@@ -283,30 +306,16 @@ hello:  .byte "HELLO, WORLD!", 0
       here:
     </para>
     <screen>
-localhost$ ophis tutor1.oph tutor1.prg -v 2
-Loading tutor1.oph
-Running: Macro definition pass
-Running: Macro expansion pass
-Running: Label initialization pass
-Fixpoint failed, looping back
-Running: Label initialization pass
-Running: Circularity check pass
-Running: Expression checking pass
-Running: Easy addressing modes pass
-Running: Label Update Pass
-Fixpoint failed, looping back
-Running: Label Update Pass
-Running: Instruction Collapse Pass
-Running: Mode Normalization pass
-Running: Label Update Pass
-Running: Assembler
+localhost$ ophis -v hello1.oph
+Loading hello1.oph
 Assembly complete: 45 bytes output (14 code, 29 data, 2 filler)
     </screen>
     <para>
-      If your emulator can run <filename>PRG</filename> files
-      directly, this file will now run (and
-      print <computeroutput>HELLO, WORLD!</computeroutput>) as many
-      times as you type <userinput>RUN</userinput>.  Otherwise, use
+      This will produce a file named <filename>hello.prg</filename>. If
+      your emulator can run <filename>PRG</filename> files directly,
+      this file will now run (and print <computeroutput>HELLO,
+      WORLD!</computeroutput>) as many times as you
+      type <userinput>RUN</userinput>.  Otherwise, use
       a <filename>D64</filename> management utility to put
       the <filename>PRG</filename> on a <filename>D64</filename>, then
       load and run the file off that.

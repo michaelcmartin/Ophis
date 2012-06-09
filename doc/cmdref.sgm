@@ -302,10 +302,10 @@
          </para>
 <programlisting>
 .macro store16   ; `store16 dest, src
-	lda #&lt;_2
-	sta _1
-	lda #&gt;_2
-	sta _1+1
+        lda #&lt;_2
+        sta _1
+        lda #&gt;_2
+        sta _1+1
 .macend
 </programlisting>
          <para>
@@ -361,91 +361,202 @@
          follow.
        </para>
        <itemizedlist>
-       <listitem><para><literal>.advance</literal> <emphasis>address</emphasis>:
-      Forces the program counter to
-      be <emphasis>address</emphasis>. Unlike
-      the <literal>.org</literal>
-      directive, <literal>.advance</literal> outputs zeroes until the
-      program counter reaches a specified address. Attempting
-      to <literal>.advance</literal> to a point behind the current
-      program counter is an assemble-time error.</para></listitem>
-      <listitem><para><literal>.alias</literal> <emphasis>label</emphasis> <emphasis>value</emphasis>: The
-      .alias directive assigns an arbitrary value to a label. This
-      value may be an arbitrary argument, but cannot reference any
-      label that has not already been defined (this prevents
-      recursive label dependencies).</para></listitem>
-      <listitem><para><literal>.byte</literal> <emphasis>arg</emphasis> [ , <emphasis>arg</emphasis>, ... ]:
-      Specifies a series of arguments, which are evaluated, and
-      strings, which are included as raw ASCII data. The final
-      results of these arguments must be one byte in size. Seperate
-      constants are seperated by comments.</para></listitem>
-      <listitem><para><literal>.checkpc</literal> <emphasis>address</emphasis>: Ensures that the
-      program counter is less than or equal to the address
-      specified, and emits an assemble-time error if it is not.
-      <emphasis>This produces no code in the final binary - it is there to
-      ensure that linking a large amount of data together does not
-      overstep memory boundaries.</emphasis></para></listitem>
-      <listitem><para><literal>.data</literal> <emphasis>[label]</emphasis>: Sets the segment to
-      the segment name specified and disallows output. If no label
-      is given, switches to the default data segment.</para></listitem>
-      <listitem><para><literal>.incbin</literal> <emphasis>filename</emphasis>: Inserts the
-      contents of the file specified as binary data. Use it to
-      include graphics information, precompiled code, or other
-      non-assembler data.</para></listitem>
-      <listitem><para><literal>.include</literal> <emphasis>filename</emphasis>: Includes the
-      entirety of the file specified at that point in the program.
-      Use this to order your final sources.</para></listitem>
-      <listitem><para><literal>.org</literal> <emphasis>address</emphasis>: Sets the program
-      counter to the address specified. <emphasis>This does not emit any
-      code in and of itself, nor does it overwrite anything that
-      previously existed.</emphasis> If you wish to jump ahead in memory,
-      use <literal>.advance</literal>.</para></listitem>
-      <listitem><para><literal>.require</literal> <emphasis>filename</emphasis>: Includes the entirety
-      of the file specified at that point in the program.  Unlike <literal>.include</literal>,
-      however, code included with <literal>.require</literal> will only be inserted once.
-      The <literal>.require</literal> directive is useful for ensuring that certain code libraries
-      are somewhere in the final binary.  They are also very useful for guaranteeing that
-      macro libraries are available.</para></listitem>
-      <listitem><para><literal>.space</literal> <emphasis>label</emphasis> <emphasis>size</emphasis>: This
-      directive is used to organize global variables. It defines the
-      label specified to be at the current location of the program
-      counter, and then advances the program counter <emphasis>size</emphasis>
-      steps ahead. No actual code is produced. This is equivalent
-      to <literal>label: .org ^+size</literal>.</para></listitem>
-      <listitem><para><literal>.text</literal> <emphasis>[label]</emphasis>: Sets the segment to
-      the segment name specified and allows output. If no label is
-      given, switches to the default text segment.</para></listitem>
-      <listitem><para><literal>.word</literal> <emphasis>arg</emphasis> [ , <emphasis>arg</emphasis>, ... ]:
-      Like <literal>.byte</literal>, but values are all treated as two-byte
-      values and stored low-end first (as is the 6502's wont). Use
-      this to create jump tables (an unadorned label will evaluate
-      to that label's location) or otherwise store 16-bit
-      data.</para></listitem>
-      <listitem><para><literal>.dword</literal> <emphasis>arg</emphasis> [ , <emphasis>arg</emphasis>, ...]:
-      Like <literal>.word</literal>, but for 32-bit values.</para></listitem>
-      <listitem><para><literal>.wordbe</literal> <emphasis>arg</emphasis> [ , <emphasis>arg</emphasis>, ...]:
-      Like <literal>.word</literal>, but stores the value in a big-endian format (high byte first).</para></listitem>
-      <listitem><para><literal>.dwordbe</literal> <emphasis>arg</emphasis> [ , <emphasis>arg</emphasis>, ...]:
-      Like <literal>.dword</literal>, but stores the value high byte first.</para></listitem>
-      <listitem><para><literal>.scope</literal>: Starts a new scope block. Labels
-      that begin with an underscore are only reachable from within
-      their innermost enclosing <literal>.scope</literal> statement.</para></listitem>
-      <listitem><para><literal>.scend</literal>: Ends a scope block. Makes the
-      temporary labels defined since the last <literal>.scope</literal>
-      statement unreachable, and permits them to be redefined in a
-      new scope.</para></listitem>
-      <listitem><para><literal>.macro</literal> <emphasis>name</emphasis>: Begins a macro
-      definition block. This is a scope block that can be inlined
-      at arbitrary points with <literal>.invoke</literal>. Arguments to the
-      macro will be bound to temporary labels with names like
-      <literal>_1</literal>, <literal>_2</literal>, etc.</para></listitem>
-      <listitem><para><literal>.macend</literal>: Ends a macro definition
-      block.</para></listitem>
-      <listitem><para><literal>.invoke</literal> <emphasis>label</emphasis> [<emphasis>argument</emphasis> [,
-      <emphasis>argument</emphasis> ...]]: invokes (inlines) the specified
-      macro, binding the values of the arguments to the ones the
-      macro definition intends to read.  A shorthand for <literal>.invoke</literal>
-      is the name of the macro to invoke, backquoted.</para></listitem>
-         </itemizedlist>
+         <listitem>
+           <para>
+             <literal>.outfile</literal> <emphasis>filename</emphasis>:
+             Sets the filename for the output binary if one has not
+             already been set. If no name is ever set, the output will
+             be written to <literal>ophis.bin</literal>.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.advance</literal> <emphasis>address</emphasis>:
+             Forces the program counter to
+             be <emphasis>address</emphasis>. Unlike
+             the <literal>.org</literal>
+             directive, <literal>.advance</literal> outputs zeroes
+             until the program counter reaches a specified
+             address. Attempting to <literal>.advance</literal> to a
+             point behind the current program counter is an
+             assemble-time error.
+         </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.alias</literal> <emphasis>label</emphasis> <emphasis>value</emphasis>:
+             The .alias directive assigns an arbitrary value to a
+             label. This value may be an arbitrary argument, but
+             cannot reference any label that has not already been
+             defined (this prevents recursive label
+             dependencies).
+         </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.byte</literal> <emphasis>arg</emphasis> [
+             , <emphasis>arg</emphasis>, ... ]: Specifies a series of
+             arguments, which are evaluated, and strings, which are
+             included as raw ASCII data. The final results of these
+             arguments must be one byte in size. Seperate constants
+             are seperated by comments.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.checkpc</literal> <emphasis>address</emphasis>:
+             Ensures that the program counter is less than or equal to
+             the address specified, and emits an assemble-time error
+             if it is not. <emphasis>This produces no code in the
+             final binary - it is there to ensure that linking a large
+             amount of data together does not overstep memory
+             boundaries.</emphasis>
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.data</literal> <emphasis>[label]</emphasis>:
+             Sets the segment to the segment name specified and
+             disallows output. If no label is given, switches to the
+             default data segment.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.incbin</literal> <emphasis>filename</emphasis>:
+             Inserts the contents of the file specified as binary
+             data. Use it to include graphics information, precompiled
+             code, or other non-assembler data.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.include</literal> <emphasis>filename</emphasis>:
+             Includes the entirety of the file specified at that point
+             in the program.  Use this to order your final sources, if
+             you aren't doing it via the command line.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.org</literal> <emphasis>address</emphasis>:
+             Sets the program counter to the address
+             specified. <emphasis>This does not emit any code in and
+             of itself, nor does it overwrite anything that previously
+             existed.</emphasis> If you wish to jump ahead in memory,
+             use <literal>.advance</literal>.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.require</literal> <emphasis>filename</emphasis>:
+             Includes the entirety of the file specified at that point
+             in the program.  Unlike <literal>.include</literal>,
+             however, code included with <literal>.require</literal>
+             will only be inserted once.
+             The <literal>.require</literal> directive is useful for
+             ensuring that certain code libraries are somewhere in the
+             final binary.  They are also very useful for guaranteeing
+             that macro libraries are available.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.space</literal> <emphasis>label</emphasis> <emphasis>size</emphasis>:
+             This directive is used to organize global variables. It
+             defines the label specified to be at the current location
+             of the program counter, and then advances the program
+             counter <emphasis>size</emphasis> steps ahead. No actual
+             code is produced. This is equivalent to <literal>label:
+             .org ^+size</literal>.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.text</literal> <emphasis>[label]</emphasis>:
+             Sets the segment to the segment name specified and allows
+             output. If no label is given, switches to the default
+             text segment.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.word</literal> <emphasis>arg</emphasis> [
+             , <emphasis>arg</emphasis>, ... ]:
+             Like <literal>.byte</literal>, but values are all treated
+             as two-byte values and stored low-end first (as is the
+             6502's wont). Use this to create jump tables (an
+             unadorned label will evaluate to that label's location)
+             or otherwise store 16-bit data.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.dword</literal> <emphasis>arg</emphasis> [
+             , <emphasis>arg</emphasis>, ...]:
+             Like <literal>.word</literal>, but for 32-bit
+             values.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.wordbe</literal> <emphasis>arg</emphasis> [
+             , <emphasis>arg</emphasis>, ...]:
+             Like <literal>.word</literal>, but stores the value in a
+             big-endian format (high byte first).
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.dwordbe</literal> <emphasis>arg</emphasis> [
+             , <emphasis>arg</emphasis>, ...]:
+             Like <literal>.dword</literal>, but stores the value high
+             byte first.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.scope</literal>: Starts a new scope
+             block. Labels that begin with an underscore are only
+             reachable from within their innermost
+             enclosing <literal>.scope</literal>
+             statement.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.scend</literal>: Ends a scope block. Makes the
+             temporary labels defined since the
+             last <literal>.scope</literal> statement unreachable, and
+             permits them to be redefined in a new
+             scope.
+           </para>
+         </listitem>
+         <listitem>
+           <para>
+             <literal>.macro</literal> <emphasis>name</emphasis>:
+             Begins a macro definition block. This is a scope block
+             that can be inlined at arbitrary points
+             with <literal>.invoke</literal>. Arguments to the macro
+             will be bound to temporary labels with names like
+             <literal>_1</literal>, <literal>_2</literal>, etc.
+           </para>
+         </listitem>
+      <listitem>
+        <para>
+          <literal>.macend</literal>: Ends a macro definition block.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>.invoke</literal> <emphasis>label</emphasis> [<emphasis>argument</emphasis> [,
+          <emphasis>argument</emphasis> ...]]: invokes (inlines) the
+          specified macro, binding the values of the arguments to the
+          ones the macro definition intends to read.  A shorthand
+          for <literal>.invoke</literal> is the name of the macro to
+          invoke, backquoted.
+        </para>
+      </listitem>
+    </itemizedlist>
   </section>
 </appendix>

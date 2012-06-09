@@ -1,0 +1,213 @@
+.include "../platform/c64_0.oph"
+.require "../platform/c64kernal.oph"
+.outfile "fibonacci.prg"
+
+	lda	#<opening     ; Print opening text
+	sta	fun'args
+	lda	#>opening
+	sta	fun'args+1
+	jsr	print'string
+
+	lda	#$00
+	sta	fun'vars      ; Count num from 0 to 19
+*	lda	fun'vars      ; Main loop: print num, with leading space if <10
+	cmp	#$09
+	bcs	+
+	lda	#$20
+	jsr	chrout
+	lda	fun'vars
+*	sta	fun'args      ; Copy num to args, print it, plus ": "
+	inc	fun'args
+	lda	#$00
+	sta	fun'args+1
+	jsr	print'dec
+	lda	#$3A
+	jsr	chrout
+	lda	#$20
+	jsr	chrout
+	lda	fun'vars      ; Copy num to args, call fib, print result
+	sta	fun'args
+	jsr	fib
+	jsr	print'dec
+	lda	#$0D          ; Newline
+	jsr	chrout
+	inc	fun'vars      ; Increment num; if it's 20, we're done.
+	lda	fun'vars
+	cmp	#20
+	bne	--            ; Otherwise, loop.
+	rts
+
+opening:
+.byte	147, "           FIBONACCI SEQUENCE",13,13,0
+
+.scope
+; Uint16 fib (Uint8 x): compute Xth fibonnaci number.
+; fib(0) = fib(1) = 1.
+; Stack usage: 3.
+
+fib:	lda	#$03
+	jsr	save'stack
+
+	lda	fun'vars    ; If x < 2, goto _base.
+	cmp	#$02
+	bcc	_base
+
+	dec	fun'args    ; Otherwise, call fib(x-1)...
+	jsr	fib
+	lda	fun'args    ; Copy the result to local variable...
+	sta	fun'vars+1
+	lda	fun'args+1
+	sta	fun'vars+2
+	lda	fun'vars    ; Call fib(x-2)...
+	sec
+	sbc	#$02
+	sta	fun'args
+	jsr	fib
+	clc                 ; And add the old result to it, leaving it
+	lda	fun'args    ; in the 'result' location.
+	adc	fun'vars+1
+	sta	fun'args
+	lda	fun'args+1
+	adc	fun'vars+2
+	sta	fun'args+1
+	jmp	_done       ; and then we're done.
+
+_base:	ldy	#$01        ; In the base case, just copy 1 to the
+	sty	fun'args    ; result.
+	dey
+	sty	fun'args+1
+
+_done:	lda	#$03
+	jsr	restore'stack
+	rts
+.scend
+
+.scope
+; Stack routines: init'stack, save'stack, restore'stack
+.data zp
+.space _sp 	$02
+.space _counter	$01
+.space fun'args $10
+.space fun'vars $40
+
+.text
+init'stack:
+	lda	#$00
+	sta	_sp
+	lda	#$A0
+	sta	_sp+1
+	rts
+
+save'stack:
+	sta	_counter
+	sec
+	lda	_sp
+	sbc	_counter
+	sta	_sp
+	lda	_sp+1
+	sbc	#$00
+	sta	_sp+1
+	ldy	#$00
+*	lda	fun'vars, y
+	sta	(_sp), y
+	lda	fun'args, y
+	sta	fun'vars, y
+	iny
+	dec	_counter
+	bne -
+	rts
+
+restore'stack:
+	pha
+	sta	_counter
+	ldy	#$00
+*	lda	(_sp), y
+	sta	fun'vars, y
+	iny
+	dec	_counter
+	bne -
+	pla
+	clc
+	adc	_sp
+	sta	_sp
+	lda	_sp+1
+	adc	#$00
+	sta	_sp+1
+	rts
+.scend
+
+
+; Utility functions.  print'dec prints an unsigned 16-bit integer.
+; It's ugly and long, mainly because we don't bother with niceties
+; like "division".  print'string prints a zero-terminated string.
+
+.scope
+.data
+.org 	fun'args
+	.space	_val		2
+	.space	_step		2
+	.space	_res		1
+	.space	_allowzero	1
+.text
+print'dec:
+	lda 	#$00
+	sta	_allowzero
+	lda	#<10000
+	sta	_step
+	lda 	#>10000
+	sta 	_step+1
+	jsr 	repsub'16
+	lda	#<1000
+	sta	_step
+	lda 	#>1000
+	sta 	_step+1
+	jsr 	repsub'16
+	lda	#0
+	sta	_step+1
+	lda 	#100
+	sta 	_step
+	jsr 	repsub'16
+	lda 	#10
+	sta 	_step
+	jsr 	repsub'16
+	lda 	_val
+	jsr 	_print
+	rts
+
+repsub'16:
+	lda	#$00
+	sta	_res
+*	lda	_val
+	sec
+	sbc	_step
+	lda	_val+1
+	sbc	_step+1
+	bcc	_done
+	lda	_val
+	sec
+	sbc	_step
+	sta	_val
+	lda	_val+1
+	sbc	_step+1
+	sta	_val+1
+	inc	_res
+	jmp	-
+_done:	lda	_res
+	ora	_allowzero
+	beq	_ret
+	sta	_allowzero
+	lda	_res
+_print:	clc
+	adc	#'0
+	jsr	chrout
+_ret:	rts
+.scend
+
+print'string:
+	ldy	#$00
+*	lda	(fun'args), y
+	beq	+
+	jsr	chrout
+	iny
+	jmp	-
+*	rts

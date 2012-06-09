@@ -1,0 +1,270 @@
+<chapter>
+<title>Functionals</title>
+
+<para>
+  This essay deals with indirect calls.  These are the core of an
+  enormous number of high level languages: LISP's closures, C's
+  function pointers, C++ and Java's virtual method calls, and some
+  implementations of the <literal>switch</literal> statement.
+</para>
+
+<para>
+  These techniques vary in complexity, and most will not be
+  appropriate for large-scale assembler projects.  Of them, however,
+  the Data-Directed approach is the most likely to lead to organized
+  and maintainable code.
+</para>
+
+<section>
+  <title>Function Pointers</title>
+
+  <para>
+    Because assembly language is totally untyped, function pointers
+    are the same as any other sixteen-bit integer.  This makes
+    representing them really quite easy; most assemblers should permit
+    routines to be declared simply by naming the routine as
+    a <literal>.word</literal> directly.
+  </para>
+
+  <para>
+    To actually invoke these methods, copy them to some sixteen-bit
+    location (say, <literal>target</literal>) and then invoking the
+    method is a simple matter of the using an indirect jump:
+    the <literal>JMP&nbsp;(target)</literal> instruction.
+  </para>
+
+  <para>
+    There's really only one subtlety here, and it's that the indirect
+    jump is an indirect <emphasis>jump</emphasis>, not an
+    indirect <emphasis>function call</emphasis>.  Thus, if some
+    function <literal>A</literal> makes in indirect jump to some
+    routine, when that routine returns, it returns to whoever
+    called <literal>A</literal>, not <literal>A</literal>
+    itself.
+  </para>
+
+  <para>
+    There are several ways of dealing with this, but only one correct
+    way, which is to structure your procedures so that any call
+    to <literal>JMP&nbsp;(xxxx)</literal> occurs at the very
+    end.
+  </para>
+</section>
+<section>
+  <title>A quick digression on how subroutines work</title>
+  <para>
+    Ordinarily, subroutines are called with <literal>JSR</literal> and
+    finished with <literal>RTS</literal>.  The <literal>JSR</literal>
+    instruction takes its own address, adds 2 to it, and pushes this
+    16-bit value on the stack, high byte first, then low byte (so that
+    the low byte will be popped off first).
+  </para>
+
+  <para>
+    But wait, you may object.  All <literal>JSR</literal> instructions
+    are three bytes long.  This <quote>return address</quote> is in
+    the middle of the instruction.  And you would be quite right;
+    the <literal>RTS</literal> instruction pops off the 16-bit
+    address, adds one to it, and <emphasis>then</emphasis> sets the
+    program counter to that value.
+  </para>
+
+  <para>
+    So it <emphasis>is</emphasis> possible to set up
+    a <quote><literal>JSR</literal> indirect</quote> kind of operation
+    by adding two to the indirect jump's address and then pushing that
+    value onto the stack before making the jump; however, you wouldn't
+    want to do this.  It takes six bytes and trashes your accumulator,
+    and you can get the same functionality with half the space and
+    with no register corruption by simply defining the indirect jump
+    to be a one-instruction routine and <literal>JSR</literal>-ing to
+    it directly.  As an added bonus, that way if you have multiple
+    indirect jumps through the same pointer, you don't need to
+    duplicate the jump instruction.
+  </para>
+
+  <para>
+    Does this mean that abusing <literal>JSR</literal>
+    and <literal>RTS</literal> is a dead-end, though?  Not at all...
+  </para>
+</section>
+<section>
+  <title>Dispatch-on-type and Data-Directed Assembler</title>
+
+  <para>
+    Most of the time, you care about function pointers because you've
+    arranged them in some kind of table.  You hand it an index
+    representing the type of your argument, or which method it is
+    you're calling, or some other determinator, and then you index
+    into an array of routines and execute the right one.
+  </para>
+
+  <para>
+    Writing a generic routine to do this is kind of a pain.  First you
+    have to pass a 16-bit pointer in, then you have to dereference it
+    to figure out where your table is, then you have to do an indexed
+    dereference on <emphasis>that</emphasis> to get the routine you
+    want to run, then you need to copy it out to somewhere fixed so
+    that you can write your jump instruction.  And making this
+    non-generic doesn't help a whole lot, since that only saves you
+    the first two steps, but now you have to write them out in every
+    single indexed jump instruction.  If only there were some way to
+    easily and quickly pass in a local pointer directly...
+  </para>
+
+  <para>
+    Something, say, like the <literal>JSR</literal> instruction, only not for
+    program code.
+  </para>
+
+  <para>
+    Or we could just use the <literal>JSR</literal> statement itself,
+    but only call this routine at the ends of other routines, much
+    like we were organizing for indirect jumps to begin with.  This
+    lets us set up routines that look like this:
+  </para>
+
+<programlisting>
+jump'table'alpha:
+    jsr do'jump'table
+    .word alpha'0, alpha'1, alpha'2
+</programlisting>
+
+  <para>
+    Where the <literal>alpha'x</literal> routines are the ones to be
+    called when the index has that value.  This leaves the
+    implementation of do'jump'table, which in this case uses the Y
+    register to hold the index:
+  </para>
+
+<programlisting>
+do'jump'table:
+    sta _scratch
+    pla
+    sta _jmpptr
+    pla
+    sta _jmpptr+1
+    tya
+    asl
+    tay
+    iny
+    lda (_jmpptr), y
+    sta _target
+    iny
+    lda (_jmpptr), y
+    sta _target+1
+    lda _scratch
+    jmp (_target)
+</programlisting>
+
+  <para>
+    The <literal>TYA:ASL:TAY:INY</literal> sequence can actually be
+    omitted if you don't mind having your Y indices be 1, 3, 5, 7, 9,
+    etc., instead of 0, 1, 2, 3, 4, etc.  Likewise, the instructions
+    dealing with <literal>_scratch</literal> can be omitted if you
+    don't mind trashing the accumulator.  Keeping the accumulator and
+    X register pristine for the target call comes in handy, though,
+    because it means we can pass in a pointer argument purely in
+    registers.  This will come in handy soon...
+  </para>
+</section>
+<section>
+  <title>VTables and Object-Oriented Assembler</title>
+
+  <para>
+    The usual technique for getting something that looks
+    object-oriented in non-object-oriented languages is to fill a
+    structure with function pointers, and have those functions take
+    the structure itself as an argument.  This works just fine in
+    assembler, of course (and doesn't really require anything more
+    than your traditional jump-indirects), but it's also possible to
+    use a lot of the standard optimizations that languages such as C++
+    provide.
+  </para>
+
+  <para>
+    The most important of these is the <emphasis>vtable</emphasis>.
+    Each object type has its own vtable, and it's a list of function
+    pointers for all the methods that type provides.  This is a space
+    savings over the traditional structs-with-function-pointers
+    approach because when you have many objects of the same class, you
+    only have to represent the vtable once.  So that all objects may
+    be treated identically, the vtable location is traditionally fixed
+    as being the first entry in the corresponding structure.
+  </para>
+
+  <para>
+    Virtual method invocation takes an object pointer (traditionally
+    called <literal>self</literal> or <literal>this</literal>) and a
+    method index and invokes the approprate method on that object.
+    Gee, where have we seen that before?
+  </para>
+
+<programlisting>
+sprite'vtable:
+    jsr do'jump'table
+    .word sprite'init, sprite'update, sprite'render
+</programlisting>
+
+  <para>
+    We mentioned before that vtables are generally the first entries
+    in objects.  We can play another nasty trick here, paying an
+    additional byte per object to have the vtable be not merely a
+    pointer to its vtable routine, but an actual jump instruction to
+    it.  (That is, if an object is at location X, then location X is
+    the byte value <literal>$4C</literal>,
+    representing <literal>JMP</literal>, location X+1 is the low byte
+    of the vtable, and location X+2 is the high byte of the vtable.)
+    Given that, our <literal>invokevirtual</literal> function becomes
+    very simple indeed:
+  </para>
+
+<programlisting>
+invokevirtual:
+    sta this
+    stx this+1
+    jmp (this)
+</programlisting>
+
+  <para>
+    Which, combined with all our previous work here, takes
+    the <literal>this</literal> pointer in <literal>.AX</literal> and
+    a method identifier in <literal>.Y</literal> and invokes that
+    method on that object.  Arguments besides <literal>this</literal>
+    need to be set up before the call
+    to <literal>invokevirtual</literal>, probably in some global
+    argument array somewhere as discussed back in <xref linkend="hll2">.
+  </para>
+</section>
+<section>
+  <title>A final reminder</title>
+
+  <para>
+    We've been talking about all these routines as if they could be
+    copy-pasted or hand-compiled from C++ or Java code.  This isn't
+    really the case, primarily because <quote>local variables</quote>
+    in your average assembler routines aren't really local, so
+    multiple calls to the same method will tend to trash the program
+    state.  And since a lot of the machinery described here shares a
+    lot of memory (in particular, every single method invocation
+    everywhere shares a <literal>this</literal>), attempting to shift
+    over standard OO code into this format is likely to fail
+    miserably.
+  </para>
+
+  <para>
+    You can get an awful lot of flexibility out of even just one layer
+    of method-calls, though, given a thoughtful
+    design. The <literal>do'jump'table</literal> routine, or one very
+    like it, was extremely common in NES games in the mid-1980s and
+    later, usually as the beginning of the frame-update loop.
+  </para>
+
+  <para>
+    If you find you really need multiple layers of method calls,
+    though, then you really are going to need a full-on program stack,
+    and that's going to be several kinds of mess.  That's the topic
+    for the final chapter.
+  </para>
+</section>
+</chapter>

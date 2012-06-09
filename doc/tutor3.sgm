@@ -53,7 +53,10 @@
       the KERNAL values are standard, we do not reproduce them here.
       (The files in question are <xref linkend="c64-1-src"
       endterm="c64-1-fname"> and <xref linkend="kernal-src"
-      endterm="kernal-fname">.)
+      endterm="kernal-fname">.) The <filename>c64kernal.oph</filename>
+      header is likely to be useful in your own projects, and it is
+      available in the <literal>platform/</literal> directory for easy
+      inclusion.
     </para>
   </section>
   <section>

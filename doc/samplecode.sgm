@@ -5,10 +5,11 @@
     of this manual.
   </para>
   <section id="tutor1-src">
-    <title id="tutor1-fname"><filename>tutor1.oph</filename></title>
+    <title id="tutor1-fname"><filename>hello1.oph</filename></title>
 <programlisting>
 .word $0801
 .org  $0801
+.outfile "hello.prg"
 
         .word next, 10          ; Next line and current line number
         .byte $9e," 2064",0     ; SYS 2064
@@ -28,10 +29,11 @@ hello:  .byte "HELLO, WORLD!", 0
 </programlisting>
   </section>
   <section id="tutor2-src">
-    <title id="tutor2-fname"><filename>tutor2.oph</filename></title>
+    <title id="tutor2-fname"><filename>hello2.oph</filename></title>
 <programlisting>
 .word $0801
 .org  $0801
+.outfile "hello.prg"
 
 .scope
         .word _next, 10         ; Next line and current line number
@@ -68,85 +70,86 @@ _next:  .word 0                 ; End of program
 
 .advance 2064
 
-.require "kernal.oph"
+.require "../platform/c64kernal.oph"
 </programlisting>
   </section>
   <section id="kernal-src">
-    <title id="kernal-fname"><filename>kernal.oph</filename></title>
+    <title id="kernal-fname"><filename>c64kernal.oph</filename></title>
 <programlisting>
 ; KERNAL routine aliases (C64)
 
-.alias acptr  $ffa5
-.alias chkin  $ffc6
-.alias chkout $ffc9
-.alias chrin  $ffcf
-.alias chrout $ffd2
-.alias ciout  $ffa8
-.alias cint   $ff81
-.alias clall  $ffe7
-.alias close  $ffc3
-.alias clrchn $ffcc
-.alias getin  $ffe4
-.alias iobase $fff3
-.alias ioinit $ff84
-.alias listen $ffb1
-.alias load   $ffd5
-.alias membot $ff9c
-.alias memtop $ff99
-.alias open   $ffc0
-.alias plot   $fff0
-.alias ramtas $ff87
-.alias rdtim  $ffde
-.alias readst $ffb7
-.alias restor $ff8a
-.alias save   $ffd8
-.alias scnkey $ff9f
-.alias screen $ffed
-.alias second $ff93
-.alias setlfs $ffba
-.alias setmsg $ff90
-.alias setnam $ffbd
-.alias settim $ffdb
-.alias settmo $ffa2
-.alias stop   $ffe1
-.alias talk   $ffb4
-.alias tksa   $ff96
-.alias udtim  $ffea
-.alias unlsn  $ffae
-.alias untlk  $ffab
-.alias vector $ff8d
+.alias  acptr           $ffa5
+.alias  chkin           $ffc6
+.alias  chkout          $ffc9
+.alias  chrin           $ffcf
+.alias  chrout          $ffd2
+.alias  ciout           $ffa8
+.alias  cint            $ff81
+.alias  clall           $ffe7
+.alias  close           $ffc3
+.alias  clrchn          $ffcc
+.alias  getin           $ffe4
+.alias  iobase          $fff3
+.alias  ioinit          $ff84
+.alias  listen          $ffb1
+.alias  load            $ffd5
+.alias  membot          $ff9c
+.alias  memtop          $ff99
+.alias  open            $ffc0
+.alias  plot            $fff0
+.alias  ramtas          $ff87
+.alias  rdtim           $ffde
+.alias  readst          $ffb7
+.alias  restor          $ff8a
+.alias  save            $ffd8
+.alias  scnkey          $ff9f
+.alias  screen          $ffed
+.alias  second          $ff93
+.alias  setlfs          $ffba
+.alias  setmsg          $ff90
+.alias  setnam          $ffbd
+.alias  settim          $ffdb
+.alias  settmo          $ffa2
+.alias  stop            $ffe1
+.alias  talk            $ffb4
+.alias  tksa            $ff96
+.alias  udtim           $ffea
+.alias  unlsn           $ffae
+.alias  untlk           $ffab
+.alias  vector          $ff8d
 
 ; Character codes for the colors.
-.alias color'0 144
-.alias color'1 5
-.alias color'2 28
-.alias color'3 159
-.alias color'4 156
-.alias color'5 30
-.alias color'6 31
-.alias color'7 158
-.alias color'8 129
-.alias color'9 149
-.alias color'10 150
-.alias color'11 151
-.alias color'12 152
-.alias color'13 153
-.alias color'14 154
-.alias color'15 155
+.alias  color'0         144
+.alias  color'1         5
+.alias  color'2         28
+.alias  color'3         159
+.alias  color'4         156
+.alias  color'5         30
+.alias  color'6         31
+.alias  color'7         158
+.alias  color'8         129
+.alias  color'9         149
+.alias  color'10        150
+.alias  color'11        151
+.alias  color'12        152
+.alias  color'13        153
+.alias  color'14        154
+.alias  color'15        155
 
 ; ...and reverse video
-.alias reverse'on 18
-.alias reverse'off 146
+.alias  reverse'on      18
+.alias  reverse'off     146
 
 ; ...and character set
-.alias upper'case 142
-.alias lower'case 14
+.alias  upper'case      142
+.alias  lower'case      14
 </programlisting>
   </section>
   <section id="tutor3-src">
-    <title id="tutor3-fname"><filename>tutor3.oph</filename></title>
+    <title id="tutor3-fname"><filename>hello3.oph</filename></title>
 <programlisting>
 .include "c64-1.oph"
+.outfile "hello.prg"
 
 .macro print
         ldx #0
@@ -194,9 +197,10 @@ target10: .byte "UNIVERSE", 0
 </programlisting>
   </section>
   <section id="tutor4a-src">
-    <title id="tutor4a-fname"><filename>tutor4a.oph</filename></title>
+    <title id="tutor4a-fname"><filename>hello4a.oph</filename></title>
 <programlisting>
 .include "c64-1.oph"
+.outfile "hello.prg"
 
 .macro print
         ldx #0
@@ -265,9 +269,10 @@ delay:  tax
 </programlisting>
   </section>
   <section id="tutor4b-src">
-    <title id="tutor4b-fname"><filename>tutor4b.oph</filename></title>
+    <title id="tutor4b-fname"><filename>hello4b.oph</filename></title>
 <programlisting>
 .include "c64-1.oph"
+.outfile "hello.prg"
 
 .macro print
         ldx #0
@@ -338,9 +343,10 @@ delay:  tax
 </programlisting>
   </section>
   <section id="tutor4c-src">
-    <title id="tutor4c-fname"><filename>tutor4c.oph</filename></title>
+    <title id="tutor4c-fname"><filename>hello4c.oph</filename></title>
 <programlisting>
 .include "c64-1.oph"
+.outfile "hello.prg"
 
 .macro print
         ldx #0
@@ -414,9 +420,10 @@ delay:  tax
 </programlisting>
   </section>
   <section id="tutor5-src">
-    <title id="tutor5-fname"><filename>tutor5.oph</filename></title>
+    <title id="tutor5-fname"><filename>hello5.oph</filename></title>
 <programlisting>
 .include "c64-1.oph"
+.outfile "hello.prg"
 
 .data
 .org $C000
@@ -494,9 +501,10 @@ delay:  sta _tmp        ; save argument (rdtim destroys it)
 </programlisting>
   </section>
   <section id="tutor6-src">
-    <title id="tutor6-fname"><filename>tutor6.oph</filename></title>
+    <title id="tutor6-fname"><filename>hello6.oph</filename></title>
 <programlisting>
 .include "c64-1.oph"
+.outfile "hello.prg"
 
 .data
 .org $C000
@@ -601,43 +609,63 @@ _done:  rts
 </programlisting>
   </section>
   <section id="c64-2-src">
-    <title id="c64-2-fname"><filename>c64-2.oph</filename></title>
+    <title id="c64-2-fname"><filename>c64_0.oph</filename></title>
 <programlisting>
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Commodore 64 Basic Runtime File
+;;
+;; Include this at the TOP of your C64 program, and it will handle
+;; hiding away the BASIC ROM and data and restoring it at the end.
+;;
+;; You will have a contiguous block of RAM from $0800 to $CF81, and
+;; Zero Page access from $02 to $7F in the segment "zp".
+
 .word $0801
 .org  $0801
 
+; BASIC program that just calls our machine language code
 .scope
         .word _next, 10         ; Next line and current line number
-        .byte $9e," 2064",0     ; SYS 2064
+        .byte $9e," 2062",0     ; SYS 2062
 _next:  .word 0                 ; End of program
 .scend
 
-.advance $0810
-
-.require "kernal.oph"
-
-.data zp
+.data zp ; Zero Page memory segment.
 .org $0002
 
 .text
 
 .scope
-        ; Cache BASIC's zero page at top of available RAM.
-        ldx #$7E
-*       lda $01, x
-        sta $CF81, x
+        ; Cache BASIC zero page at top of available RAM
+        ldx     #$7E
+*       lda     $01, x
+        sta     $CF81, x
         dex
-        bne -
+        bne     -
 
-        jsr _main
+        ; Swap out the BASIC ROM for RAM
+        lda     $01
+        and     #$fe
+        ora     #$06
+        sta     $01
 
-        ; Restore BASIC's zero page and return control.
+        ; Run the real program
+        jsr     _main
 
-        ldx #$7E
-*       lda $CF81, x
-        sta $01, x
+        ; Restore BASIC ROM
+        lda     $01
+        ora     #$07
+        sta     $01
+
+        ; Restore BASIC zero page
+        ldx     #$7E
+*       lda     $CF81, x
+        sta     $01, x
         dex
-        bne -
+        bne     -
+
+        ; Back to BASIC
         rts
 
 _main:
@@ -646,9 +674,11 @@ _main:
 </programlisting>
   </section>
   <section id="tutor7-src">
-    <title id="tutor7-fname"><filename>tutor7.oph</filename></title>
+    <title id="tutor7-fname"><filename>hello7.oph</filename></title>
 <programlisting>
-.include "c64-2.oph"
+.include "../platform/c64_0.oph"
+.require "../platform/c64kernal.oph"
+.outfile "hello.prg"
 
 .data
 .org $C000
@@ -744,6 +774,461 @@ _done:  rts
 
 .data zp
 .checkpc $80
+</programlisting>
+  </section>
+  <section id="structure-src">
+    <title id="structure-fname"><filename>structuredemo.oph</filename></title>
+<programlisting>
+.include "../platform/c64_0.oph"
+.require "../platform/c64kernal.oph"
+.outfile "structuredemo.prg"
+
+        jsr print'unsorted
+        jsr insertion'sort
+        jsr print'list
+        rts
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Linked list data: head, next, lb, hb.
+; lb/hb: Low/high bytes of the data array.  These are immutable and
+;        kept with the program text.
+; head:  Array index of the first element in the list, or #$FF if the
+;        list is empty
+; next:  Array of successor indices.  If you've just read element X,
+;        the value of memory location next+X is the index of the
+;        next element.  If next is #$FF, you've reached the end of
+;        the list.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+.data
+.org    $C000
+.space  head    1
+.space  next    16
+
+.text
+lb:   .byte &lt;$838,&lt;$618,&lt;$205,&lt;$984,&lt;$724,&lt;$301,&lt;$249,&lt;$946
+      .byte &lt;$925,&lt;$043,&lt;$114,&lt;$697,&lt;$985,&lt;$633,&lt;$312,&lt;$086
+hb:   .byte &gt;$838,&gt;$618,&gt;$205,&gt;$984,&gt;$724,&gt;$301,&gt;$249,&gt;$946
+      .byte &gt;$925,&gt;$043,&gt;$114,&gt;$697,&gt;$985,&gt;$633,&gt;$312,&gt;$086
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; insertion'sort:  Sorts the list defined by head, next, hb, lb.
+; Arguments:  None.
+; Modifies:   All registers destroyed, head and next array sorted.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+insertion'sort:
+        lda #$FF        ; Clear list by storing the terminator in 'head'
+        sta head
+        ldx #$0         ; Loop through the lb/hb array, adding each
+insertion'sort'loop:    ; element one at a time
+        txa
+        pha
+        jsr insert_elt
+        pla
+        tax
+        inx
+        cpx #$10
+        bne insertion'sort'loop
+        rts
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; insert_elt: Insert an element into the linked list.  Maintains the
+;             list in sorted, ascending order.  Used by
+;             insertion'sort.
+; Arguments:  X register holds the index of the element to add.
+; Modifies:   All registers destroyed; head and next arrays updated
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+.data
+.space lbtoinsert 1
+.space hbtoinsert 1
+.space indextoinsert 1
+
+.text
+
+insert_elt:
+        ldy head                        ; If the list is empty, make
+        cpy #$FF                        ; head point at it, and return.
+        bne insert_elt'list'not'empty
+        stx head
+        tya
+        sta next,x
+        rts
+insert_elt'list'not'empty:
+        lda lb,x                        ; Cache the data we're inserting
+        sta lbtoinsert
+        lda hb,x
+        sta hbtoinsert
+        stx indextoinsert
+        ldy head                        ; Compare the first value with
+        sec                             ; the data.  If the data must
+        lda lb,y                        ; be inserted at the front...
+        sbc lbtoinsert
+        lda hb,y
+        sbc hbtoinsert
+        bmi insert_elt'not'smallest
+        tya                             ; Set its next pointer to the
+        sta next,x                      ; old head, update the head
+        stx head                        ; pointer, and return.
+        rts
+insert_elt'not'smallest:
+        ldx head
+insert_elt'loop:                        ; At this point, we know that
+        lda next,x                      ; argument &gt; data[X].
+        tay
+        cpy #$FF                        ; if next[X] = #$FF, insert arg at end.
+        beq insert_elt'insert'after'current
+        lda lb,y                        ; Otherwise, compare arg to
+        sec                             ; data[next[X]].  If we insert
+        sbc lbtoinsert                  ; before that...
+        lda hb,y
+        sbc hbtoinsert
+        bmi insert_elt'goto'next
+insert_elt'insert'after'current:        ; Fix up all the next links
+        tya
+        ldy indextoinsert
+        sta next,y
+        tya
+        sta next,x
+        rts                             ; and return.
+insert_elt'goto'next:                   ; Otherwise, let X = next[X]
+        tya                             ; and go looping again.
+        tax
+        jmp insert_elt'loop
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; print'unsorted: Steps through the data array and prints each value.
+; Standalone procedure.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+print'unsorted:
+        lda #&lt;unsorted'hdr
+        ldx #&gt;unsorted'hdr
+        jsr put'string
+        ldy #$00
+print'unsorted'loop:
+        lda hb, Y
+        jsr print'hex
+        lda lb, y
+        jsr print'hex
+        lda #$20
+        jsr chrout
+        iny
+        cpy #$10
+        bne print'unsorted'loop
+        lda #$0D
+        jsr chrout
+        rts
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; print'list: Starts at head, and prints out every value in the
+;             linked list.
+; Standalone procedure.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+print'list:
+        lda #&lt;sorted'hdr
+        ldx #&gt;sorted'hdr
+        jsr put'string
+        ldy head
+print'list'loop:
+        cpy #$FF
+        beq print'list'done
+        lda hb, y
+        jsr print'hex
+        lda lb, y
+        jsr print'hex
+        lda #$20
+        jsr chrout
+        lda next, Y
+        tay
+        jmp print'list'loop
+print'list'done:
+        lda #$0d
+        jsr chrout
+        rts
+
+;; String data for the above routines.
+
+unsorted'hdr:
+        .byte 147               ; Clear screen first!
+        .byte "UNSORTED DATA:",13,0
+
+sorted'hdr:
+        .byte "SORTED DATA:",13,0
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; print'hex: outputs a two-character hex representation of a one-
+;            byte value.
+; Arguments: Byte to print in accumulator
+; Modifies: .A and .X
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+print'hex:
+        pha
+        clc
+        lsr
+        lsr
+        lsr
+        lsr
+        tax
+        lda hexstr,x
+        jsr chrout
+        pla
+        and #$0F
+        tax
+        lda hexstr,X
+        jsr chrout
+        rts
+
+; Character data array for print'hex.
+hexstr: .byte "0123456789ABCDEF"
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; put'string: outputs a C-style null terminated string with length
+;             less than 256 to the screen.  If 256 bytes are written
+;             without finding a terminator, the routine ends quietly.
+; Arguments: Low byte of string address in .A, high byte in .X
+; Modifies: .A and .Y
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+.data zp
+.space put'string'addr 2
+
+.text
+put'string:
+        sta put'string'addr
+        stx put'string'addr+1
+        ldy #$00
+put'string'loop:
+        lda (put'string'addr),y
+        beq put'string'done
+        jsr chrout
+        iny
+        bne put'string'loop
+put'string'done:
+        rts
+
+</programlisting>
+  </section>
+  <section id="fib-src">
+    <title id="fib-fname"><filename>fibonacci.oph</filename></title>
+<programlisting>
+.include "../platform/c64_0.oph"
+.require "../platform/c64kernal.oph"
+.outfile "fibonacci.prg"
+
+        lda     #&lt;opening     ; Print opening text
+        sta     fun'args
+        lda     #&gt;opening
+        sta     fun'args+1
+        jsr     print'string
+
+        lda     #$00
+        sta     fun'vars      ; Count num from 0 to 19
+*       lda     fun'vars      ; Main loop: print num, with leading space if &lt;10
+        cmp     #$09
+        bcs     +
+        lda     #$20
+        jsr     chrout
+        lda     fun'vars
+*       sta     fun'args      ; Copy num to args, print it, plus ": "
+        inc     fun'args
+        lda     #$00
+        sta     fun'args+1
+        jsr     print'dec
+        lda     #$3A
+        jsr     chrout
+        lda     #$20
+        jsr     chrout
+        lda     fun'vars      ; Copy num to args, call fib, print result
+        sta     fun'args
+        jsr     fib
+        jsr     print'dec
+        lda     #$0D          ; Newline
+        jsr     chrout
+        inc     fun'vars      ; Increment num; if it's 20, we're done.
+        lda     fun'vars
+        cmp     #20
+        bne     --            ; Otherwise, loop.
+        rts
+
+opening:
+.byte   147, "           FIBONACCI SEQUENCE",13,13,0
+
+.scope
+; Uint16 fib (Uint8 x): compute Xth fibonnaci number.
+; fib(0) = fib(1) = 1.
+; Stack usage: 3.
+
+fib:    lda     #$03
+        jsr     save'stack
+
+        lda     fun'vars    ; If x &lt; 2, goto _base.
+        cmp     #$02
+        bcc     _base
+
+        dec     fun'args    ; Otherwise, call fib(x-1)...
+        jsr     fib
+        lda     fun'args    ; Copy the result to local variable...
+        sta     fun'vars+1
+        lda     fun'args+1
+        sta     fun'vars+2
+        lda     fun'vars    ; Call fib(x-2)...
+        sec
+        sbc     #$02
+        sta     fun'args
+        jsr     fib
+        clc                 ; And add the old result to it, leaving it
+        lda     fun'args    ; in the 'result' location.
+        adc     fun'vars+1
+        sta     fun'args
+        lda     fun'args+1
+        adc     fun'vars+2
+        sta     fun'args+1
+        jmp     _done       ; and then we're done.
+
+_base:  ldy     #$01        ; In the base case, just copy 1 to the
+        sty     fun'args    ; result.
+        dey
+        sty     fun'args+1
+
+_done:  lda     #$03
+        jsr     restore'stack
+        rts
+.scend
+
+.scope
+; Stack routines: init'stack, save'stack, restore'stack
+.data zp
+.space _sp      $02
+.space _counter $01
+.space fun'args $10
+.space fun'vars $40
+
+.text
+init'stack:
+        lda     #$00
+        sta     _sp
+        lda     #$A0
+        sta     _sp+1
+        rts
+
+save'stack:
+        sta     _counter
+        sec
+        lda     _sp
+        sbc     _counter
+        sta     _sp
+        lda     _sp+1
+        sbc     #$00
+        sta     _sp+1
+        ldy     #$00
+*       lda     fun'vars, y
+        sta     (_sp), y
+        lda     fun'args, y
+        sta     fun'vars, y
+        iny
+        dec     _counter
+        bne -
+        rts
+
+restore'stack:
+        pha
+        sta     _counter
+        ldy     #$00
+*       lda     (_sp), y
+        sta     fun'vars, y
+        iny
+        dec     _counter
+        bne -
+        pla
+        clc
+        adc     _sp
+        sta     _sp
+        lda     _sp+1
+        adc     #$00
+        sta     _sp+1
+        rts
+.scend
+
+
+; Utility functions.  print'dec prints an unsigned 16-bit integer.
+; It's ugly and long, mainly because we don't bother with niceties
+; like "division".  print'string prints a zero-terminated string.
+
+.scope
+.data
+.org    fun'args
+        .space  _val            2
+        .space  _step           2
+        .space  _res            1
+        .space  _allowzero      1
+.text
+print'dec:
+        lda     #$00
+        sta     _allowzero
+        lda     #&lt;10000
+        sta     _step
+        lda     #&gt;10000
+        sta     _step+1
+        jsr     repsub'16
+        lda     #&lt;1000
+        sta     _step
+        lda     #&gt;1000
+        sta     _step+1
+        jsr     repsub'16
+        lda     #0
+        sta     _step+1
+        lda     #100
+        sta     _step
+        jsr     repsub'16
+        lda     #10
+        sta     _step
+        jsr     repsub'16
+        lda     _val
+        jsr     _print
+        rts
+
+repsub'16:
+        lda     #$00
+        sta     _res
+*       lda     _val
+        sec
+        sbc     _step
+        lda     _val+1
+        sbc     _step+1
+        bcc     _done
+        lda     _val
+        sec
+        sbc     _step
+        sta     _val
+        lda     _val+1
+        sbc     _step+1
+        sta     _val+1
+        inc     _res
+        jmp     -
+_done:  lda     _res
+        ora     _allowzero
+        beq     _ret
+        sta     _allowzero
+        lda     _res
+_print: clc
+        adc     #'0
+        jsr     chrout
+_ret:   rts
+.scend
+
+print'string:
+        ldy     #$00
+*       lda     (fun'args), y
+        beq     +
+        jsr     chrout
+        iny
+        jmp     -
+*       rts
 </programlisting>
   </section>
 </appendix>

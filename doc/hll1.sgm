@@ -1,0 +1,185 @@
+<chapter id="hll-1">
+<title>The Second Step</title>
+
+<para>
+  This essay discusses how to do 16-or-more bit addition and
+  subtraction on the 6502, and how to do unsigned comparisons
+  properly, thus making 16-bit arithmetic less necessary.
+</para>
+
+<section>
+  <title>The problem</title>
+  <para>
+    The <literal>ADC</literal>, <literal>SBC</literal>, <literal>INX</literal>,
+    and <literal>INY</literal> instructions are the only real
+    arithmetic instructions the 6502 chip has.  In and of themselves,
+    they aren't too useful for general applications: the accumulator
+    can only hold 8 bits, and thus can't store any value over 255.
+    Matters get even worse when we're branching based on
+    values; <literal>BMI</literal> and <literal>BPL</literal> hinge on
+    the seventh (sign) bit of the result, so we can't represent any
+    value above 127.
+  </para>
+</section>
+
+<section>
+  <title>The solution</title>
+
+  <para>
+    We have two solutions available to us.  First, we can use
+    the <quote>unsigned</quote> discipline, which involves checking
+    different flags, but lets us deal with values between 0 and 255
+    instead of -128 to 127.  Second, we can trade speed and register
+    persistence for multiple precision arithmetic, using 16-bit
+    integers (-32768 to 32767, or 0-65535), 24-bit, or more.
+  </para>
+
+  <para>
+    Multiplication, division, and floating point arithmetic are beyond
+    the scope of this essay.  The best way to deal with those is to
+    find a math library on the web (I
+    recommend <ulink url="http://www.6502.org/"></ulink>) and use the
+    routines there.
+  </para>
+</section>
+
+<section>
+  <title>Unsigned arithmetic</title>
+  <para>
+    When writing control code that hinges on numbers, we should always
+    strive to have our comparison be with zero; that way, no explicit
+    compare is necessary, and we can branch simply
+    with <literal>BEQ/BNE</literal>, which test the zero flag.
+    Otherwise, we use <literal>CMP</literal>.
+    The <literal>CMP</literal> command subtracts its argument from the
+    accumulator (without borrow), updates the flags, but throws away
+    the result.  If the value is equal, the result is zero.
+    (<literal>CMP</literal> followed by <literal>BEQ</literal>
+    branches if the argument is equal to the accumulator; this is
+    probably why it's called <literal>BEQ</literal> and not something
+    like <literal>BZS</literal>.)
+  </para>
+  <para>
+    Intuitively, then, to check if the accumulator is <emphasis>less
+    than</emphasis> some value, we <literal>CMP</literal> against that
+    value and <literal>BMI</literal>.  The <literal>BMI</literal>
+    command branches based on the Negative Flag, which is equal to the
+    seventh bit of <literal>CMP</literal>'s subtract.  That's exactly
+    what we need, for signed arithmetic.  However, this produces
+    problems if you're writing a boundary detector on your screen or
+    something and find that 192 &lt; 4.  192 is outside of a signed
+    byte's range, and is interpreted as if it were -64.  This will not
+    do for most graphics applications, where your values will be
+    ranging from 0-319 or 0-199 or 0-255.
+  </para>
+
+  <para>
+    Instead, we take advantage of the implied subtraction
+    that <literal>CMP</literal> does.  When subtracting, the result's
+    carry bit starts at 1, and gets borrowed from if necessary.  Let
+    us consider some four-bit subtractions.
+  </para>
+
+<programlisting>
+C|3210       C|3210
+------       ------
+1|1001    9  1|1001    9
+ |0100  - 4   |1100  -12
+------  ---  ------  ---
+1|0101    5  0|1101   -3
+</programlisting>
+
+  <para>
+    The <literal>CMP</literal> command properly modifies the carry bit
+    to reflect this.  When computing A-B, the carry bit is set if A
+    &gt;= B, and it's clear if A &lt; B.  Consider the following two
+    code sequences.
+  </para>
+
+<programlisting>
+    (1)                  (2)
+  CMP #$C0            CMP #$C0
+  BMI label           BCC label
+</programlisting>
+
+  <para>
+    The code in the first column treats the value in the accumulator
+    as a signed value, and branches if the value is less than -64.
+    (Because of overflow issues, it will actually branch for
+    accumulator values between $40 and $BF, even though it *should*
+    only be doing it for values between $80 and $BF.  To see why,
+    compare $40 to $C0 and look at the result.)  The second column
+    code treats the accumulator as holding an unsigned value, and
+    branches if the value is less than 192.  It will branch for
+    accumulator values $00-$BF.
+  </para>
+</section>
+
+<section>
+  <title>16-bit addition and subtraction</title>
+
+  <para>
+    Time to use the carry bit for what it was meant to do.  Adding two
+    8 bit numbers can produce a 9-bit result.  That 9th bit is stored
+    in the carry flag.  The <literal>ADC</literal> command adds the
+    carry value to its result, as well.  Thus, carries work just as
+    we'd expect them to.  Suppose we're storing two 16-bit values, low
+    byte first, in $C100-1 and $C102-3.  To add them together and
+    store them in $C104-5, this is very easy:
+  </para>
+
+<programlisting>
+  CLC
+  LDA $C100
+  ADC $C102
+  STA $C104
+  LDA $C101
+  ADC $C103
+  STA $C105
+</programlisting>
+
+  <para>
+    Subtraction is identical, but you set the carry bit first
+    with <literal>SEC</literal> (because borrow is the complement of
+    carry&mdash;think about how the unsigned compare works if this
+    puzzles you) and, of course, using the <literal>SBC</literal>
+    instruction instead of <literal>ADC</literal>.
+  </para>
+
+  <para>
+    The carry/borrow bit is set appropriately to let you continue,
+    too.  As long as you just keep working your way up to bytes of
+    ever-higher significance, this generalizes to 24 (do it three
+    times instead of two) or 32 (four, etc.) bit integers.
+  </para>
+</section>
+
+<section>
+  <title>16-bit comparisons</title>
+
+  <para>
+    Doing comparisons on extended precision values is about the same
+    as doing them on 8-bit values, but you have to have the value you
+    test in memory, since it won't fit in the accumulator all at once.
+    You don't have to store the values back anywhere, either, since
+    all you care about is the final state of the flags.  For example,
+    here's a signed comparison, branching to <literal>label</literal>
+    if the value in $C100-1 is less than 1000 ($03E8):
+  </para>
+
+<programlisting>
+  SEC
+  LDA $C100
+  SBC #$E8
+  LDA $C101    ; We only need the carry bit from that subtract
+  SBC #$03
+  BMI label
+</programlisting>
+
+  <para>
+    All the commentary on signed and unsigned compares holds for
+    16-bit (or higher) integers just as it does for the 8-bit
+    ones.
+  </para>
+</section>
+</chapter>
