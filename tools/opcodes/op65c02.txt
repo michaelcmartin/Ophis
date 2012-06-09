@@ -10,7 +10,7 @@
   09: ORA - Immediate
   0A: ASL - Implied
   0B:
-  0C: TSB - Absolute
+  0C: TSB - Absolute; TSB.W - Absolute
   0D: ORA - Absolute
   0E: ASL - Absolute
   0F: BBR0 - Relative
@@ -26,7 +26,7 @@
   19: ORA - Absolute, Y
   1A: INA - Implied; INC - Implied
   1B:
-  1C: TRB - Absolute
+  1C: TRB - Absolute; TRB.W - Absolute
   1D: ORA - Absolute, X
   1E: ASL - Absolute, X
   1F: BBR1 - Relative
@@ -154,9 +154,9 @@
   99: STA - Absolute, Y
   9A: TXS - Implied
   9B:
-  9C: STZ - Absolute
+  9C: STZ - Absolute; STZ.W - Absolute
   9D: STA - Absolute, X
-  9E: STZ - Absolute, X
+  9E: STZ - Absolute, X; STZ.W - Absolute, X
   9F: BBS1 - Relative
   A0: LDY - Immediate
   A1: LDA - (Zero Page, X)
