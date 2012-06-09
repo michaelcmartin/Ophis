@@ -1,0 +1,61 @@
+; Test file for 'wide' 65(c)02 opcode compliance
+
+; This odd little source file uses every absolute addressing mode of
+; every opcode, and uses the opcode itself as the argument to each
+; instruction.  The resulting binary's bytes are thus in strictly
+; increasing numerical order. Since this uses wide instructions, they
+; should be separated by zeroes.
+
+; This test file also uses 65c02 extensions and will require the -c
+; options to Ophis.
+
+
+	TSB.W	$0C
+	ORA.W	$0D
+	ASL.W	$0E
+	ORA.W	$19, Y
+	TRB.W	$1C
+	ORA.W	$1D, X
+	ASL.W	$1E, X
+	BIT.W	$2C
+	AND.W	$2D
+	ROL.W	$2E
+	AND.W	$39, Y
+	AND.W	$3D, X
+	ROL.W	$3E, X
+	EOR.W	$4D
+	LSR.W	$4E
+	EOR.W	$59, Y
+	EOR.W	$5D, X
+	LSR.W	$5E, X
+	ADC.W	$6D
+	ROR.W	$6E
+	ADC.W	$79, Y
+	ADC.W	$7D, X
+	ROR.W	$7E, X
+	STY.W	$8C
+	STA.W	$8D
+	STX.W	$8E
+	STA.W	$99, Y
+	STZ.W	$9C
+	STA.W	$9D, X
+	STZ.W	$9E, X
+	LDY.W	$AC
+	LDA.W	$AD
+	LDX.W	$AE
+	LDA.W	$B9,Y
+	LDY.W	$BC, X
+	LDA.W	$BD, X
+	LDX.W	$BE, Y
+	CPY.W	$CC
+	CMP.W	$CD
+	DEC.W	$CE
+	CMP.W	$D9, Y
+	CMP.W	$DD, X
+	DEC.W	$DE, X
+	CPX.W	$EC
+	SBC.W	$ED
+	INC.W	$EE
+	SBC.W	$F9, Y
+	SBC.W	$FD, X
+	INC.W	$FE, X
