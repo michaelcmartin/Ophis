@@ -1,4 +1,4 @@
-.require "../stella.oph"
+.require "../../platform/stella.oph"
 .outfile "hi_stella.bin"
 
 .data

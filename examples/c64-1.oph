@@ -3,10 +3,10 @@
 
 .scope
 	.word _next, 10		; Next line and current line number
-	.byte $9e," 2064",0	; SYS 2064
+	.byte $9e," 2062",0	; SYS 2064
 _next:	.word 0			; End of program
 .scend
 
-.advance 2064
+.advance 2062
 
-.require "kernal.oph"
+.require "../platform/c64kernal.oph"
