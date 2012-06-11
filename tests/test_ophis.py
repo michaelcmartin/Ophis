@@ -57,8 +57,14 @@ def test_file(test_name, fname, ename, options=[]):
 def test_basic():
     print
     print "==== BASIC OPERATION ===="
-    test_string('Basic Ophis operation', '.byte "Hello, world!", 10',
-                'Hello, world!\n')
+    test_string('Basic Ophis operation', '.byte "Hello, world!"',
+                'Hello, world!')
+    test_string('Newline/EOF passthrough', '.byte 10,26,13,4,0,"Hi",13,10',
+                '\n\x1a\r\x04\x00Hi\r\n')
+    # Normally these would go in Expressions but we need them to run the
+    # tests for relative instructions.
+    test_string('Program counter recognition', '.org $41\nlda #^\n', '\xa9A')
+    test_string('Program counter math', '.org $41\nlda #^+3\n', '\xa9D')
     if failed == 0:
         test_file('Basic instructions', 'testbase.oph', 'testbase.bin')
         test_file('Basic data pragmas', 'testdata.oph', 'testdata.bin')
@@ -200,9 +206,133 @@ def test_transforms():
                 '\xf0\x03\x4c\xc5\x01\xad\x00\x01')
 
 
+def test_expressions():
+    print "\n==== EXPRESSIONS AND LABELS ===="
+    test_string('Basic addition', '.byte 3+2', '\x05')
+    test_string('Basic subtraction', '.byte 3-2', '\x01')
+    test_string('Basic multiplication', '.byte 3*2', '\x06')
+    test_string('Basic division', '.byte 6/2', '\x03')
+    test_string('Basic bit-union', '.byte 5|9', '\x0d')
+    test_string('Basic bit-intersection', '.byte 5&9', '\x01')
+    test_string('Basic bit-toggle', '.byte 5^9', '\x0c')
+    test_string('Division truncation', '.byte 5/2', '\x02')
+    test_string('Overflow', '.byte $FF*$10', '')
+    test_string('Multibyte overflow', '.word $FF*$10', '\xf0\x0f')
+    test_string('Masked overflow', '.byte $FF*$10&$FF', '\xf0')
+    test_string('Underflow', '.byte 2-3', '')
+    test_string('Masked underflow', '.byte 2-3&$FF', '\xff')
+    test_string('Arithmetic precedence', '.byte 2+3*4-6/2', '\x0b')
+    test_string('Parentheses', '.byte [2+3]*[4-6/2]', '\x05')
+    # The manual gets this one wrong! $D000-275 needs brackets.
+    test_string('Byte selector precedence',
+                '.byte >$d000+32,>[$d000+32],<[$D000-275]',
+                '\xf0\xd0\xed')
+    test_string('Named labels', '.org $6948\nl: .word l', 'Hi')
+    test_string('.alias directive (basic)', '.alias hi $6948\n.word hi', 'Hi')
+    test_string('.alias directive (derived)',
+                '.alias hi $6948\n.alias ho hi+$600\n.word hi,ho', 'HiHo')
+    test_string('.alias directive (circular)',
+                '.alias a c+1\n.alias b a+3\n.alias c b-4\n.word a, b, c',
+                '')
+    test_string('.advance directive (basic)', 'lda #$05\n.advance $05\n.byte ^',
+                '\xa9\x05\x00\x00\x00\x05')
+    test_string('.advance directive (filler)',
+                'lda #$05\nf: .advance $05,f+3\n.byte ^',
+                '\xa9\x05\x05\x05\x05\x05')
+    test_string('.advance no-op', 'lda #$05\n.advance $02\n.byte ^',
+                '\xa9\x05\x02')
+    test_string('.advance failure', 'lda #$05\n.advance $01\n.byte ^', '')
+    test_string('.checkpc, space > 0', 'lda #$05\n.checkpc $10', '\xa9\x05')
+    test_string('.checkpc, space = 0', 'lda #$05\n.checkpc 2', '\xa9\x05')
+    test_string('.checkpc, space < 0', 'lda $$05\n.checkpc 1', '')
+
+
+def test_segments():
+    print("\n==== ASSEMBLY SEGMENTS ====")
+    # Basic - make sure PC is tracked separately when segment changes
+    # No writing to .data segments
+    # .space directive
+    # multiple named segments
+
+
+def test_scopes():
+    print("\n==== LABEL SCOPING ====")
+    # Duplicate labels in separate unnested scopes OK
+    # Data hiding - invisible outside scope, overwritten in nested
+    # Anonymous labels: basic support but also across scope boundaries
+
+
+def test_macros():
+    print("\n==== MACROS ====")
+    test_string('Basic macros',
+                '.macro greet\n'
+                '  .byte "hi"\n'
+                '.macend\n'
+                '`greet\n.invoke greet', "hihi")
+    test_string('Macros with arguments',
+                '.macro greet\n'
+                '  .byte "hi",_1\n'
+                '.macend\n'
+                "`greet 'A\n.invoke greet 'B", "hiAhiB")
+    test_string('Macros invoking macros',
+                '.macro inner\n'
+                '  .byte " there"\n'
+                '.macend\n'
+                '.macro greet\n'
+                '  .byte "hi"\n'
+                '  `inner\n'
+                '.macend\n'
+                "`greet", "hi there")
+    test_string('Macros defining macros (illegal)',
+                '.macro greet\n'
+                '.macro inner\n'
+                '  .byte " there"\n'
+                '.macend\n'
+                '  .byte "hi"\n'
+                '  `inner\n'
+                '.macend\n'
+                "`greet", "")
+    test_string('Fail on infinite recursion',
+                '.macro inner\n'
+                '  .byte " there"\n'
+                '  `greet\n'
+                '.macend\n'
+                '.macro greet\n'
+                '  .byte "hi"\n'
+                '  `inner\n'
+                '.macend\n'
+                "`greet", "")
+
+
+def test_subfiles():
+    print("\n==== COMPILATION UNITS ====")
+    # .include, basic and repeated
+    # .require, basic and repeated
+    # .include before .require of same file
+    # .require before .include of same file
+    # .require the same file twice but with different names
+    #     (that is, a/header.oph and header.oph)
+    # .require different files with the same pathname (../base.oph)
+    # .charmap: set, reset, out-of-range
+    # .charmapbin: legal and illegal charmaps
+    # .incbin, basic usage
+    # .incbin, hardcoded offset
+    # .incbin, hardcoded offset and length
+    # .incbin, softcoded offset and length
+    # .incbin, length too long
+    # .incbin, negative offset
+    # .incbin, offset = size of file
+    # .incbin, offset > size of file
+
+
 def test_systematic():
     test_outfile()
     test_transforms()
+    test_expressions()
+    test_segments()
+    test_scopes()
+    test_macros()
+    test_subfiles()
 
 
 if __name__ == '__main__':
