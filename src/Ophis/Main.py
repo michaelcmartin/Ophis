@@ -67,6 +67,12 @@ def run_all():
             outfile = Ophis.CmdLine.outfile
             if outfile == '-':
                 output = sys.stdout
+                if sys.platform == "win32":
+                    # We can't dump our binary in test mode; that would be
+                    # disastrous. So, we'll do some platform-specific
+                    # things here to force our stdout to binary mode.
+                    import os, msvcrt
+                    msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
             elif outfile is None:
                 output = file('ophis.bin', 'wb')
             else:
