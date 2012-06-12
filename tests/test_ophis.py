@@ -5,7 +5,10 @@ import subprocess
 import os
 import os.path
 
-pythonpath = sys.executable
+if len(sys.argv) > 1:
+    pythonpath = sys.argv[1]
+else:
+    pythonpath = sys.executable
 homepath = os.path.realpath(os.path.dirname(sys.argv[0]))
 ophispath = os.path.join(homepath, "..", "bin", "ophis")
 
@@ -16,6 +19,10 @@ failed = 0
 # when explicitly testing the input/output file capabilities.
 
 
+def assembled(raw):
+    return ' '.join(["%02X" % ord(c) for c in raw])
+
+
 def assemble_raw(asm="", options=[]):
     p = subprocess.Popen([pythonpath, ophispath] + options,
                          stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -24,7 +31,7 @@ def assemble_raw(asm="", options=[]):
 
 
 def assemble_string(asm, options=[]):
-    return assemble_raw(asm, ["-o", "-", "-"] + options)
+    return assemble_raw(asm, ["-qo", "-", "-"] + options)
 
 
 def test_string(test_name, asm, expected, options=[]):
@@ -34,7 +41,11 @@ def test_string(test_name, asm, expected, options=[]):
     else:
         global failed
         failed += 1
-        print "%s: FAILED\nError output:\n%s" % (test_name, err)
+        print "%s: FAILED" % test_name
+        print "Assembled code: ", assembled(out)
+        print "Expected code:  ", assembled(expected)
+    if err != '':
+        print "Error output:\n%s" % err
 
 
 def test_file(test_name, fname, ename, options=[]):
@@ -223,7 +234,9 @@ def test_expressions():
     test_string('Masked underflow', '.byte 2-3&$FF', '\xff')
     test_string('Arithmetic precedence', '.byte 2+3*4-6/2', '\x0b')
     test_string('Parentheses', '.byte [2+3]*[4-6/2]', '\x05')
-    # The manual gets this one wrong! $D000-275 needs brackets.
+    test_string('String escapes',
+                '.byte "The man said, \\"The \\\\ is Windowsy.\\""',
+                'The man said, "The \\ is Windowsy."')
     test_string('Byte selector precedence',
                 '.byte >$d000+32,>[$d000+32],<[$D000-275]',
                 '\xf0\xd0\xed')
@@ -234,7 +247,8 @@ def test_expressions():
     test_string('.alias directive (circular)',
                 '.alias a c+1\n.alias b a+3\n.alias c b-4\n.word a, b, c',
                 '')
-    test_string('.advance directive (basic)', 'lda #$05\n.advance $05\n.byte ^',
+    test_string('.advance directive (basic)',
+                'lda #$05\n.advance $05\n.byte ^',
                 '\xa9\x05\x00\x00\x00\x05')
     test_string('.advance directive (filler)',
                 'lda #$05\nf: .advance $05,f+3\n.byte ^',
@@ -244,22 +258,73 @@ def test_expressions():
     test_string('.advance failure', 'lda #$05\n.advance $01\n.byte ^', '')
     test_string('.checkpc, space > 0', 'lda #$05\n.checkpc $10', '\xa9\x05')
     test_string('.checkpc, space = 0', 'lda #$05\n.checkpc 2', '\xa9\x05')
-    test_string('.checkpc, space < 0', 'lda $$05\n.checkpc 1', '')
+    test_string('.checkpc, space < 0', 'lda $05\n.checkpc 1', '')
+    test_string('A X Y usable as labels',
+                '.alias a 1\n.alias x 2\n.alias y 3\n'
+                'lda (a+x+y),y\nlda (x+y,x)',
+                '\xb1\x06\xa1\x05')
+    test_string('Opcodes usable as labels',
+                'ldy #$00\n dey: dey\n bne dey',
+                '\xa0\x00\x88\xd0\xfd')
 
 
 def test_segments():
     print("\n==== ASSEMBLY SEGMENTS ====")
-    # Basic - make sure PC is tracked separately when segment changes
-    # No writing to .data segments
-    # .space directive
-    # multiple named segments
+    test_string('Segments (basic)',
+                '.org $41\n'
+                '.data\n'
+                '.org $61\n'
+                'd:\n'
+                '.text\n'
+                'l: .byte l, d', 'Aa')
+    test_string('Data cleanliness', '.byte 65\n.data\n.byte 65', '')
+    test_string('.space directive',
+                '.data\n.org $41\n.space a 2\n.space b 1\n.space c 1\n'
+                '.text\n.byte a, b, c\n', 'ACD')
+    test_string('Multiple named segments',
+                '.data\n.org $41\n.data a\n.org $61\n.data b\n.org $4a\n'
+                '.data\n.space q 1\n.data a\n.space r 1\n.data b\n.space s 1\n'
+                '.text\n.org $10\n.text a\n.org $20\n'
+                '.text\n.byte ^,q,r,s\n'
+                '.text a\n.byte ^,q,r,s\n',
+                '\x10AaJ\x20AaJ')
 
 
 def test_scopes():
     print("\n==== LABEL SCOPING ====")
-    # Duplicate labels in separate unnested scopes OK
-    # Data hiding - invisible outside scope, overwritten in nested
-    # Anonymous labels: basic support but also across scope boundaries
+    test_string('Repeated labels, different scopes',
+                '.org $41\n'
+                '.scope\n'
+                '_l: .byte _l\n'
+                '.scend\n'
+                '.scope\n'
+                '_l: .byte _l\n'
+                '.scend\n', 'AB')
+    test_string('Data hiding outside of scope',
+                '.org $41\n'
+                '.scope\n'
+                '_l: .byte _l\n'
+                '.scend\n'
+                '    .byte _l\n', '')
+    test_string('Repeated labels, nested scopes',
+                '.org $41\n'
+                '.scope\n'
+                '_l: .byte _l\n'
+                '.scope\n'
+                '_l: .byte _l\n'
+                '.scend\n'
+                '    .byte _l\n'
+                '.scend\n', 'ABA')
+    test_string('Anonymous labels (basic)',
+                '.org $41\n'
+                '* .byte -, +\n'
+                '* .byte -, --\n', 'ACCA')
+    test_string('Anonymous labels (across scopes)',
+                '.org $41\n'
+                '* .byte -, +\n'
+                '.scope\n'
+                '* .byte -, --\n'
+                '.scend\n', 'ACCA')
 
 
 def test_macros():
@@ -306,23 +371,70 @@ def test_macros():
 
 def test_subfiles():
     print("\n==== COMPILATION UNITS ====")
-    # .include, basic and repeated
-    # .require, basic and repeated
-    # .include before .require of same file
-    # .require before .include of same file
-    # .require the same file twice but with different names
-    #     (that is, a/header.oph and header.oph)
-    # .require different files with the same pathname (../base.oph)
-    # .charmap: set, reset, out-of-range
-    # .charmapbin: legal and illegal charmaps
-    # .incbin, basic usage
-    # .incbin, hardcoded offset
-    # .incbin, hardcoded offset and length
-    # .incbin, softcoded offset and length
-    # .incbin, length too long
-    # .incbin, negative offset
-    # .incbin, offset = size of file
-    # .incbin, offset > size of file
+    test_string(".include pragma", '.include "baseinc.oph"', 'BASIC\n')
+    test_string(".include repeated",
+                '.include "baseinc.oph"\n.include "baseinc.oph"',
+                'BASIC\nBASIC\n')
+    test_string(".require pragma", '.require "baseinc.oph"', 'BASIC\n')
+    test_string(".include before .require",
+                '.include "baseinc.oph"\n.require "baseinc.oph"',
+                'BASIC\n')
+    test_string(".require before .include",
+                '.require "baseinc.oph"\n.include "baseinc.oph"',
+                'BASIC\nBASIC\n')
+    test_string(".require same file twice with different paths",
+                '.include "baseinc.oph"\n.include "sub/baseinc.oph"',
+                'BASIC\nSUB 1 START\nSUB 1 END\n')
+    test_string(".require different files with identical paths",
+                '.include "sub/sub/sub.oph"',
+                'SUB 2 START\nSUB 1 START\nBASIC\nSUB 1 END\nSUB 2 END\n')
+    test_string(".charmap (basic)",
+                '.charmap \'A, "abcdefghijklmnopqrstuvwxyz"\n'
+                '.charmap \'a, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\n'
+                '.byte "hELLO, wORLD!"', "Hello, World!")
+    test_string(".charmap (reset)",
+                '.charmap \'A, "abcdefghijklmnopqrstuvwxyz"\n'
+                '.charmap \'a, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\n'
+                '.byte "hELLO, wORLD!",10\n'
+                '.charmap\n'
+                '.byte "hELLO, wORLD!",10\n',
+                "Hello, World!\nhELLO, wORLD!\n")
+    test_string(".charmap (out of range)",
+                '.charmap 250, "ABCDEFGHIJKLM"\n.byte 250,251',
+                '')
+    test_string(".charmapbin (basic)",
+                '.charmapbin "../examples/petscii.map"\n.byte "hELLO, wORLD!"',
+                "Hello, World!")
+    test_string(".charmapbin (illegal)",
+                '.charmapbin "baseinc.bin"\n.byte "hELLO, wORLD!"', '')
+    test_string(".incbin (basic)", '.incbin "baseinc.bin"', "BASIC\n")
+    test_string(".incbin (hardcoded offset)",
+                '.incbin "baseinc.bin",3', "IC\n")
+    test_string(".incbin (hardcoded offset and length)",
+                '.incbin "baseinc.bin",3,2', "IC")
+    test_string(".incbin (softcoded offset and length)",
+                '.alias off len+1\n.alias len 2\n'
+                '.incbin "baseinc.bin",off,len', "IC")
+    test_string(".incbin (length too long)",
+                '.byte 65\n.incbin "baseinc.bin",3,4', "")
+    test_string(".incbin (negative offset)",
+                '.byte 65\n.incbin "baseinc.bin",1-5,4', "")
+    test_string(".incbin (offset = size)",
+                '.byte 65\n.incbin "baseinc.bin",6', "A")
+    test_string(".incbin (offset > size)",
+                '.byte 65\n.incbin "baseinc.bin",7', "")
+    test_string(".incbin (softcoded length too long)",
+                '.alias off len\n.alias len 4\n'
+                '.byte 65\n.incbin "baseinc.bin",off,len', "")
+    test_string(".incbin (softcoded negative offset)",
+                '.alias off 1-5\n'
+                '.byte 65\n.incbin "baseinc.bin",off,4', "")
+    test_string(".incbin (softcoded offset = size)",
+                '.alias off 6\n'
+                '.byte 65\n.incbin "baseinc.bin",off', "A")
+    test_string(".incbin (softcoded offset > size)",
+                '.alias off 7\n'
+                '.byte 65\n.incbin "baseinc.bin",off', "")
 
 
 def test_systematic():
@@ -339,7 +451,7 @@ if __name__ == '__main__':
     print "Using Python interpreter:", pythonpath
 
     test_basic()
-
+    os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
     if failed == 0:
         test_systematic()
     else:
