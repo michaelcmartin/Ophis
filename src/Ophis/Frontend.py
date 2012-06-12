@@ -15,6 +15,9 @@ import os.path
 # license: See README for details.
 
 
+loadedfiles = {}
+
+
 class Lexeme(object):
     "Class for lexer tokens.  Used by lexer and parser."
     def __init__(self, type="UNKNOWN", value=None):
@@ -180,8 +183,17 @@ class ParseLine(object):
         """Reads a token from the ParseLine line and returns it if it's of a
     type in the sequence tokens.  Otherwise, it logs an error."""
         token = self.pop()
-        if token.type not in tokens:
-            Err.log('Expected: "' + '", "'.join(tokens) + '"')
+        if token.type in tokens:
+            return token
+        if 'LABEL' in tokens:
+            if token.type in ['X', 'Y']:
+                token.value = token.type.lower()
+                token.type = 'LABEL'
+                return token
+            elif token.type == 'OPCODE':
+                token.type = 'LABEL'
+                return token
+        Err.log('Expected: "' + '", "'.join(tokens) + '"')
         return token
 
 
@@ -196,7 +208,7 @@ def parse_expr(line):
         next = line.lookahead(0).type
         if next == "NUM":
             return IR.ConstantExpr(line.expect("NUM").value)
-        elif next == "LABEL":
+        elif next in ["LABEL", "X", "Y", "OPCODE"]:
             return IR.LabelExpr(line.expect("LABEL").value)
         elif next == "^":
             line.expect("^")
@@ -352,11 +364,20 @@ def parse_line(ppt, lexemelist):
 context_directory = None
 
 
-def parse_file(ppt, filename):
+def parse_file(ppt, filename, load_once=False):
     "Loads an Ophis source file, and returns an IR list."
-    global context_directory
+    global context_directory, loadedfiles
     Err.currentpoint = ppt
     old_context = context_directory
+    if filename != '-':
+        if context_directory is not None:
+            filename = os.path.abspath(os.path.join(context_directory,
+                                                    filename))
+        if load_once and filename in loadedfiles:
+            if Cmd.print_loaded_files:
+                print>>sys.stderr, "Skipping " + filename
+            return IR.NullNode
+        loadedfiles[filename] = True
     if Cmd.print_loaded_files:
         if filename != '-':
             print>>sys.stderr, "Loading " + filename

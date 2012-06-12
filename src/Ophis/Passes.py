@@ -174,10 +174,12 @@ class InitLabels(Pass):
     def __init__(self):
         Pass.__init__(self)
         self.labelmap = {}
+        self.runcount = 0
 
     def prePass(self):
         self.changed = False
         self.PCvalid = True
+        self.runcount += 1
 
     def visitAdvance(self, node, env):
         self.PCvalid = node.data[0].valid(env, self.PCvalid)
@@ -195,6 +197,12 @@ class InitLabels(Pass):
         if val.valid(env, self.PCvalid) and label not in env:
             env[label] = 0
             self.changed = True
+        if label in ['a', 'x', 'y'] and self.runcount == 1:
+            print>>sys.stderr, str(node.ppt) + ": WARNING: " \
+                "using register name as label"
+        if label in Ops.opcodes and self.runcount == 1:
+            print>>sys.stderr, str(node.ppt) + ": WARNING: " \
+                "using opcode name as label"
 
     def visitUnknown(self, node, env):
         pass
@@ -787,6 +795,10 @@ class Assembler(Pass):
         length = node.data[1].value(env)
         if offset < 2:
             Err.log("Negative offset in .incbin")
+        elif offset > len(node.data):
+            Err.log("Offset extends past end of file")
+        elif length < 0:
+            Err.log("Negative length")
         elif offset + length > len(node.data):
             Err.log("File too small for .incbin subrange")
         else:

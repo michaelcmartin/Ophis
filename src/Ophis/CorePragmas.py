@@ -12,14 +12,13 @@ import Ophis.Frontend as FE
 import Ophis.Errors as Err
 import os.path
 
-loadedfiles = {}
 basecharmap = "".join([chr(x) for x in range(256)])
 currentcharmap = basecharmap
 
 
 def reset():
-    global loadedfiles, currentcharmap, basecharmap
-    loadedfiles = {}
+    global currentcharmap, basecharmap
+    FE.loadedfiles = {}
     currentcharmap = basecharmap
 
 
@@ -36,8 +35,6 @@ def pragmaInclude(ppt, line, result):
     filename = line.expect("STRING").value
     line.expect("EOL")
     if type(filename) == str:
-        global loadedfiles
-        loadedfiles[filename] = True
         result.append(FE.parse_file(ppt, filename))
 
 
@@ -46,10 +43,7 @@ def pragmaRequire(ppt, line, result):
     filename = line.expect("STRING").value
     line.expect("EOL")
     if type(filename) == str:
-        global loadedfiles
-        if filename not in loadedfiles:
-            loadedfiles[filename] = True
-            result.append(FE.parse_file(ppt, filename))
+        result.append(FE.parse_file(ppt, filename, True))
 
 
 def pragmaIncbin(ppt, line, result):
@@ -69,6 +63,25 @@ def pragmaIncbin(ppt, line, result):
             f = file(os.path.join(FE.context_directory, filename), "rb")
             if offset.hardcoded and (size is None or size.hardcoded):
                 # We know how big it will be, we can just use the values.
+                # First check to make sure they're sane
+                if offset.value() < 0:
+                    Err.log("Offset may not be negative")
+                    f.close()
+                    return
+                f.seek(0, 2)  # Seek to end of file
+                if offset.value() > f.tell():
+                    Err.log("Offset runs past end of file")
+                    f.close()
+                    return
+                if size is not None:
+                    if size.value() < 0:
+                        Err.log("Length may not be negative")
+                        f.close()
+                        return
+                    if offset.value() + size.value() > f.tell():
+                        Err.log(".incbin length too long")
+                        f.close()
+                        return
                 if size is None:
                     size = IR.ConstantExpr(-1)
                 f.seek(offset.value())
@@ -97,10 +110,10 @@ def pragmaIncbin(ppt, line, result):
 def pragmaCharmap(ppt, line, result):
     "Modify the character map."
     global currentcharmap, basecharmap
-    bytes = readData(line)
-    if len(bytes) == 0:
+    if str(line.lookahead(0)) == "EOL":
         currentcharmap = basecharmap
     else:
+        bytes = readData(line)
         try:
             base = bytes[0].data
             newsubstr = "".join([chr(x.data) for x in bytes[1:]])

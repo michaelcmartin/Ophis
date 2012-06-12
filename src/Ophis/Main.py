@@ -8,6 +8,7 @@
 # license: See README for details.
 
 import sys
+import os
 import Ophis.Frontend
 import Ophis.IR
 import Ophis.CorePragmas
@@ -71,7 +72,7 @@ def run_all():
                     # We can't dump our binary in test mode; that would be
                     # disastrous. So, we'll do some platform-specific
                     # things here to force our stdout to binary mode.
-                    import os, msvcrt
+                    import msvcrt
                     msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
             elif outfile is None:
                 output = file('ophis.bin', 'wb')
