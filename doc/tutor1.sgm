@@ -144,26 +144,30 @@ next:   .word 0              ; End of program
           assembler know right away where everything is supposed to
           be.
         </para></listitem>
-        <listitem><para> Instead of hardcoding in the value $080C, we
-           instead use a label to identify the location it's pointing
-           to.  Ophis will compute the address
-           of <literal>next</literal> and put that value in as data.
-           We also describe the line number in decimal since BASIC
-           line numbers generally <emphasis>are</emphasis> in decimal.
-           Labels are defined by putting their name, then a colon, as
-           seen in the definition of <literal>next</literal>.
+        <listitem><para>
+          Instead of hardcoding in the value $080C, we instead use a
+          label to identify the location it's pointing to.  Ophis
+          will compute the address of <literal>next</literal> and
+          put that value in as data.  We also describe the line
+          number in decimal since BASIC line numbers
+          generally <emphasis>are</emphasis> in decimal.  Labels are
+          defined by putting their name, then a colon, as seen in
+          the definition of <literal>next</literal>.
         </para></listitem>
         <listitem><para>
-           Instead of putting in the hex codes for the string part of
-           the BASIC code, we included the string directly.  Each
-           character in the string becomes one byte.
+          Instead of putting in the hex codes for the string part of
+          the BASIC code, we included the string directly.  Each
+          character in the string becomes one byte.
         </para></listitem>
         <listitem><para>
           Instead of adding the buffer ourselves, we
           used <literal>.advance</literal>, which outputs zeros until
           the specified address is reached.  Attempting
           to <literal>.advance</literal> backwards produces an
-          assemble-time error.
+          assemble-time error. (If we wanted to output something
+          besides zeros, we could add it as a second
+          argument: <literal>.advance 2064,$FF</literal>, for
+          instance.)
         </para></listitem>
         <listitem><para>
           It has comments that explain what the data are for.  The

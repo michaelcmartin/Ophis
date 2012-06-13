@@ -117,7 +117,7 @@
         <listitem><para><literal>&lt;$D000+32</literal> evaluates to $20</para></listitem>
         <listitem><para><literal>&gt;$D000+32</literal> evaluates to $F0</para></listitem>
         <listitem><para><literal>&gt;[$D000+32]</literal> evaluates to $D0</para></listitem>
-        <listitem><para><literal>&gt;$D000-275</literal> evaluates to $CE</para></listitem>
+        <listitem><para><literal>&gt;[$D000-275]</literal> evaluates to $CE</para></listitem>
       </itemizedlist>
     </section>
     <section>
@@ -371,15 +371,16 @@
          </listitem>
          <listitem>
            <para>
-             <literal>.advance</literal> <emphasis>address</emphasis>:
-             Forces the program counter to
-             be <emphasis>address</emphasis>. Unlike
+             <literal>.advance</literal> <emphasis>address</emphasis>
+             [, <emphasis>filler</emphasis>]: Forces the program
+             counter to be <emphasis>address</emphasis>. Unlike
              the <literal>.org</literal>
-             directive, <literal>.advance</literal> outputs zeroes
-             until the program counter reaches a specified
-             address. Attempting to <literal>.advance</literal> to a
-             point behind the current program counter is an
-             assemble-time error.
+             directive, <literal>.advance</literal> outputs bytes (the
+             value of <emphasis>filler</emphasis>, or zeroes if it is
+             unspecified) until the program counter reaches a
+             specified address. Attempting
+             to <literal>.advance</literal> to a point behind the
+             current program counter is an assemble-time error.
          </para>
          </listitem>
          <listitem>
@@ -423,10 +424,14 @@
          </listitem>
          <listitem>
            <para>
-             <literal>.incbin</literal> <emphasis>filename</emphasis>:
-             Inserts the contents of the file specified as binary
-             data. Use it to include graphics information, precompiled
-             code, or other non-assembler data.
+             <literal>.incbin</literal> <emphasis>filename</emphasis>
+             [, <emphasis>offset</emphasis>
+             [, <emphasis>length</emphasis>]]: Inserts the contents of
+             the file specified as binary data. Use it to include
+             graphics information, precompiled code, or other
+             non-assembler data. You may also optionally specify an
+             index to start including from, or a length to only
+             include a subset.
            </para>
          </listitem>
          <listitem>

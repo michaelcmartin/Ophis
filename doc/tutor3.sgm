@@ -35,6 +35,13 @@
     </para>
 
     <para>
+      If you only wish to include part of a binary
+      file, <literal>.incbin</literal> takes up to two optional
+      arguments, naming the file offset at which to start reading and
+      the number of characters to read.
+    </para>
+
+    <para>
       As a sample library, we will expand the definition of
       the <literal>chrout</literal> routine to include the standard
       names for every KERNAL routine.  Our header file will
