@@ -32,7 +32,7 @@ def parse_args(raw_args):
     global infiles, outfile
 
     parser = optparse.OptionParser(
-        usage="Usage: %prog [options] srcfile outfile",
+        usage="Usage: %prog [options] srcfile [srcfile ...]",
         version="Ophis 6502 cross-assembler, version 2.0")
 
     parser.add_option("-o", default=None, dest="outfile",

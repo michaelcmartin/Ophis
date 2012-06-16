@@ -1,6 +1,6 @@
 from distutils.core import setup
 setup(name='Ophis',
-      version='1.0.1',
+      version='2.0',
       description='A cross-assembler for the 6502 series of processors',
       url='https://github.com/michaelcmartin/Ophis',
       author="Michael Martin",
