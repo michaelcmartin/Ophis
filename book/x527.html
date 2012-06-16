@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>16-bit addition and subtraction</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="The Second Step"
+HREF="c486.html"><LINK
+REL="PREVIOUS"
+TITLE="Unsigned arithmetic"
+HREF="x504.html"><LINK
+REL="NEXT"
+TITLE="16-bit comparisons"
+HREF="x537.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x504.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>The Second Step</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x537.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN527"
+>16-bit addition and subtraction</A
+></H1
+><P
+>    Time to use the carry bit for what it was meant to do.  Adding two
+    8 bit numbers can produce a 9-bit result.  That 9th bit is stored
+    in the carry flag.  The <TT
+CLASS="LITERAL"
+>ADC</TT
+> command adds the
+    carry value to its result, as well.  Thus, carries work just as
+    we'd expect them to.  Suppose we're storing two 16-bit values, low
+    byte first, in $C100-1 and $C102-3.  To add them together and
+    store them in $C104-5, this is very easy:
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>  CLC
+  LDA $C100
+  ADC $C102
+  STA $C104
+  LDA $C101
+  ADC $C103
+  STA $C105</PRE
+></TD
+></TR
+></TABLE
+><P
+>    Subtraction is identical, but you set the carry bit first
+    with <TT
+CLASS="LITERAL"
+>SEC</TT
+> (because borrow is the complement of
+    carry&#8212;think about how the unsigned compare works if this
+    puzzles you) and, of course, using the <TT
+CLASS="LITERAL"
+>SBC</TT
+>
+    instruction instead of <TT
+CLASS="LITERAL"
+>ADC</TT
+>.
+  </P
+><P
+>    The carry/borrow bit is set appropriately to let you continue,
+    too.  As long as you just keep working your way up to bytes of
+    ever-higher significance, this generalizes to 24 (do it three
+    times instead of two) or 32 (four, etc.) bit integers.
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x504.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x537.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Unsigned arithmetic</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c486.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>16-bit comparisons</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

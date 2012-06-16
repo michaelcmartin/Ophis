@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>A final reminder</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Functionals"
+HREF="c816.html"><LINK
+REL="PREVIOUS"
+TITLE="VTables and Object-Oriented Assembler"
+HREF="x871.html"><LINK
+REL="NEXT"
+TITLE="Call Stacks"
+HREF="c900.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x871.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Functionals</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c900.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN892"
+>A final reminder</A
+></H1
+><P
+>    We've been talking about all these routines as if they could be
+    copy-pasted or hand-compiled from C++ or Java code.  This isn't
+    really the case, primarily because <SPAN
+CLASS="QUOTE"
+>"local variables"</SPAN
+>
+    in your average assembler routines aren't really local, so
+    multiple calls to the same method will tend to trash the program
+    state.  And since a lot of the machinery described here shares a
+    lot of memory (in particular, every single method invocation
+    everywhere shares a <TT
+CLASS="LITERAL"
+>this</TT
+>), attempting to shift
+    over standard OO code into this format is likely to fail
+    miserably.
+  </P
+><P
+>    You can get an awful lot of flexibility out of even just one layer
+    of method-calls, though, given a thoughtful
+    design. The <TT
+CLASS="LITERAL"
+>do'jump'table</TT
+> routine, or one very
+    like it, was extremely common in NES games in the mid-1980s and
+    later, usually as the beginning of the frame-update loop.
+  </P
+><P
+>    If you find you really need multiple layers of method calls,
+    though, then you really are going to need a full-on program stack,
+    and that's going to be several kinds of mess.  That's the topic
+    for the final chapter.
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x871.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c900.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>VTables and Object-Oriented Assembler</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c816.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Call Stacks</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

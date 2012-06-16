@@ -1,0 +1,409 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Local variables and memory segments</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Using the Ophis Assembler"
+HREF="p50.html"><LINK
+REL="PREVIOUS"
+TITLE="Character maps"
+HREF="c319.html"><LINK
+REL="NEXT"
+TITLE="Expressions"
+HREF="c395.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c319.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c395.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CH5-LINK"
+></A
+>Local variables and memory segments</H1
+><P
+>    As mentioned in <A
+HREF="c319.html"
+>the Chapter called <I
+>Character maps</I
+></A
+>, there are better ways
+    to handle waiting than just executing vast numbers of NOPs.  The
+    Commodore 64 KERNAL library includes a <TT
+CLASS="LITERAL"
+>rdtim</TT
+>
+    routine that returns the uptime of the machine, in
+    60<SUP
+>th</SUP
+>s of a second, as a 24-bit integer.
+    The Commodore 64 programmer's guide available online actually has
+    a bug in it, reversing the significance of the A and Y registers.
+    The accumulator holds the <I
+CLASS="EMPHASIS"
+>least</I
+> significant
+    byte, not the most.
+  </P
+><P
+>    Here's a first shot at a better delay routine:
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.scope
+        ; data used by the delay routine
+        _tmp:    .byte 0
+        _target: .byte 0
+
+delay:  sta _tmp        ; save argument (rdtim destroys it)
+        jsr rdtim
+        clc
+        adc _tmp        ; add current time to get target
+        sta _target
+*       jsr rdtim
+        cmp _target
+        bmi -           ; Buzz until target reached
+        rts
+.scend</PRE
+></TD
+></TR
+></TABLE
+><P
+>    This works, but it eats up two bytes of file space that don't
+    really need to be specified.  Also, it's modifying data inside a
+    program text area, which isn't good if you're assembling to a ROM
+    chip.  (Since the Commodore 64 stores its programs in RAM, it's
+    not an issue for us here.)  A slightly better solution is to
+    use <TT
+CLASS="LITERAL"
+>.alias</TT
+> to assign the names to chunks of RAM
+    somewhere.  There's a 4K chunk of RAM from $C000 through $CFFF
+    between the BASIC ROM and the I/O ROM that should serve our
+    purposes nicely.  We can replace the definitions
+    of <TT
+CLASS="LITERAL"
+>_tmp</TT
+> and <TT
+CLASS="LITERAL"
+>_target</TT
+> with:
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>        ; data used by the delay routine
+        .alias _tmp    $C000
+        .alias _target $C001</PRE
+></TD
+></TR
+></TABLE
+><P
+>    This works better, but now we've just added a major bookkeeping
+    burden upon ourselves&#8212;we must ensure that no routines step on
+    each other.  What we'd really like are two separate program
+    counters&#8212;one for the program text, and one for our variable
+    space.
+  </P
+><P
+>    Ophis lets us do this with the <TT
+CLASS="LITERAL"
+>.text</TT
+>
+    and <TT
+CLASS="LITERAL"
+>.data</TT
+> commands.
+    The <TT
+CLASS="LITERAL"
+>.text</TT
+> command switches to the program-text
+    counter, and the <TT
+CLASS="LITERAL"
+>.data</TT
+> command switches to the
+    variable-data counter.  When Ophis first starts assembling a file,
+    it starts in <TT
+CLASS="LITERAL"
+>.text</TT
+> mode.
+  </P
+><P
+>    To reserve space for a variable, use the .space command.  This
+    takes the form:
+
+<TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.space varname size</PRE
+></TD
+></TR
+></TABLE
+>
+
+    which assigns the name <TT
+CLASS="LITERAL"
+>varname</TT
+> to the current
+    program counter, then advances the program counter by the amount
+    specified in <TT
+CLASS="LITERAL"
+>size</TT
+>.  Nothing is output to the
+    final binary as a result of the <TT
+CLASS="LITERAL"
+>.space</TT
+> command.
+  </P
+><P
+>    You may not put in any commands that produce output into
+    a <TT
+CLASS="LITERAL"
+>.data</TT
+> segment.  Generally, all you will be
+    using are <TT
+CLASS="LITERAL"
+>.org</TT
+> and <TT
+CLASS="LITERAL"
+>.space</TT
+>
+    commands.  Ophis will not complain if you
+    use <TT
+CLASS="LITERAL"
+>.space</TT
+> inside a <TT
+CLASS="LITERAL"
+>.text</TT
+>
+    segment, but this is nearly always wrong.
+  </P
+><P
+>    The final version of <TT
+CLASS="LITERAL"
+>delay</TT
+> looks like this:
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>; DELAY routine.  Takes values from the Accumulator and pauses
+; for that many jiffies (1/60th of a second).
+.scope
+.data
+.space _tmp 1
+.space _target 1
+
+.text
+
+delay:  sta _tmp        ; save argument (rdtim destroys it)
+        jsr rdtim
+        clc
+        adc _tmp        ; add current time to get target
+        sta _target
+*       jsr rdtim
+        cmp _target
+        bmi -                ; Buzz until target reached
+        rts
+.scend</PRE
+></TD
+></TR
+></TABLE
+><P
+>    We're not quite done yet, however, because we have to tell the
+    data segment where to begin.  (If we don't, it starts at 0, which
+    is usually wrong.)  We add a very brief data segment to the top of
+    our code:
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.data
+.org $C000
+.text</PRE
+></TD
+></TR
+></TABLE
+><P
+>    This will run.  However, we also ought to make sure that we aren't
+    overstepping any boundaries.  Our program text shouldn't run into
+    the BASIC chip at $A000, and our data shouldn't run into the I/O
+    region at $D000.  The <TT
+CLASS="LITERAL"
+>.checkpc</TT
+> command lets us
+    assert that the program counter hasn't reached a specific point
+    yet.  We put, at the end of our code:
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.checkpc $A000
+.data
+.checkpc $D000</PRE
+></TD
+></TR
+></TABLE
+><P
+>    The final program is available as <A
+HREF="x1010.html"
+><I
+><I
+>hello5.oph</I
+></I
+></A
+>.  Note that we based this on the
+    all-uppercase version from the last section, not any of the
+    charmapped versions.
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c319.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c395.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Character maps</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="p50.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Expressions</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

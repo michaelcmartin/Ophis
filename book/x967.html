@@ -1,0 +1,219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Example: Fibonnacci Numbers</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Call Stacks"
+HREF="c900.html"><LINK
+REL="PREVIOUS"
+TITLE="Our Goals"
+HREF="x915.html"><LINK
+REL="NEXT"
+TITLE="Example Programs"
+HREF="a975.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x915.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Call Stacks</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="a975.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN967"
+>Example: Fibonnacci Numbers</A
+></H1
+><P
+>    About the simplest <SPAN
+CLASS="QUOTE"
+>"interesting"</SPAN
+> recursive function
+    is the Fibonacci numbers.  The function fib(x) is defined as being
+    1 if x is 0 or 1, and being fib(x-2)+fib(x-1) otherwise.
+  </P
+><P
+>    Actually expressing it like that directly produces a very
+    inefficient implementation, but it's a simple demonstration of the
+    system.  Here's code for expressing the fib function:
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.scope
+; Uint16 fib (Uint8 x): compute Xth fibonnaci number.
+; fib(0) = fib(1) = 1.
+; Stack usage: 3.
+
+fib:    lda     #$03
+        jsr     save'stack
+        lda     fun'vars
+        cmp     #$02
+        bcc     _base
+
+        dec     fun'args
+        jsr     fib
+        lda     fun'args
+        sta     fun'vars+1
+        lda     fun'args+1
+        sta     fun'vars+2
+        lda     fun'vars
+        sec
+        sbc     #$02
+        sta     fun'args
+        jsr     fib
+        clc
+        lda     fun'args
+        adc     fun'vars+1
+        sta     fun'args
+        lda     fun'args+1
+        adc     fun'vars+2
+        sta     fun'args+1
+        jmp     _done
+
+_base:  ldy     #$01
+        sty     fun'args
+        dey
+        sty     fun'args+1
+
+_done:  lda     #$03
+        jsr     restore'stack
+        rts
+.scend</PRE
+></TD
+></TR
+></TABLE
+><P
+>    The full application, which deals with interfacing with CBM BASIC
+    and handles console I/O and such, is in <A
+HREF="x1030.html"
+><I
+><I
+>fibonacci.oph</I
+></I
+></A
+>.
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x915.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="a975.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Our Goals</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c900.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Example Programs</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

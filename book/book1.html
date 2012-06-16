@@ -1,0 +1,654 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Programming with Ophis</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="NEXT"
+TITLE="Preface"
+HREF="f10.html"></HEAD
+><BODY
+CLASS="BOOK"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="BOOK"
+><A
+NAME="AEN1"
+></A
+><DIV
+CLASS="TITLEPAGE"
+><H1
+CLASS="TITLE"
+><A
+NAME="AEN2"
+>Programming with Ophis</A
+></H1
+><H3
+CLASS="AUTHOR"
+><A
+NAME="AEN4"
+></A
+>Michael Martin</H3
+><P
+CLASS="COPYRIGHT"
+>Copyright &copy; 2006-2012 Michael Martin</P
+><HR></DIV
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+><A
+HREF="f10.html"
+>Preface</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="f10.html#AEN15"
+>History of the project</A
+></DT
+><DT
+><A
+HREF="x29.html"
+>Getting a copy of Ophis</A
+></DT
+><DT
+><A
+HREF="x41.html"
+>About the examples</A
+></DT
+></DL
+></DD
+><DT
+>I. <A
+HREF="p50.html"
+>Using the Ophis Assembler</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c55.html"
+>The basics</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c55.html#AEN68"
+>A note on numeric notation</A
+></DT
+><DT
+><A
+HREF="x71.html"
+>Producing Commodore 64 programs</A
+></DT
+><DT
+><A
+HREF="x140.html"
+>Related commands and options</A
+></DT
+><DT
+><A
+HREF="x161.html"
+>Writing the actual code</A
+></DT
+><DT
+><A
+HREF="x170.html"
+>Assembling the code</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c223.html"
+>Labels and aliases</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c223.html#AEN229"
+>Temporary labels</A
+></DT
+><DT
+><A
+HREF="x237.html"
+>Anonymous labels</A
+></DT
+><DT
+><A
+HREF="x248.html"
+>Aliasing</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c259.html"
+>Headers, Libraries, and Macros</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c259.html#AEN263"
+>Header files and libraries</A
+></DT
+><DT
+><A
+HREF="x284.html"
+>Macros</A
+></DT
+><DT
+><A
+HREF="x314.html"
+>Example code</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c319.html"
+>Character maps</A
+></DT
+><DT
+><A
+HREF="c353.html"
+>Local variables and memory segments</A
+></DT
+><DT
+><A
+HREF="c395.html"
+>Expressions</A
+></DT
+><DT
+><A
+HREF="c443.html"
+>Advanced Memory Segments</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c443.html#AEN448"
+>The Problem</A
+></DT
+><DT
+><A
+HREF="x454.html"
+>The Solution</A
+></DT
+><DT
+><A
+HREF="x476.html"
+>Where to go from here</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+>II. <A
+HREF="p481.html"
+>To HLL and Back</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c486.html"
+>The Second Step</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c486.html#AEN489"
+>The problem</A
+></DT
+><DT
+><A
+HREF="x498.html"
+>The solution</A
+></DT
+><DT
+><A
+HREF="x504.html"
+>Unsigned arithmetic</A
+></DT
+><DT
+><A
+HREF="x527.html"
+>16-bit addition and subtraction</A
+></DT
+><DT
+><A
+HREF="x537.html"
+>16-bit comparisons</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c543.html"
+>Structured Programming</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c543.html#AEN548"
+>Control constructs</A
+></DT
+><DT
+><A
+HREF="x597.html"
+>The stack</A
+></DT
+><DT
+><A
+HREF="x603.html"
+>Procedures and register saving</A
+></DT
+><DT
+><A
+HREF="x621.html"
+>Variables</A
+></DT
+><DT
+><A
+HREF="x666.html"
+>Data structures</A
+></DT
+><DT
+><A
+HREF="x719.html"
+>A modest example: Insertion sort on linked lists</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c748.html"
+>Pointers and Indirection</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c748.html#AEN753"
+>The absolute basics</A
+></DT
+><DT
+><A
+HREF="x782.html"
+>Pointer arithmetic</A
+></DT
+><DT
+><A
+HREF="x798.html"
+>What about Indexed Indirect?</A
+></DT
+><DT
+><A
+HREF="x805.html"
+>Comparison with the other indexed forms</A
+></DT
+><DT
+><A
+HREF="x813.html"
+>Conclusion</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c816.html"
+>Functionals</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c816.html#AEN821"
+>Function Pointers</A
+></DT
+><DT
+><A
+HREF="x836.html"
+>A quick digression on how subroutines work</A
+></DT
+><DT
+><A
+HREF="x855.html"
+>Dispatch-on-type and Data-Directed Assembler</A
+></DT
+><DT
+><A
+HREF="x871.html"
+>VTables and Object-Oriented Assembler</A
+></DT
+><DT
+><A
+HREF="x892.html"
+>A final reminder</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="c900.html"
+>Call Stacks</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="c900.html#AEN904"
+>Recursion</A
+></DT
+><DT
+><A
+HREF="x915.html"
+>Our Goals</A
+></DT
+><DT
+><A
+HREF="x967.html"
+>Example: Fibonnacci Numbers</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+><A
+HREF="a975.html"
+>Example Programs</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="a975.html#TUTOR1-SRC"
+><TT
+CLASS="FILENAME"
+>hello1.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x982.html"
+><TT
+CLASS="FILENAME"
+>hello2.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x986.html"
+><TT
+CLASS="FILENAME"
+>c64-1.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x990.html"
+><TT
+CLASS="FILENAME"
+>c64kernal.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x994.html"
+><TT
+CLASS="FILENAME"
+>hello3.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x998.html"
+><TT
+CLASS="FILENAME"
+>hello4a.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x1002.html"
+><TT
+CLASS="FILENAME"
+>hello4b.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x1006.html"
+><TT
+CLASS="FILENAME"
+>hello4c.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x1010.html"
+><TT
+CLASS="FILENAME"
+>hello5.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x1014.html"
+><TT
+CLASS="FILENAME"
+>hello6.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x1018.html"
+><TT
+CLASS="FILENAME"
+>c64_0.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x1022.html"
+><TT
+CLASS="FILENAME"
+>hello7.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x1026.html"
+><TT
+CLASS="FILENAME"
+>structuredemo.oph</TT
+></A
+></DT
+><DT
+><A
+HREF="x1030.html"
+><TT
+CLASS="FILENAME"
+>fibonacci.oph</TT
+></A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="a1034.html"
+>Ophis Command Reference</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="a1034.html#AEN1036"
+>Command Modes</A
+></DT
+><DT
+><A
+HREF="x1101.html"
+>Basic arguments</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="x1101.html#AEN1104"
+>Numeric types</A
+></DT
+><DT
+><A
+HREF="x1101.html#AEN1127"
+>Label types</A
+></DT
+><DT
+><A
+HREF="x1101.html#AEN1140"
+>String types</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="x1149.html"
+>Compound Arguments</A
+></DT
+><DT
+><A
+HREF="x1176.html"
+>Memory Model</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="x1176.html#AEN1179"
+>Basic PC tracking</A
+></DT
+><DT
+><A
+HREF="x1176.html#AEN1188"
+>Basic Segmentation simulation</A
+></DT
+><DT
+><A
+HREF="x1176.html#AEN1212"
+>General Segmentation Simulation</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="x1221.html"
+>Macros</A
+></DT
+><DD
+><DL
+><DT
+><A
+HREF="x1221.html#AEN1225"
+>Defining Macros</A
+></DT
+><DT
+><A
+HREF="x1221.html#AEN1231"
+>Invoking Macros</A
+></DT
+><DT
+><A
+HREF="x1221.html#AEN1239"
+>Passing Arguments to Macros</A
+></DT
+><DT
+><A
+HREF="x1221.html#AEN1249"
+>Features and Restrictions of the Ophis Macro Model</A
+></DT
+></DL
+></DD
+><DT
+><A
+HREF="x1261.html"
+>Assembler directives</A
+></DT
+></DL
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="f10.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Preface</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

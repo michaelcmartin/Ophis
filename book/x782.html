@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Pointer arithmetic</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Pointers and Indirection"
+HREF="c748.html"><LINK
+REL="PREVIOUS"
+TITLE="Pointers and Indirection"
+HREF="c748.html"><LINK
+REL="NEXT"
+TITLE="What about Indexed Indirect?"
+HREF="x798.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c748.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Pointers and Indirection</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x798.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN782"
+>Pointer arithmetic</A
+></H1
+><P
+>    Pointer arithmetic is an obscenely powerful and dangerous
+    technique.  However, it's the most straightforward way to deal
+    with enormous arrays, structs, indexable stacks, and nearly
+    everything you do in C.  (C has no native array or string types
+    primarily because it allows arbitrary pointer arithmetic, which is
+    strong enough to handle all of those without complaint and at
+    blazing speed.  It also allows for all kinds of buffer overrun
+    security holes, but let's face it, who's going to be cracking root
+    on your Apple II?)  There are a number of ways to implement this
+    on the 6502.  We'll deal with them in increasing order of design
+    complexity.
+  </P
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN785"
+>The straightforward, slow way</A
+></H2
+><P
+>      When computing a pointer value, you simply treat the pointer as
+      if it were a 16-bit integer.  Do all the math you need, then
+      when the time comes to dereference it, simply do a direct
+      dereference as above.  This is definitely doable, and it's not
+      difficult.  However, it is costly in both space and time.
+    </P
+><P
+>      When dealing with arbitrary indices large enough that they won't
+      fit in the Y register, or when creating values that you don't
+      intend to dereference (such as subtracting two pointers to find
+      the length of a string), this is also the only truly usable
+      technique.
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN789"
+>The clever fast way</A
+></H2
+><P
+>      But wait, you say.  Often when we compute a value, at least one
+      of the operations is going to be an addition, and we're almost
+      certain to have that value be less than 256!  Surely we may save
+      ourselves an operation by loading that value into the Y register
+      and having the load operation itself perform the final
+      addition!
+    </P
+><P
+>      Very good.  This is the fastest technique, and sometimes it's
+      even the most readable.  These cases usually involve repeated
+      reading of various fields from a structure or record.  The base
+      pointer always points to the base of the structure (or the top
+      of the local variable list, or what have you) and the Y register
+      takes values that index into that structure.  This lets you keep
+      the pointer variable in memory largely static and requires no
+      explicit arithmetic instructions at all.
+    </P
+><P
+>      However, this technique is highly opaque and should always be
+      well documented, indicating exactly what you think you're
+      pointing at.  Then, when you get garbage results, you can
+      compare your comments and the resulting Y values with the actual
+      definition of the structure to see who's screwing up.
+    </P
+><P
+>      For a case where we still need to do arithmetic, consider the
+      classic case of needing to clear out a large chunk of memory.
+      The following code fills the 4KB of memory between $C000 and
+      $D000 with zeroes:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>        lda #$C0        ; Store #$C000 in mem (low byte first)
+        sta mem+1
+        lda #$00
+        sta mem
+        ldx #$04        ; x holds number of times to execute outer loop
+        tay             ; accumulator and y are both 0
+loop:   sta (mem), y
+        iny
+        bne loop        ; Inner loop ends when y wraps around to 0
+        inc mem+1       ; "Carry" from the iny to the core pointer
+        dex             ; Decrement outer loop count, quit if done
+        bne loop</PRE
+></TD
+></TR
+></TABLE
+><P
+>      Used carefully, proper use of the Y register can make your code
+      smaller, faster, <I
+CLASS="EMPHASIS"
+>and</I
+> more readable.  Used
+      carelessly it can make your code an unreadable, unmaintainable
+      mess.  Use it wisely, and with care, and it will be your
+      greatest ally in writing flexible code.
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c748.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x798.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Pointers and Indirection</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c748.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>What about Indexed Indirect?</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

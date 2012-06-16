@@ -1,0 +1,333 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Assembling the code</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="The basics"
+HREF="c55.html"><LINK
+REL="PREVIOUS"
+TITLE="Writing the actual code"
+HREF="x161.html"><LINK
+REL="NEXT"
+TITLE="Labels and aliases"
+HREF="c223.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x161.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>The basics</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c223.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN170"
+>Assembling the code</A
+></H1
+><P
+>       The Ophis assembler is a collection of Python modules,
+       controlled by a master script.  On Windows, this should all
+       have been combined into an executable
+       file <B
+CLASS="COMMAND"
+>ophis.exe</B
+>; on other platforms, the
+       Ophis modules should be in the library and
+       the <B
+CLASS="COMMAND"
+>ophis</B
+> script should be in your path.
+       Typing <B
+CLASS="COMMAND"
+>ophis</B
+> with no arguments should give a
+       summary of available command line options.
+    </P
+><P
+>      Ophis takes a list of source files and produces an output file
+      based on assembling each file you give it, in order. You can add
+      a line to your program like this to name the output file:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.outfile "hello.prg"</PRE
+></TD
+></TR
+></TABLE
+><P
+>      Alternately, you can use the <CODE
+CLASS="OPTION"
+>-o</CODE
+> option on the
+      command line. This will override any <TT
+CLASS="LITERAL"
+>.outfile</TT
+>
+      directives. If you don't specify any name, it will put the
+      output into a file named <TT
+CLASS="FILENAME"
+>ophis.bin</TT
+>.
+    </P
+><P
+>      If you are using Ophis as part of some larger toolchain, you can
+      also make it run in <I
+CLASS="EMPHASIS"
+>pipe mode</I
+>. If you give
+      a dash <CODE
+CLASS="OPTION"
+>-</CODE
+> as an input file or as the output
+      target, Ophis will use standard input or output for
+      communication.
+    </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="AEN185"
+></A
+><P
+><B
+>Table 2. Ophis Options</B
+></P
+><TABLE
+BORDER="1"
+BGCOLOR="#E0E0E0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+>Option</TH
+><TH
+ALIGN="CENTER"
+>Effect</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><CODE
+CLASS="OPTION"
+>-o FILE</CODE
+></TD
+><TD
+>Overrides the default filename for output.</TD
+></TR
+><TR
+><TD
+><CODE
+CLASS="OPTION"
+>-u</CODE
+></TD
+><TD
+>Allows the 6510 undocumented opcodes as listed in the VICE documentation.</TD
+></TR
+><TR
+><TD
+><CODE
+CLASS="OPTION"
+>-c</CODE
+></TD
+><TD
+>Allows opcodes and addressing modes added by the 65C02.</TD
+></TR
+><TR
+><TD
+><CODE
+CLASS="OPTION"
+>-q</CODE
+></TD
+><TD
+>Quiet operation.  Only reports warnings and errors.</TD
+></TR
+><TR
+><TD
+><CODE
+CLASS="OPTION"
+>-v</CODE
+></TD
+><TD
+>Verbose operation.  Reports files as they are loaded.</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>      The only options Ophis demands are an input file and an output
+      file.  Here's a sample session, assembling the tutorial file
+      here:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>localhost$ ophis -v hello1.oph
+Loading hello1.oph
+Assembly complete: 45 bytes output (14 code, 29 data, 2 filler)
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>      This will produce a file named <TT
+CLASS="FILENAME"
+>hello.prg</TT
+>. If
+      your emulator can run <TT
+CLASS="FILENAME"
+>PRG</TT
+> files directly,
+      this file will now run (and print <SAMP
+CLASS="COMPUTEROUTPUT"
+>HELLO,
+      WORLD!</SAMP
+>) as many times as you
+      type <KBD
+CLASS="USERINPUT"
+>RUN</KBD
+>.  Otherwise, use
+      a <TT
+CLASS="FILENAME"
+>D64</TT
+> management utility to put
+      the <TT
+CLASS="FILENAME"
+>PRG</TT
+> on a <TT
+CLASS="FILENAME"
+>D64</TT
+>, then
+      load and run the file off that.
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x161.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c223.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Writing the actual code</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c55.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Labels and aliases</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
