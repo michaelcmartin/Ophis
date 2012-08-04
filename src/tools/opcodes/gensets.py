@@ -142,7 +142,7 @@ def dump_map(m, prologue=''):
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        chipsets = argv[1:]
+        chipsets = sys.argv[1:]
     else:
         chipsets = ['chipsets.txt']
     archs = []
