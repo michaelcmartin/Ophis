@@ -16,6 +16,7 @@ import os.path
 
 
 loadedfiles = {}
+templabelcount = 0
 
 
 class Lexeme(object):
@@ -205,6 +206,7 @@ def parse_expr(line):
 
     def atom():
         "Parses lowest-priority expression components."
+        global templabelcount
         next = line.lookahead(0).type
         if next == "NUM":
             return IR.ConstantExpr(line.expect("NUM").value)
