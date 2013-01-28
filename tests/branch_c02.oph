@@ -1,74 +1,74 @@
 .text
 .org $0800
 early:
-     bbr0 late
-     bbr1 late
-     bbr2 late
-     bbr3 late
-     bbr4 late
-     bbr5 late
-     bbr6 late
-     bbr7 late
+     bbr0 $42, late
+     bbr1 $42, late
+     bbr2 $42, late
+     bbr3 $42, late
+     bbr4 $42, late
+     bbr5 $42, late
+     bbr6 $42, late
+     bbr7 $42, late
      bra  late
-     bbs0 late
-     bbs1 late
-     bbs2 late
-     bbs3 late
-     bbs4 late
-     bbs5 late
-     bbs6 late
-     bbs7 late
-     bbr0 early
-     bbr1 early
-     bbr2 early
-     bbr3 early
-     bbr4 early
-     bbr5 early
-     bbr6 early
-     bbr7 early
+     bbs0 $42, late
+     bbs1 $42, late
+     bbs2 $42, late
+     bbs3 $42, late
+     bbs4 $42, late
+     bbs5 $42, late
+     bbs6 $42, late
+     bbs7 $42, late
+     bbr0 $42, early
+     bbr1 $42, early
+     bbr2 $42, early
+     bbr3 $42, early
+     bbr4 $42, early
+     bbr5 $42, early
+     bbr6 $42, early
+     bbr7 $42, early
      bra  early
-     bbs0 early
-     bbs1 early
-     bbs2 early
-     bbs3 early
-     bbs4 early
-     bbs5 early
-     bbs6 early
-     bbs7 early
+early2:
+     bbs0 $42, early2
+     bbs1 $42, early2
+     bbs2 $42, early2
+     bbs3 $42, early2
+     bbs4 $42, early2
+     bbs5 $42, early2
+     bbs6 $42, early2
+     bbs7 $42, early2
  .advance ^+256
 late:
-     bbr0 late
-     bbr1 late
-     bbr2 late
-     bbr3 late
-     bbr4 late
-     bbr5 late
-     bbr6 late
-     bbr7 late
+     bbr0 $42, late
+     bbr1 $42, late
+     bbr2 $42, late
+     bbr3 $42, late
+     bbr4 $42, late
+     bbr5 $42, late
+     bbr6 $42, late
+     bbr7 $42, late
      bra  late
-     bbs0 late
-     bbs1 late
-     bbs2 late
-     bbs3 late
-     bbs4 late
-     bbs5 late
-     bbs6 late
-     bbs7 late
-     bbr0 early
-     bbr1 early
-     bbr2 early
-     bbr3 early
-     bbr4 early
-     bbr5 early
-     bbr6 early
-     bbr7 early
+     bbs0 $42, late
+     bbs1 $42, late
+     bbs2 $42, late
+     bbs3 $42, late
+     bbs4 $42, late
+     bbs5 $42, late
+     bbs6 $42, late
+     bbs7 $42, late
+     bbr0 $42, early
+     bbr1 $42, early
+     bbr2 $42, early
+     bbr3 $42, early
+     bbr4 $42, early
+     bbr5 $42, early
+     bbr6 $42, early
+     bbr7 $42, early
      bra  early
-     bbs0 early
-     bbs1 early
-     bbs2 early
-     bbs3 early
-     bbs4 early
-     bbs5 early
-     bbs6 early
-     bbs7 early
-
+     bbs0 $42, early
+     bbs1 $42, early
+     bbs2 $42, early
+     bbs3 $42, early
+     bbs4 $42, early
+     bbs5 $42, early
+     bbs6 $42, early
+     bbs7 $42, early

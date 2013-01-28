@@ -1,106 +1,107 @@
 .text
 .org $0800
 early:
-     bbs0 +
+     bbs0 $42, +
      jmp  late
-*    bbs1 +
+*    bbs1 $42, +
      jmp  late
-*    bbs2 +
+*    bbs2 $42, +
      jmp  late
-*    bbs3 +
+*    bbs3 $42, +
      jmp  late
-*    bbs4 +
+*    bbs4 $42, +
      jmp  late
-*    bbs5 +
+*    bbs5 $42, +
      jmp  late
-*    bbs6 +
+*    bbs6 $42, +
      jmp  late
-*    bbs7 +
+*    bbs7 $42, +
      jmp  late
 *    jmp  late
-*    bbr0 +
+*    bbr0 $42, +
      jmp  late
-*    bbr1 +
+*    bbr1 $42, +
      jmp  late
-*    bbr2 +
+*    bbr2 $42, +
      jmp  late
-*    bbr3 +
+*    bbr3 $42, +
      jmp  late
-*    bbr4 +
+*    bbr4 $42, +
      jmp  late
-*    bbr5 +
+*    bbr5 $42, +
      jmp  late
-*    bbr6 +
+*    bbr6 $42, +
      jmp  late
-*    bbr7 +
+*    bbr7 $42, +
      jmp  late
-*    bbr0 early
-     bbr1 early
-     bbr2 early
-     bbr3 early
-     bbr4 early
-     bbr5 early
-     bbr6 early
-     bbr7 early
+*    bbr0 $42, early
+     bbr1 $42, early
+     bbr2 $42, early
+     bbr3 $42, early
+     bbr4 $42, early
+     bbr5 $42, early
+     bbr6 $42, early
+     bbr7 $42, early
      bra  early
-     bbs0 early
-     bbs1 early
-     bbs2 early
-     bbs3 early
-     bbs4 early
-     bbs5 early
-     bbs6 early
-     bbs7 early
+early2:
+     bbs0 $42, early2
+     bbs1 $42, early2
+     bbs2 $42, early2
+     bbs3 $42, early2
+     bbs4 $42, early2
+     bbs5 $42, early2
+     bbs6 $42, early2
+     bbs7 $42, early2
 .advance ^+256
 late:
-     bbr0 late
-     bbr1 late
-     bbr2 late
-     bbr3 late
-     bbr4 late
-     bbr5 late
-     bbr6 late
-     bbr7 late
+     bbr0 $42, late
+     bbr1 $42, late
+     bbr2 $42, late
+     bbr3 $42, late
+     bbr4 $42, late
+     bbr5 $42, late
+     bbr6 $42, late
+     bbr7 $42, late
      bra  late
-     bbs0 late
-     bbs1 late
-     bbs2 late
-     bbs3 late
-     bbs4 late
-     bbs5 late
-     bbs6 late
-     bbs7 late
-     bbs0 +
+     bbs0 $42, late
+     bbs1 $42, late
+     bbs2 $42, late
+     bbs3 $42, late
+     bbs4 $42, late
+     bbs5 $42, late
+     bbs6 $42, late
+     bbs7 $42, late
+     bbs0 $42, +
      jmp  early
-*    bbs1 +
+*    bbs1 $42, +
      jmp  early
-*    bbs2 +
+*    bbs2 $42, +
      jmp  early
-*    bbs3 +
+*    bbs3 $42, +
      jmp  early
-*    bbs4 +
+*    bbs4 $42, +
      jmp  early
-*    bbs5 +
+*    bbs5 $42, +
      jmp  early
-*    bbs6 +
+*    bbs6 $42, +
      jmp  early
-*    bbs7 +
+*    bbs7 $42, +
      jmp  early
 *    jmp  early
-     bbr0 +
+     bbr0 $42, +
      jmp  early
-*    bbr1 +
+*    bbr1 $42, +
      jmp  early
-*    bbr2 +
+*    bbr2 $42, +
      jmp  early
-*    bbr3 +
+*    bbr3 $42, +
      jmp  early
-*    bbr4 +
+*    bbr4 $42, +
      jmp  early
-*    bbr5 +
+*    bbr5 $42, +
      jmp  early
-*    bbr6 +
+*    bbr6 $42, +
      jmp  early
-*    bbr7 +
+*    bbr7 $42, +
      jmp  early
 *

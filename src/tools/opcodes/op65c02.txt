@@ -13,7 +13,7 @@
   0C: TSB - Absolute; TSB.W - Absolute
   0D: ORA - Absolute
   0E: ASL - Absolute
-  0F: BBR0 - Relative
+  0F: BBR0 - Zero Page, Relative
   10: BPL - Relative
   11: ORA - (Zero Page), Y
   12: ORA - (Zero Page)
@@ -29,7 +29,7 @@
   1C: TRB - Absolute; TRB.W - Absolute
   1D: ORA - Absolute, X
   1E: ASL - Absolute, X
-  1F: BBR1 - Relative
+  1F: BBR1 - Zero Page, Relative
   20: JSR - Absolute
   21: AND - (Zero Page, X)
   22:
@@ -45,7 +45,7 @@
   2C: BIT - Absolute
   2D: AND - Absolute
   2E: ROL - Absolute
-  2F: BBR2 - Relative
+  2F: BBR2 - Zero Page, Relative
   30: BMI - Relative
   31: AND - (Zero Page), Y
   32: AND - (Zero Page)
@@ -61,7 +61,7 @@
   3C: BIT - Absolute, X
   3D: AND - Absolute, X
   3E: ROL - Absolute, X
-  3F: BBR3 - Relative
+  3F: BBR3 - Zero Page, Relative
   40: RTI - Implied
   41: EOR - (Zero Page, X)
   42:
@@ -77,7 +77,7 @@
   4C: JMP - Absolute
   4D: EOR - Absolute
   4E: LSR - Absolute
-  4F: BBR4 - Relative
+  4F: BBR4 - Zero Page, Relative
   50: BVC - Relative
   51: EOR - (Zero Page), Y
   52: EOR - (Zero Page)
@@ -93,7 +93,7 @@
   5C:
   5D: EOR - Absolute, X
   5E: LSR - Absolute, X
-  5F: BBR5 - Relative
+  5F: BBR5 - Zero Page, Relative
   60: RTS - Implied
   61: ADC - (Zero Page, X)
   62:
@@ -109,7 +109,7 @@
   6C: JMP - (Absolute)
   6D: ADC - Absolute
   6E: ROR - Absolute
-  6F: BBR6 - Relative
+  6F: BBR6 - Zero Page, Relative
   70: BVS - Relative
   71: ADC - (Zero Page), Y
   72: ADC - (Zero Page)
@@ -125,7 +125,7 @@
   7C: JMP - (Absolute, X)
   7D: ADC - Absolute, X
   7E: ROR - Absolute, X
-  7F: BBR7 - Relative
+  7F: BBR7 - Zero Page, Relative
   80: BRA - Relative
   81: STA - (Zero Page, X)
   82:
@@ -141,7 +141,7 @@
   8C: STY - Absolute
   8D: STA - Absolute
   8E: STX - Absolute
-  8F: BBS0 - Relative
+  8F: BBS0 - Zero Page, Relative
   90: BCC - Relative
   91: STA - (Zero Page), Y
   92: STA - (Zero Page)
@@ -157,7 +157,7 @@
   9C: STZ - Absolute; STZ.W - Absolute
   9D: STA - Absolute, X
   9E: STZ - Absolute, X; STZ.W - Absolute, X
-  9F: BBS1 - Relative
+  9F: BBS1 - Zero Page, Relative
   A0: LDY - Immediate
   A1: LDA - (Zero Page, X)
   A2: LDX - Immediate
@@ -173,7 +173,7 @@
   AC: LDY - Absolute
   AD: LDA - Absolute
   AE: LDX - Absolute
-  AF: BBS2 - Relative
+  AF: BBS2 - Zero Page, Relative
   B0: BCS - Relative
   B1: LDA - (Zero Page), Y
   B2: LDA - (Zero Page)
@@ -189,7 +189,7 @@
   BC: LDY - Absolute, X
   BD: LDA - Absolute, X
   BE: LDX - Absolute, Y
-  BF: BBS3 - Relative
+  BF: BBS3 - Zero Page, Relative
   C0: CPY - Immediate
   C1: CMP - (Zero Page, X)
   C2:
@@ -205,7 +205,7 @@
   CC: CPY - Absolute
   CD: CMP - Absolute
   CE: DEC - Absolute
-  CF: BBS4 - Relative
+  CF: BBS4 - Zero Page, Relative
   D0: BNE - Relative
   D1: CMP - (Zero Page), Y
   D2: CMP - (Zero Page)
@@ -221,7 +221,7 @@
   DC:
   DD: CMP - Absolute, X
   DE: DEC - Absolute, X
-  DF: BBS5 - Relative
+  DF: BBS5 - Zero Page, Relative
   E0: CPX - Immediate
   E1: SBC - (Zero Page, X)
   E2:
@@ -237,7 +237,7 @@
   EC: CPX - Absolute
   ED: SBC - Absolute
   EE: INC - Absolute
-  EF: BBS6 - Relative
+  EF: BBS6 - Zero Page, Relative
   F0: BEQ - Relative
   F1: SBC - (Zero Page), Y
   F2: SBC - (Zero Page)
@@ -253,4 +253,4 @@
   FC:
   FD: SBC - Absolute, X
   FE: INC - Absolute, X
-  FF: BBS7 - Relative
+  FF: BBS7 - Zero Page, Relative

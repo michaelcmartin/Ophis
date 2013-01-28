@@ -314,6 +314,7 @@ def parse_line(ppt, lexemelist):
                 Err.log("Unknown pragma " + pragma)
         else:   # Instruction
             opcode = line.expect("OPCODE").value
+            arg2 = None
             if line.lookahead(0).type == "#":
                 mode = "Immediate"
                 line.expect("#")
@@ -344,15 +345,21 @@ def parse_line(ppt, lexemelist):
                 arg = parse_expr(line)
                 tok = line.expect("EOL", ",").type
                 if tok == ",":
-                    tok = line.expect("X", "Y").type
-                    if tok == "X":
-                        mode = "MemoryX"
+                    # Parser has to special-case the BBXn instructions,
+                    # Which uniquely take two addresses
+                    if opcode[:3] in ["bbs", "bbr"]:
+                        arg2 = parse_expr(line)
+                        mode = "Memory2"
                     else:
-                        mode = "MemoryY"
+                        tok = line.expect("X", "Y").type
+                        if tok == "X":
+                            mode = "MemoryX"
+                        else:
+                            mode = "MemoryY"
                     line.expect("EOL")
                 else:
                     mode = "Memory"
-            result.append(IR.Node(ppt, mode, opcode, arg))
+            result.append(IR.Node(ppt, mode, opcode, arg, arg2))
 
     aux()
     result = [node for node in result if node is not IR.NullNode]

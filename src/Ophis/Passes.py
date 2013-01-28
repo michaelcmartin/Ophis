@@ -273,6 +273,9 @@ class EasyModes(Pass):
             if not collapse_y(node, env):
                 node.nodetype = "AbsoluteY"
 
+    def visitMemory2(self, node, env):
+        node.nodetype = "ZPRelative"
+
     def visitPointer(self, node, env):
         if node.data[1].hardcoded:
             if not collapse_no_index_ind(node, env):
@@ -328,6 +331,9 @@ class PCTracker(Pass):
 
     def visitRelative(self, node, env):
         env.incPC(2)
+
+    def visitZPRelative(self, node, env):
+        env.incPC(3)
 
     def visitIndirect(self, node, env):
         env.incPC(3)
@@ -564,13 +570,13 @@ class ExtendBranches(PCTracker):
         self.changed = False
 
     def visitRelative(self, node, env):
-        (opcode, expr) = node.data
+        (opcode, expr) = node.data[:2]
         arg = expr.value(env)
         arg = arg - (env.getPC() + 2)
         if arg < -128 or arg > 127:
             if opcode == 'bra':
                 # If BRA - BRanch Always - is out of range, it's a JMP.
-                node.data = ('jmp', expr)
+                node.data = ('jmp', expr, None)
                 node.nodetype = "Absolute"
                 if Cmd.warn_on_branch_extend:
                     print>>sys.stderr, str(node.ppt) + ": WARNING: " \
@@ -584,8 +590,9 @@ class ExtendBranches(PCTracker):
                 expansion = [IR.Node(node.ppt, "Relative",
                                      ExtendBranches.reversed[opcode],
                                      IR.SequenceExpr([IR.PCExpr(), "+",
-                                                      IR.ConstantExpr(5)])),
-                             IR.Node(node.ppt, "Absolute", 'jmp', expr)]
+                                                      IR.ConstantExpr(5)]),
+                                     None),
+                             IR.Node(node.ppt, "Absolute", 'jmp', expr, None)]
                 node.nodetype = 'SEQUENCE'
                 node.data = expansion
                 if Cmd.warn_on_branch_extend:
@@ -597,7 +604,36 @@ class ExtendBranches(PCTracker):
             self.changed = True
             node.accept(self, env)
         else:
-            env.incPC(2)
+            PCTracker.visitRelative(self, node, env)
+
+    def visitZPRelative(self, node, env):
+        (opcode, tested, expr) = node.data
+        arg = expr.value(env)
+        arg = arg - (env.getPC() + 3)
+        if arg < -128 or arg > 127:
+            # Otherwise, we replace it with a 'macro' of sorts by hand:
+            # $branch LOC -> $reversed_branch ^+6; JMP LOC
+            # We don't use temp labels here because labels need to have
+            # been fixed in place by this point, and JMP is always 3
+            # bytes long.
+            expansion = [IR.Node(node.ppt, "ZPRelative",
+                                 ExtendBranches.reversed[opcode],
+                                 tested,
+                                 IR.SequenceExpr([IR.PCExpr(), "+",
+                                                  IR.ConstantExpr(6)])),
+                         IR.Node(node.ppt, "Absolute", 'jmp', expr, None)]
+            node.nodetype = 'SEQUENCE'
+            node.data = expansion
+            if Cmd.warn_on_branch_extend:
+                print>>sys.stderr, str(node.ppt) + ": WARNING: " + \
+                    opcode + " out of range, " \
+                    "replacing with " + \
+                    ExtendBranches.reversed[opcode] + \
+                    "/jmp combo"
+            self.changed = True
+            node.accept(self, env)
+        else:
+            PCTracker.visitZPRelative(self, node, env)
 
 
 class NormalizeModes(Pass):
@@ -710,9 +746,20 @@ class Assembler(Pass):
         else:
             Err.log("Attempt to write to data segment")
 
+    def relativize(self, expr, env, arglen):
+        "Convert an expression into one for use in relative addressing"
+        arg = expr.value(env)
+        arg = arg - (env.getPC() + arglen + 1)
+        if arg < -128 or arg > 127:
+            Err.log("Branch target out of bounds")
+            arg = 0
+        if arg < 0:
+            arg += 256
+        return IR.ConstantExpr(arg)
+
     def assemble(self, node, mode, env):
         "A generic instruction called by the visitor methods themselves"
-        (opcode, expr) = node.data
+        (opcode, expr, expr2) = node.data
         bin_op = Ops.opcodes[opcode][mode]
         if bin_op is None:
             Err.log('%s does not have mode "%s"' % (opcode.upper(),
@@ -720,19 +767,17 @@ class Assembler(Pass):
             return
         self.outputbyte(IR.ConstantExpr(bin_op), env)
         arglen = Ops.lengths[mode]
-        if mode == 14:  # Special handling for relative mode
-            arg = expr.value(env)
-            arg = arg - (env.getPC() + 2)
-            if arg < -128 or arg > 127:
-                Err.log("Branch target out of bounds")
-                arg = 0
-            if arg < 0:
-                arg += 256
-            expr = IR.ConstantExpr(arg)
-        if arglen == 1:
+        if mode == 15:  # ZP Relative mode is wildly nonstandard
+            expr2 = self.relativize(expr2, env, arglen)
             self.outputbyte(expr, env)
-        if arglen == 2:
-            self.outputword(expr, env)
+            self.outputbyte(expr2, env)
+        else:
+            if mode == 14:
+                expr = self.relativize(expr, env, arglen)
+            if arglen == 1:
+                self.outputbyte(expr, env)
+            elif arglen == 2:
+                self.outputword(expr, env)
         env.incPC(1 + arglen)
         self.code += 1 + arglen
 
@@ -780,6 +825,9 @@ class Assembler(Pass):
 
     def visitRelative(self, node, env):
         self.assemble(node, 14, env)
+
+    def visitZPRelative(self, node, env):
+        self.assemble(node, 15, env)
 
     def visitLabel(self, node, env):
         pass
