@@ -16,9 +16,8 @@ import Ophis.Errors as Err
 import Ophis.IR as IR
 import Ophis.Opcodes as Ops
 import Ophis.CmdLine as Cmd
+import Ophis.Listing as Listing
 import Ophis.Macro as Macro
-
-# The passes themselves
 
 
 class Pass(object):
@@ -670,20 +669,32 @@ class Assembler(Pass):
     a file."""
     name = "Assembler"
 
+    # The self.listing field defined in prePass and referred to elsewhere
+    # holds the necessary information to build the program listing later.
+    # Each member of this list is either a string (in which case it is
+    # a listed instruction to be echoed) or it is a tuple of
+    # (startPC, bytes). Byte listings need to be interrupted when the
+    # PC is changed by an .org, which may happen in the middle of
+    # data definition blocks.
     def prePass(self):
         self.output = []
         self.code = 0
         self.data = 0
         self.filler = 0
+        if Cmd.listfile is not None:
+            self.listing = Listing.Listing(Cmd.listfile)
+        else:
+            self.listing = Listing.NullLister()
 
     def postPass(self):
+        self.listing.dump()
         if Cmd.print_summary and Err.count == 0:
             print>>sys.stderr, "Assembly complete: %s bytes output " \
                                "(%s code, %s data, %s filler)" \
                                % (len(self.output),
                                   self.code, self.data, self.filler)
 
-    def outputbyte(self, expr, env):
+    def outputbyte(self, expr, env, tee=None):
         'Outputs a byte, with range checking'
         if self.writeOK:
             val = expr.value(env)
@@ -691,10 +702,12 @@ class Assembler(Pass):
                 Err.log("Byte constant " + str(expr) + " out of range")
                 val = 0
             self.output.append(int(val))
+            if tee is not None:
+                tee.append(self.output[-1])
         else:
             Err.log("Attempt to write to data segment")
 
-    def outputword(self, expr, env):
+    def outputword(self, expr, env, tee=None):
         'Outputs a little-endian word, with range checking'
         if self.writeOK:
             val = expr.value(env)
@@ -703,10 +716,12 @@ class Assembler(Pass):
                 val = 0
             self.output.append(int(val & 0xFF))
             self.output.append(int((val >> 8) & 0xFF))
+            if tee is not None:
+                tee.extend(self.output[-2:])
         else:
             Err.log("Attempt to write to data segment")
 
-    def outputdword(self, expr, env):
+    def outputdword(self, expr, env, tee=None):
         'Outputs a little-endian dword, with range checking'
         if self.writeOK:
             val = expr.value(env)
@@ -717,10 +732,12 @@ class Assembler(Pass):
             self.output.append(int((val >> 8) & 0xFF))
             self.output.append(int((val >> 16) & 0xFF))
             self.output.append(int((val >> 24) & 0xFF))
+            if tee is not None:
+                tee.extend(self.output[-4:])
         else:
             Err.log("Attempt to write to data segment")
 
-    def outputword_be(self, expr, env):
+    def outputword_be(self, expr, env, tee=None):
         'Outputs a big-endian word, with range checking'
         if self.writeOK:
             val = expr.value(env)
@@ -729,10 +746,12 @@ class Assembler(Pass):
                 val = 0
             self.output.append(int((val >> 8) & 0xFF))
             self.output.append(int(val & 0xFF))
+            if tee is not None:
+                tee.extend(self.output[-2:])
         else:
             Err.log("Attempt to write to data segment")
 
-    def outputdword_be(self, expr, env):
+    def outputdword_be(self, expr, env, tee=None):
         'Outputs a big-endian dword, with range checking'
         if self.writeOK:
             val = expr.value(env)
@@ -743,6 +762,8 @@ class Assembler(Pass):
             self.output.append(int((val >> 16) & 0xFF))
             self.output.append(int((val >> 8) & 0xFF))
             self.output.append(int(val & 0xFF))
+            if tee is not None:
+                tee.extend(self.output[-4:])
         else:
             Err.log("Attempt to write to data segment")
 
@@ -757,6 +778,40 @@ class Assembler(Pass):
             arg += 256
         return IR.ConstantExpr(arg)
 
+    def listing_string(self, pc, binary, mode, opcode, val1, val2):
+        base = " %04X " % pc
+        base += (" %02X" * len(binary)) % tuple(binary)
+        formats = ["",
+                   "#$%02X",
+                   "$%02X",
+                   "$%02X, X",
+                   "$%02X, Y",
+                   "$%04X",
+                   "$%04X, X",
+                   "$%04X, Y",
+                   "($%04X)",
+                   "($%04X, X)",
+                   "($%04X), Y",
+                   "($%02X)",
+                   "($%02X, X)",
+                   "($%02X), Y",
+                   "$%04X",
+                   "$%02X, $%04X"]
+        fmt = ("%-16s %-5s" % (base, opcode.upper())) + formats[mode]
+        if val1 is None:
+            return fmt
+        elif val2 is None:
+            arglen = Ops.lengths[mode]
+            mask = 0xFF
+            # Relative is a full address in a byte, so it also has the
+            # 0xFFFF mask.
+            if arglen == 2 or mode == 14:
+                mask = 0xFFFF
+            return fmt % (val1 & mask)
+        else:
+            # Mode is 15: Zero Page, Relative
+            return fmt % (val1 & 0xFF, val2 & 0xFFFF)
+
     def assemble(self, node, mode, env):
         "A generic instruction called by the visitor methods themselves"
         (opcode, expr, expr2) = node.data
@@ -765,19 +820,30 @@ class Assembler(Pass):
             Err.log('%s does not have mode "%s"' % (opcode.upper(),
                                                     Ops.modes[mode]))
             return
-        self.outputbyte(IR.ConstantExpr(bin_op), env)
+        inst_bytes = []
+        self.outputbyte(IR.ConstantExpr(bin_op), env, inst_bytes)
         arglen = Ops.lengths[mode]
+        val1 = None
+        val2 = None
+        if expr is not None:
+            val1 = expr.value(env)
+        if expr2 is not None:
+            val2 = expr2.value(env)
         if mode == 15:  # ZP Relative mode is wildly nonstandard
             expr2 = self.relativize(expr2, env, arglen)
-            self.outputbyte(expr, env)
-            self.outputbyte(expr2, env)
+            self.outputbyte(expr, env, inst_bytes)
+            self.outputbyte(expr2, env, inst_bytes)
         else:
             if mode == 14:
                 expr = self.relativize(expr, env, arglen)
             if arglen == 1:
-                self.outputbyte(expr, env)
+                self.outputbyte(expr, env, inst_bytes)
             elif arglen == 2:
-                self.outputword(expr, env)
+                self.outputword(expr, env, inst_bytes)
+        self.listing.listInstruction(self.listing_string(env.getPC(),
+                                                         inst_bytes,
+                                                         mode, opcode,
+                                                         val1, val2))
         env.incPC(1 + arglen)
         self.code += 1 + arglen
 
@@ -833,8 +899,10 @@ class Assembler(Pass):
         pass
 
     def visitByte(self, node, env):
+        created = []
         for expr in node.data:
-            self.outputbyte(expr, env)
+            self.outputbyte(expr, env, created)
+        self.registerData(created, env.getPC())
         env.incPC(len(node.data))
         self.data += len(node.data)
 
@@ -850,37 +918,50 @@ class Assembler(Pass):
         elif offset + length > len(node.data):
             Err.log("File too small for .incbin subrange")
         else:
+            created = []
             for expr in node.data[offset:(offset + length)]:
-                self.outputbyte(expr, env)
+                self.outputbyte(expr, env, created)
+            self.registerData(created, env.getPC())
             env.incPC(length)
             self.data += length
 
     def visitWord(self, node, env):
+        created = []
         for expr in node.data:
-            self.outputword(expr, env)
+            self.outputword(expr, env, created)
+        self.registerData(created, env.getPC())
         env.incPC(len(node.data) * 2)
         self.data += len(node.data) * 2
 
     def visitDword(self, node, env):
+        created = []
         for expr in node.data:
-            self.outputdword(expr, env)
+            self.outputdword(expr, env, created)
+        self.registerData(created, env.getPC())
         env.incPC(len(node.data) * 4)
         self.data += len(node.data) * 4
 
     def visitWordBE(self, node, env):
+        created = []
         for expr in node.data:
-            self.outputword_be(expr, env)
+            self.outputword_be(expr, env, created)
+        self.registerData(created, env.getPC())
         env.incPC(len(node.data) * 2)
         self.data += len(node.data) * 2
 
     def visitDwordBE(self, node, env):
+        created = []
         for expr in node.data:
-            self.outputdword_be(expr, env)
+            self.outputdword_be(expr, env, created)
+        self.registerData(created, env.getPC())
         env.incPC(len(node.data) * 4)
         self.data += len(node.data) * 4
 
     def visitSetPC(self, node, env):
-        env.setPC(node.data[0].value(env))
+        val = node.data[0].value(env)
+        if self.writeOK and env.getPC() != val:
+            self.listing.listDivider(val)
+        env.setPC(val)
 
     def visitCheckPC(self, node, env):
         pc = env.getPC()
@@ -895,7 +976,12 @@ class Assembler(Pass):
             Err.log("Attempted to .advance backwards: $%x to $%x" %
                     (pc, target))
         else:
+            created = []
             for i in xrange(target - pc):
-                self.outputbyte(node.data[1], env)
+                self.outputbyte(node.data[1], env, created)
             self.filler += target - pc
+            self.registerData(created, env.getPC())
         env.setPC(target)
+
+    def registerData(self, vals, pc):
+        self.listing.listData(vals, pc)
