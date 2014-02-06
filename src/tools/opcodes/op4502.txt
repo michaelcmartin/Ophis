@@ -17,7 +17,7 @@
   10: BPL - Relative
   11: ORA - (Zero Page), Y
   12: ORA - (Zero Page), Z
-  13: BPL - Relative.W
+  13: BPL - RelativeLong
   14: TRB - Zero Page
   15: ORA - Zero Page, X
   16: ASL - Zero Page, X
@@ -26,7 +26,7 @@
   19: ORA - Absolute, Y
   1A: INC - Implied
   1B: INZ - Implied
-  1C: TRB - Absolute; TRB.W - Absolute
+  1C: TRB - Absolute
   1D: ORA - Absolute, X
   1E: ASL - Absolute, X
   1F: BBR1 - Zero Page, Relative
@@ -49,7 +49,7 @@
   30: BMI - Relative
   31: AND - (Zero Page), Y
   32: AND - (Zero Page), Z
-  33: BMI - Relative.W
+  33: BMI - RelativeLong
   34: BIT - Zero Page, X
   35: AND - Zero Page, X
   36: ROL - Zero Page, X
@@ -81,7 +81,7 @@
   50: BVC - Relative
   51: EOR - (Zero Page), Y
   52: EOR - (Zero Page), Z
-  53: BVC - Relative.W
+  53: BVC - RelativeLong
   54: ASR - Zero Page, X
   55: EOR - Zero Page, X
   56: LSR - Zero Page, X
@@ -97,7 +97,7 @@
   60: RTS - Implied
   61: ADC - (Zero Page, X)
   62: RTS - Immediate
-  63: BSR - Relative.W
+  63: BSR - RelativeLong
   64: STZ - Zero Page
   65: ADC - Zero Page
   66: ROR - Zero Page
@@ -113,7 +113,7 @@
   70: BVS - Relative
   71: ADC - (Zero Page), Y
   72: ADC - (Zero Page), Z
-  73: BVS - Relative.W
+  73: BVS - RelativeLong
   74: STZ - Zero Page, X
   75: ADC - Zero Page, X
   76: ROR - Zero Page, X
@@ -129,7 +129,7 @@
   80: BRA - Relative
   81: STA - (Zero Page, X)
   82: STA - (Zero Page, SP), Y
-  83: BRA - Relative.W
+  83: BRA - RelativeLong
   84: STY - Zero Page
   85: STA - Zero Page
   86: STX - Zero Page
@@ -145,7 +145,7 @@
   90: BCC - Relative
   91: STA - (Zero Page), Y
   92: STA - (Zero Page), Z
-  93: BCC - Relative.W
+  93: BCC - RelativeLong
   94: STY - Zero Page, X
   95: STA - Zero Page, X
   96: STX - Zero Page, Y
@@ -154,9 +154,9 @@
   99: STA - Absolute, Y
   9A: TXS - Implied
   9B: STX - Absolute, Y
-  9C: STZ - Absolute; STZ.W - Absolute
+  9C: STZ - Absolute
   9D: STA - Absolute, X
-  9E: STZ - Absolute, X; STZ.W - Absolute, X
+  9E: STZ - Absolute, X
   9F: BBS1 - Zero Page, Relative
   A0: LDY - Immediate
   A1: LDA - (Zero Page, X)
@@ -177,7 +177,7 @@
   B0: BCS - Relative
   B1: LDA - (Zero Page), Y
   B2: LDA - (Zero Page)
-  B3: BCS - Relative.W
+  B3: BCS - RelativeLong
   B4: LDY - Zero Page, X
   B5: LDA - Zero Page, X
   B6: LDX - Zero Page, Y
@@ -201,7 +201,7 @@
   C8: INY - Implied
   C9: CMP - Immediate
   CA: DEX - Implied
-  CB: WAI - Implied
+  CB: ASW - Absolute
   CC: CPY - Absolute
   CD: CMP - Absolute
   CE: DEC - Absolute
@@ -209,7 +209,7 @@
   D0: BNE - Relative
   D1: CMP - (Zero Page), Y
   D2: CMP - (Zero Page), Z
-  D3: BNE - Relative.W
+  D3: BNE - RelativeLong
   D4: CPZ - Zero Page
   D5: CMP - Zero Page, X
   D6: DEC - Zero Page, X
@@ -217,7 +217,7 @@
   D8: CLD - Implied
   D9: CMP - Absolute, Y
   DA: PHX - Implied
-  DB: STP - Implied
+  DB: PHZ - Implied
   DC: CPZ - Absolute
   DD: CMP - Absolute, X
   DE: DEC - Absolute, X
@@ -241,7 +241,7 @@
   F0: BEQ - Relative
   F1: SBC - (Zero Page), Y
   F2: SBC - (Zero Page)
-  F3: BEQ - Relative.W
+  F3: BEQ - RelativeLong
   F4: PHW - Immediate.W
   F5: SBC - Zero Page, X
   F6: INC - Zero Page, X

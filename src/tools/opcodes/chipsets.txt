@@ -1,3 +1,5 @@
 opcodes: op6502.txt
 undocops: op6510.txt
 c02extensions: op65c02.txt
+csg4502extensions: op4502.txt
+
