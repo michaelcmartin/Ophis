@@ -240,7 +240,7 @@
   EF: BBS6 - Zero Page, Relative
   F0: BEQ - Relative
   F1: SBC - (Zero Page), Y
-  F2: SBC - (Zero Page)
+  F2: SBC - (Zero Page), Z
   F3: BEQ - RelativeLong
   F4: PHW - Immediate.W
   F5: SBC - Zero Page, X

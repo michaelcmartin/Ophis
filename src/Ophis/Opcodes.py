@@ -490,7 +490,7 @@ csg4502extensions = {
                      'rts': [0x60, 0x62, None, None, None, None, None, None,
                              None, None, None, None, None, None, None, None, None, None, None, None, None],
                      'sbc': [None, 0xE9, None, 0xE5, 0xF5, None, 0xED, 0xFD,
-                             0xF9, None, None, None, None, 0xF2, 0xE1, 0xF1, None, None, None, None, None],
+                             0xF9, None, None, None, None, None, 0xE1, 0xF1, None, 0xF2, None, None, None],
                      'see': [0x03, None, None, None, None, None, None, None,
                              None, None, None, None, None, None, None, None, None, None, None, None, None],
                      'smb0': [None, None, None, 0x87, None, None, None, None,
