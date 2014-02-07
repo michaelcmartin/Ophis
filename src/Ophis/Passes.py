@@ -768,7 +768,7 @@ class Assembler(Pass):
     def relativizelong(self, expr, env, arglen):
         "Convert an expression into one for use in relative addressing"
         arg = expr.value(env)
-        arg = arg - (env.getPC() + arglen + 1)
+        arg = arg - (env.getPC() + arglen)
         if arg < 0:
             arg += 65536
         return IR.ConstantExpr(arg)
