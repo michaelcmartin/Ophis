@@ -255,8 +255,11 @@ class EasyModes(Pass):
     name = "Easy addressing modes pass"
 
     def visitMemory(self, node, env):
-        if Ops.opcodes[node.data[0]][14] is not None:
+        if Ops.opcodes[node.data[0]][Ops.modes.index("Relative")] is not None:
             node.nodetype = "Relative"
+            return
+        if Ops.opcodes[node.data[0]][Ops.modes.index("RelativeLong")] is not None:
+            node.nodetype = "RelativeLong"
             return
         if node.data[1].hardcoded:
             if not collapse_no_index(node, env):
@@ -316,6 +319,12 @@ class PCTracker(Pass):
     def visitIndirectY(self, node, env):
         env.incPC(2)
 
+    def visitIndirectSPY(self, node, env):
+        env.incPC(2)
+
+    def visitIndirectZ(self, node, env):
+        env.incPC(2)
+
     def visitZPIndirect(self, node, env):
         env.incPC(2)
 
@@ -330,6 +339,9 @@ class PCTracker(Pass):
 
     def visitRelative(self, node, env):
         env.incPC(2)
+
+    def visitRelativeLong(self, node, env):
+        env.incPC(3)
 
     def visitZPRelative(self, node, env):
         env.incPC(3)
@@ -573,35 +585,10 @@ class ExtendBranches(PCTracker):
         arg = expr.value(env)
         arg = arg - (env.getPC() + 2)
         if arg < -128 or arg > 127:
-            if opcode == 'bra':
-                # If BRA - BRanch Always - is out of range, it's a JMP.
-                node.data = ('jmp', expr, None)
-                node.nodetype = "Absolute"
-                if Cmd.warn_on_branch_extend:
-                    print>>sys.stderr, str(node.ppt) + ": WARNING: " \
-                                       "bra out of range, replacing with jmp"
-            else:
-                # Otherwise, we replace it with a 'macro' of sorts by hand:
-                # $branch LOC -> $reversed_branch ^+5; JMP LOC
-                # We don't use temp labels here because labels need to have
-                # been fixed in place by this point, and JMP is always 3
-                # bytes long.
-                expansion = [IR.Node(node.ppt, "Relative",
-                                     ExtendBranches.reversed[opcode],
-                                     IR.SequenceExpr([IR.PCExpr(), "+",
-                                                      IR.ConstantExpr(5)]),
-                                     None),
-                             IR.Node(node.ppt, "Absolute", 'jmp', expr, None)]
-                node.nodetype = 'SEQUENCE'
-                node.data = expansion
-                if Cmd.warn_on_branch_extend:
-                    print>>sys.stderr, str(node.ppt) + ": WARNING: " + \
-                                       opcode + " out of range, " \
-                                       "replacing with " + \
-                                       ExtendBranches.reversed[opcode] + \
-                                       "/jmp combo"
-            self.changed = True
-            node.accept(self, env)
+            node.nodetype = "RelativeLong"
+            if Cmd.warn_on_branch_extend:
+                print>>sys.stderr, str(node.ppt) + ": WARNING: " \
+                    "branch out of range, replacing with 16-bit relative branch"
         else:
             PCTracker.visitRelative(self, node, env)
 
@@ -778,11 +765,20 @@ class Assembler(Pass):
             arg += 256
         return IR.ConstantExpr(arg)
 
+    def relativizelong(self, expr, env, arglen):
+        "Convert an expression into one for use in relative addressing"
+        arg = expr.value(env)
+        arg = arg - (env.getPC() + arglen + 1)
+        if arg < 0:
+            arg += 65536
+        return IR.ConstantExpr(arg)
+
     def listing_string(self, pc, binary, mode, opcode, val1, val2):
         base = " %04X " % pc
         base += (" %02X" * len(binary)) % tuple(binary)
         formats = ["",
                    "#$%02X",
+                   "#$%04X",
                    "$%02X",
                    "$%02X, X",
                    "$%02X, Y",
@@ -795,6 +791,9 @@ class Assembler(Pass):
                    "($%02X)",
                    "($%02X, X)",
                    "($%02X), Y",
+                   "($%02X, SP), Y",
+                   "($%02X), Z",
+                   "$%04X",
                    "$%04X",
                    "$%02X, $%04X"]
         fmt = ("%-16s %-5s" % (base, opcode.upper())) + formats[mode]
@@ -805,7 +804,7 @@ class Assembler(Pass):
             mask = 0xFF
             # Relative is a full address in a byte, so it also has the
             # 0xFFFF mask.
-            if arglen == 2 or mode == 14:
+            if arglen == 2 or mode == 17:
                 mask = 0xFFFF
             return fmt % (val1 & mask)
         else:
@@ -829,13 +828,15 @@ class Assembler(Pass):
             val1 = expr.value(env)
         if expr2 is not None:
             val2 = expr2.value(env)
-        if mode == 15:  # ZP Relative mode is wildly nonstandard
+        if mode == Ops.modes.index("Zero Page, Relative"):
             expr2 = self.relativize(expr2, env, arglen)
             self.outputbyte(expr, env, inst_bytes)
             self.outputbyte(expr2, env, inst_bytes)
         else:
-            if mode == 14:
+            if mode == Ops.modes.index("Relative"):
                 expr = self.relativize(expr, env, arglen)
+            elif mode == Ops.modes.index("RelativeLong"):
+                expr = self.relativizelong(expr, env, arglen)
             if arglen == 1:
                 self.outputbyte(expr, env, inst_bytes)
             elif arglen == 2:
@@ -848,52 +849,61 @@ class Assembler(Pass):
         self.code += 1 + arglen
 
     def visitImplied(self, node, env):
-        self.assemble(node,  0, env)
+        self.assemble(node,  Ops.modes.index("Implied"), env)
 
     def visitImmediate(self, node, env):
-        self.assemble(node,  1, env)
+        self.assemble(node,  Ops.modes.index("Immediate"), env)
 
     def visitZeroPage(self, node, env):
-        self.assemble(node,  2, env)
+        self.assemble(node,  Ops.modes.index("Zero Page"), env)
 
     def visitZeroPageX(self, node, env):
-        self.assemble(node,  3, env)
+        self.assemble(node,  Ops.modes.index("Zero Page, X"), env)
 
     def visitZeroPageY(self, node, env):
-        self.assemble(node,  4, env)
+        self.assemble(node,  Ops.modes.index("Zero Page, Y"), env)
 
     def visitAbsolute(self, node, env):
-        self.assemble(node,  5, env)
+        self.assemble(node,  Ops.modes.index("Absolute"), env)
 
     def visitAbsoluteX(self, node, env):
-        self.assemble(node,  6, env)
+        self.assemble(node,  Ops.modes.index("Absolute, X"), env)
 
     def visitAbsoluteY(self, node, env):
-        self.assemble(node,  7, env)
+        self.assemble(node,  Ops.modes.index("Absolute, Y"), env)
 
     def visitIndirect(self, node, env):
-        self.assemble(node,  8, env)
+        self.assemble(node,  Ops.modes.index("(Absolute)"), env)
 
     def visitAbsIndX(self, node, env):
-        self.assemble(node,  9, env)
+        self.assemble(node,  Ops.modes.index("(Absolute, X)"), env)
 
     def visitAbsIndY(self, node, env):
-        self.assemble(node, 10, env)
+        self.assemble(node, Ops.modes.index("(Absolute), Y"), env)
 
     def visitZPIndirect(self, node, env):
-        self.assemble(node, 11, env)
+        self.assemble(node, Ops.modes.index("(Zero Page)"), env)
 
     def visitIndirectX(self, node, env):
-        self.assemble(node, 12, env)
+        self.assemble(node, Ops.modes.index("(Zero Page, X)"), env)
 
     def visitIndirectY(self, node, env):
-        self.assemble(node, 13, env)
+        self.assemble(node, Ops.modes.index("(Zero Page), Y"), env)
+
+    def visitIndirectZ(self, node, env):
+        self.assemble(node, Ops.modes.index("(Zero Page), Z"), env)
+
+    def visitIndirectSPY(self, node, env):
+        self.assemble(node, Ops.modes.index("(Zero Page, SP), Y"), env)
 
     def visitRelative(self, node, env):
-        self.assemble(node, 14, env)
+        self.assemble(node, Ops.modes.index("Relative"), env)
+
+    def visitRelativeLong(self, node, env):
+        self.assemble(node, Ops.modes.index("RelativeLong"), env)
 
     def visitZPRelative(self, node, env):
-        self.assemble(node, 15, env)
+        self.assemble(node, Ops.modes.index("Zero Page, Relative"), env)
 
     def visitLabel(self, node, env):
         pass

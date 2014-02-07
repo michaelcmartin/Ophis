@@ -35,7 +35,7 @@ modes = ["Implied",               # 0
 
 
 # Lengths of the argument
-lengths = [0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2,2]
+lengths = [0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 2, 1, 1, 2, 2]
 
 opcodes = {
            'adc': [None, 0x69, None, 0x65, 0x75, None, 0x6D, 0x7D,
