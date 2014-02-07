@@ -176,7 +176,7 @@
   AF: BBS2 - Zero Page, Relative
   B0: BCS - Relative
   B1: LDA - (Zero Page), Y
-  B2: LDA - (Zero Page)
+  B2: LDA - (Zero Page), Z
   B3: BCS - RelativeLong
   B4: LDY - Zero Page, X
   B5: LDA - Zero Page, X

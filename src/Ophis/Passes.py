@@ -293,6 +293,16 @@ class EasyModes(Pass):
             if not collapse_y_ind(node, env):
                 node.nodetype = "AbsIndY"
 
+    def visitPointerSPY(self, node, env):
+        if node.data[1].hardcoded:
+            if not collapse_spy_ind(node, env):
+                node.nodetype = "AbsIndSPY"
+
+    def visitPointerZ(self, node, env):
+        if node.data[1].hardcoded:
+            if not collapse_z_ind(node, env):
+                node.nodetype = "AbsIndZ"
+
     def visitUnknown(self, node, env):
         pass
 
@@ -373,6 +383,9 @@ class PCTracker(Pass):
     def visitMemoryY(self, node, env):
         env.incPC(3)
 
+    def visitMemoryZ(self, node, env):
+        env.incPC(3)
+
     def visitPointer(self, node, env):
         env.incPC(3)
 
@@ -441,6 +454,9 @@ class Collapse(PCTracker):
     def visitMemoryY(self, node, env):
         self.changed |= collapse_y(node, env)
         PCTracker.visitMemoryY(self, node, env)
+
+    def visitMemoryZ(self, node, env):
+        PCTracker.visitMemoryZ(self, node, env)
 
     def visitPointer(self, node, env):
         self.changed |= collapse_no_index_ind(node, env)
@@ -515,7 +531,6 @@ def collapse_y(node, env):
             return True
     return False
 
-
 def collapse_no_index_ind(node, env):
     """Transforms a Pointer node into a ZPIndirect one if possible.
     Returns boolean indicating whether or not it made the collapse."""
@@ -542,6 +557,24 @@ def collapse_y_ind(node, env):
     if node.data[1].value(env) < 0x100:
         if Ops.opcodes[node.data[0]][13] is not None:
             node.nodetype = "IndirectY"
+            return True
+    return False
+
+def collapse_spy_ind(node, env):
+    """Transforms a PointerSPY node into an IndirectY one if possible.
+    Returns boolean indicating whether or not it made the collapse."""
+    if node.data[1].value(env) < 0x100:
+        if Ops.opcodes[node.data[0]][13] is not None:
+            node.nodetype = "IndirectSPY"
+            return True
+    return False
+
+def collapse_z_ind(node, env):
+    """Transforms a PointerZ node into an IndirectZ one if possible.
+    Returns boolean indicating whether or not it made the collapse."""
+    if node.data[1].value(env) < 0x100:
+        if Ops.opcodes[node.data[0]][13] is not None:
+            node.nodetype = "IndirectZ"
             return True
     return False
 

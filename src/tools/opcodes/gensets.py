@@ -40,7 +40,7 @@ modes = ["Implied",               # 0
 
 
 # Lengths of the argument
-lengths = [0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2,2]
+lengths = [0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2]
 """
 
 # These values should match the ones in the prologue string.

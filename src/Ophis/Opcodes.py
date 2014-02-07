@@ -35,7 +35,7 @@ modes = ["Implied",               # 0
 
 
 # Lengths of the argument
-lengths = [0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 2, 1, 1, 2, 2]
+lengths = [0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2]
 
 opcodes = {
            'adc': [None, 0x69, None, 0x65, 0x75, None, 0x6D, 0x7D,
@@ -445,7 +445,7 @@ csg4502extensions = {
                      'jsr': [None, None, None, None, None, None, 0x20, None,
                              None, 0x22, 0x23, None, None, None, None, None, None, None, None, None],
                      'lda': [None, 0xA9, None, 0xA5, 0xB5, None, 0xAD, 0xBD,
-                             0xB9, None, None, None, 0xB2, 0xA1, 0xB1, 0xE2, None, None, None, None],
+                             0xB9, None, None, None, None, 0xA1, 0xB1, 0xE2, 0xB2, None, None, None],
                      'ldz': [None, 0xA3, None, None, None, None, 0xAB, 0xBB,
                              None, None, None, None, None, None, None, None, None, None, None, None],
                      'map': [0x5C, None, None, None, None, None, None, None,
