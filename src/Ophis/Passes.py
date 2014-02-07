@@ -476,7 +476,7 @@ class Collapse(PCTracker):
 
     def visitZeroPage(self, node, env):
         if node.data[1].value(env) >= 0x100:
-            if Ops.opcodes[node.data[0]][5] is not None:
+            if Ops.opcodes[node.data[0]][Ops.modes.index("Absolute")] is not None:
                 node.nodetype = "Absolute"
                 PCTracker.visitAbsolute(self, node, env)
                 self.changed = True
@@ -485,7 +485,7 @@ class Collapse(PCTracker):
 
     def visitZeroPageX(self, node, env):
         if node.data[1].value(env) >= 0x100:
-            if Ops.opcodes[node.data[0]][6] is not None:
+            if Ops.opcodes[node.data[0]][Ops.modes.index("Absolute, X")] is not None:
                 node.nodetype = "AbsoluteX"
                 PCTracker.visitAbsoluteX(self, node, env)
                 self.changed = True
@@ -494,7 +494,7 @@ class Collapse(PCTracker):
 
     def visitZeroPageY(self, node, env):
         if node.data[1].value(env) >= 0x100:
-            if Ops.opcodes[node.data[0]][7] is not None:
+            if Ops.opcodes[node.data[0]][Ops.modes.index("Absolute, Y")] is not None:
                 node.nodetype = "AbsoluteY"
                 PCTracker.visitAbsoluteY(self, node, env)
                 self.changed = True
@@ -506,7 +506,7 @@ def collapse_no_index(node, env):
     """Transforms a Memory node into a ZeroPage one if possible.
     Returns boolean indicating whether or not it made the collapse."""
     if node.data[1].value(env) < 0x100:
-        if Ops.opcodes[node.data[0]][2] is not None:
+        if Ops.opcodes[node.data[0]][Ops.modes.index("Zero Page")] is not None:
             node.nodetype = "ZeroPage"
             return True
     return False
@@ -516,7 +516,7 @@ def collapse_x(node, env):
     """Transforms a MemoryX node into a ZeroPageX one if possible.
     Returns boolean indicating whether or not it made the collapse."""
     if node.data[1].value(env) < 0x100:
-        if Ops.opcodes[node.data[0]][3] is not None:
+        if Ops.opcodes[node.data[0]][Ops.modes.index("Zero Page, X")] is not None:
             node.nodetype = "ZeroPageX"
             return True
     return False
@@ -526,7 +526,7 @@ def collapse_y(node, env):
     """Transforms a MemoryY node into a ZeroPageY one if possible.
     Returns boolean indicating whether or not it made the collapse."""
     if node.data[1].value(env) < 0x100:
-        if Ops.opcodes[node.data[0]][4] is not None:
+        if Ops.opcodes[node.data[0]][Ops.modes.index("Zero Page, Y")] is not None:
             node.nodetype = "ZeroPageY"
             return True
     return False
@@ -535,7 +535,7 @@ def collapse_no_index_ind(node, env):
     """Transforms a Pointer node into a ZPIndirect one if possible.
     Returns boolean indicating whether or not it made the collapse."""
     if node.data[1].value(env) < 0x100:
-        if Ops.opcodes[node.data[0]][11] is not None:
+        if Ops.opcodes[node.data[0]][Ops.modes.index("(Zero Page)")] is not None:
             node.nodetype = "ZPIndirect"
             return True
     return False
@@ -545,7 +545,7 @@ def collapse_x_ind(node, env):
     """Transforms a PointerX node into an IndirectX one if possible.
     Returns boolean indicating whether or not it made the collapse."""
     if node.data[1].value(env) < 0x100:
-        if Ops.opcodes[node.data[0]][12] is not None:
+        if Ops.opcodes[node.data[0]][Ops.modes.index("(Zero Page, X)")] is not None:
             node.nodetype = "IndirectX"
             return True
     return False
@@ -555,7 +555,7 @@ def collapse_y_ind(node, env):
     """Transforms a PointerY node into an IndirectY one if possible.
     Returns boolean indicating whether or not it made the collapse."""
     if node.data[1].value(env) < 0x100:
-        if Ops.opcodes[node.data[0]][13] is not None:
+        if Ops.opcodes[node.data[0]][Ops.modes.index("(Zero Page), Y")] is not None:
             node.nodetype = "IndirectY"
             return True
     return False
@@ -564,7 +564,7 @@ def collapse_spy_ind(node, env):
     """Transforms a PointerSPY node into an IndirectY one if possible.
     Returns boolean indicating whether or not it made the collapse."""
     if node.data[1].value(env) < 0x100:
-        if Ops.opcodes[node.data[0]][13] is not None:
+        if Ops.opcodes[node.data[0]][Ops.modes.index("(Zero Page, SP), Y")] is not None:
             node.nodetype = "IndirectSPY"
             return True
     return False
@@ -573,7 +573,7 @@ def collapse_z_ind(node, env):
     """Transforms a PointerZ node into an IndirectZ one if possible.
     Returns boolean indicating whether or not it made the collapse."""
     if node.data[1].value(env) < 0x100:
-        if Ops.opcodes[node.data[0]][13] is not None:
+        if Ops.opcodes[node.data[0]][Ops.modes.index("(Zero Page), Z")] is not None:
             node.nodetype = "IndirectZ"
             return True
     return False
