@@ -1,8 +1,9 @@
 Ophis is a cross-assembler for the 65xx series of chips. It supports
-the stock 6502 opcodes, the 65c02 extensions, and syntax for the
-"undocumented opcodes" in the 6510 chip used on the Commodore
+the stock 6502 opcodes, the 65c02 extensions, experimental support
+for the 4502/4510 used in the Commodore 65 prototypes, and syntax for
+the "undocumented opcodes" in the 6510 chip used on the Commodore
 64. (Syntax for these opcodes matches those given in the VICE team's
-documentation.)
+documentation.) 
 
 Ophis is written in pure Python and should be highly portable.
 
@@ -10,7 +11,7 @@ It is provided under the MIT license, reproduced below:
 
 ---
 
-Ophis, Copyright (C) 2002-2012 Michael Martin and contributors
+Ophis, Copyright (C) 2002-2014 Michael Martin and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
