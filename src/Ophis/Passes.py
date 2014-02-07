@@ -618,10 +618,41 @@ class ExtendBranches(PCTracker):
         arg = expr.value(env)
         arg = arg - (env.getPC() + 2)
         if arg < -128 or arg > 127:
-            node.nodetype = "RelativeLong"
-            if Cmd.warn_on_branch_extend:
-                print>>sys.stderr, str(node.ppt) + ": WARNING: " \
-                    "branch out of range, replacing with 16-bit relative branch"
+            if Cmd.enable_4502_exts:
+                node.nodetype = "RelativeLong"
+                if Cmd.warn_on_branch_extend:
+                    print>>sys.stderr, str(node.ppt) + ": WARNING: " \
+                        "branch out of range, replacing with 16-bit relative branch"
+            else:
+                if opcode == 'bra':
+                    # If BRA - BRanch Always - is out of range, it's a JMP.
+                    node.data = ('jmp', expr, None)
+                    node.nodetype = "Absolute"
+                    if Cmd.warn_on_branch_extend:
+                        print>>sys.stderr, str(node.ppt) + ": WARNING: " \
+                            "bra out of range, replacing with jmp"
+                else:
+                    # Otherwise, we replace it with a 'macro' of sorts by hand:
+                    # $branch LOC -> $reversed_branch ^+5; JMP LOC
+                    # We don't use temp labels here because labels need to have
+                    # been fixed in place by this point, and JMP is always 3
+                    # bytes long.
+                    expansion = [IR.Node(node.ppt, "Relative",
+                                     ExtendBranches.reversed[opcode],
+                                     IR.SequenceExpr([IR.PCExpr(), "+",
+                                                      IR.ConstantExpr(5)]),
+                                     None),
+                             IR.Node(node.ppt, "Absolute", 'jmp', expr, None)]
+                    node.nodetype = 'SEQUENCE'
+                    node.data = expansion
+                    if Cmd.warn_on_branch_extend:
+                        print>>sys.stderr, str(node.ppt) + ": WARNING: " + \
+                                       opcode + " out of range, " \
+                                       "replacing with " + \
+                                       ExtendBranches.reversed[opcode] + \
+                                       "/jmp combo"
+                    self.changed = True
+                    node.accept(self, env)
         else:
             PCTracker.visitRelative(self, node, env)
 
