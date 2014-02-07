@@ -17,53 +17,55 @@ prologue = '"""' + """Opcodes file.
 # the tables in tools/opcodes. Edit those tables, not these.
 
 # Names of addressing modes
-modes = ["Implied",               # 0
-         "Immediate",             # 1
-         "Immediate.W",           # 2
-         "Zero Page",             # 3
-         "Zero Page, X",          # 4
-         "Zero Page, Y",          # 5
-         "Absolute",              # 6
-         "Absolute, X",           # 7
-         "Absolute, Y",           # 8
-         "(Absolute)",            # 9
-         "(Absolute, X)",         # 10
-         "(Absolute), Y",        # 11
-         "(Zero Page)",          # 12
-         "(Zero Page, X)",       # 13
-         "(Zero Page), Y",       # 14
-         "(Zero Page, SP), Y",   # 15
-         "(Zero Page), Z",       # 16
-         "Relative",             # 17
-         "RelativeLong",         # 18
-         "Zero Page, Relative"]  # 19
+modes = ["Implied",
+         "Immediate",
+         "ImmediateLong",
+         "Zero Page",
+         "Zero Page, X",
+         "Zero Page, Y",
+         "Absolute",
+         "Absolute, X",
+         "Absolute, Y",
+         "(Absolute)",
+         "(Absolute, X)",
+         "(Absolute), Y",
+         "(Absolute), Z",
+         "(Zero Page)",
+         "(Zero Page, X)",
+         "(Zero Page), Y",
+         "(Zero Page, SP), Y",
+         "(Zero Page), Z",
+         "Relative",
+         "RelativeLong",
+         "Zero Page, Relative"]
 
 
 # Lengths of the argument
-lengths = [0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2]
+lengths = [0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2]
 """
 
 # These values should match the ones in the prologue string.
-modes = ["Implied",               # 0
-         "Immediate",             # 1
-         "Immediate.W",           # 2
-         "Zero Page",             # 3
-         "Zero Page, X",          # 4
-         "Zero Page, Y",          # 5
-         "Absolute",              # 6
-         "Absolute, X",           # 7
-         "Absolute, Y",           # 8
-         "(Absolute)",            # 9
-         "(Absolute, X)",         # 10
-         "(Absolute), Y",        # 11
-         "(Zero Page)",          # 12
-         "(Zero Page, X)",       # 13
-         "(Zero Page), Y",       # 14
-         "(Zero Page, SP), Y",   # 15
-         "(Zero Page), Z",       # 16
-         "Relative",             # 17
-         "RelativeLong",         # 18
-         "Zero Page, Relative"]  # 19
+modes = ["Implied",
+         "Immediate",
+         "Immediate.W",
+         "Zero Page",
+         "Zero Page, X",
+         "Zero Page, Y",
+         "Absolute",
+         "Absolute, X",
+         "Absolute, Y",
+         "(Absolute)",
+         "(Absolute, X)",
+         "(Absolute), Y",
+         "(Absolute), Z",
+         "(Zero Page)",
+         "(Zero Page, X)",
+         "(Zero Page), Y",
+         "(Zero Page, SP), Y",
+         "(Zero Page), Z",
+         "Relative",
+         "RelativeLong",
+         "Zero Page, Relative"]
 
 
 flatmodes = [x.lower() for x in modes]

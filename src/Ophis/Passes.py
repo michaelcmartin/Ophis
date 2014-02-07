@@ -323,6 +323,9 @@ class PCTracker(Pass):
     def visitImmediate(self, node, env):
         env.incPC(2)
 
+    def visitImmediateLong(self, node, env):
+        env.incPC(2)
+
     def visitIndirectX(self, node, env):
         env.incPC(2)
 
@@ -372,6 +375,9 @@ class PCTracker(Pass):
         env.incPC(3)
 
     def visitAbsIndY(self, node, env):
+        env.incPC(3)
+
+    def visitAbsIndZ(self, node, env):
         env.incPC(3)
 
     def visitMemory(self, node, env):
@@ -711,6 +717,9 @@ class NormalizeModes(Pass):
     def visitPointerY(self, node, env):
         node.nodetype = "AbsIndY"
 
+    def visitPointerZ(self, node, env):
+        node.nodetype = "AbsIndZ"
+
     def visitUnknown(self, node, env):
         pass
 
@@ -852,6 +861,7 @@ class Assembler(Pass):
                    "($%04X)",
                    "($%04X, X)",
                    "($%04X), Y",
+                   "($%04X), Z",
                    "($%02X)",
                    "($%02X, X)",
                    "($%02X), Y",
@@ -918,6 +928,9 @@ class Assembler(Pass):
     def visitImmediate(self, node, env):
         self.assemble(node,  Ops.modes.index("Immediate"), env)
 
+    def visitImmediateLong(self, node, env):
+        self.assemble(node,  Ops.modes.index("ImmediateLong"), env)
+
     def visitZeroPage(self, node, env):
         self.assemble(node,  Ops.modes.index("Zero Page"), env)
 
@@ -944,6 +957,9 @@ class Assembler(Pass):
 
     def visitAbsIndY(self, node, env):
         self.assemble(node, Ops.modes.index("(Absolute), Y"), env)
+
+    def visitAbsIndZ(self, node, env):
+        self.assemble(node, Ops.modes.index("(Absolute), Z"), env)
 
     def visitZPIndirect(self, node, env):
         self.assemble(node, Ops.modes.index("(Zero Page)"), env)
