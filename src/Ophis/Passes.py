@@ -324,7 +324,7 @@ class PCTracker(Pass):
         env.incPC(2)
 
     def visitImmediateLong(self, node, env):
-        env.incPC(2)
+        env.incPC(3)
 
     def visitIndirectX(self, node, env):
         env.incPC(2)
@@ -479,6 +479,15 @@ class Collapse(PCTracker):
     # Previously zero-paged elements may end up un-zero-paged by
     # the branch extension pass. Force them to Absolute equivalents
     # if this happens.
+
+    def visitImmediate(self, node, env):
+        if node.data[1].value(env) >= 0x100:
+            if Ops.opcodes[node.data[0]][Ops.modes.index("ImmediateLong")] is not None:
+                node.nodetype = "ImmediateLong"
+                PCTracker.visitImmediateLong(self, node, env)
+                self.changed = True
+                return
+        PCTracker.visitImmediate(self, node, env)
 
     def visitZeroPage(self, node, env):
         if node.data[1].value(env) >= 0x100:
