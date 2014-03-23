@@ -2,13 +2,14 @@
 
 import optparse
 
-# Copyright 2002-2012 Michael C. Martin and additional contributors.
+# Copyright 2002-2014 Michael C. Martin and additional contributors.
 # You may use, modify, and distribute this file under the MIT
 # license: See README for details.
 
 enable_branch_extend = True
 enable_undoc_ops = False
 enable_65c02_exts = False
+enable_4502_exts = False
 
 warn_on_branch_extend = True
 
@@ -34,7 +35,7 @@ def parse_args(raw_args):
 
     parser = optparse.OptionParser(
         usage="Usage: %prog [options] srcfile [srcfile ...]",
-        version="Ophis 6502 cross-assembler, version 2.0")
+        version="Ophis 6502 cross-assembler, version 2.1")
 
     parser.add_option("-o", default=None, dest="outfile",
                       help="Output filename (default 'ophis.bin')")
@@ -75,9 +76,9 @@ def parse_args(raw_args):
     if options.c02 and options.undoc:
         parser.error("--undoc and --65c02 are mutually exclusive")
     if options.c02 and options.csg4502:
-        parser.error("--undoc and --65c02 are mutually exclusive")
+        parser.error("--65c02 and --4502 are mutually exclusive")
     if options.csg4502 and options.undoc:
-        parser.error("--undoc and --65c02 are mutually exclusive")
+        parser.error("--undoc and --4502 are mutually exclusive")
 
     infiles = args
     outfile = options.outfile
