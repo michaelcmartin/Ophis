@@ -9,6 +9,7 @@ import optparse
 enable_branch_extend = True
 enable_undoc_ops = False
 enable_65c02_exts = False
+enable_4502_exts = False
 
 warn_on_branch_extend = True
 
@@ -75,9 +76,9 @@ def parse_args(raw_args):
     if options.c02 and options.undoc:
         parser.error("--undoc and --65c02 are mutually exclusive")
     if options.c02 and options.csg4502:
-        parser.error("--undoc and --65c02 are mutually exclusive")
+        parser.error("--65c02 and --4502 are mutually exclusive")
     if options.csg4502 and options.undoc:
-        parser.error("--undoc and --65c02 are mutually exclusive")
+        parser.error("--undoc and --4502 are mutually exclusive")
 
     infiles = args
     outfile = options.outfile
