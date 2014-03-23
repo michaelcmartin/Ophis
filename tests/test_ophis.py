@@ -82,6 +82,7 @@ def test_basic():
         test_file('Undocumented instructions', 'test6510.oph', 'test6510.bin',
                   ['-u'])
         test_file('65c02 extensions', 'test65c02.oph', 'test65c02.bin', ['-c'])
+        test_file('4502 extensions', 'test4502.oph', 'test4502.bin', ['-4'])
         test_file('Wide instructions', 'testwide.oph', 'testwide.bin', ['-c'])
         test_file('Branch restrictions (6502)', 'longbranch.oph', None,
                   ['--no-branch-extend'])

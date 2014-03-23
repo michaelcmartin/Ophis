@@ -1,0 +1,256 @@
+  00: BRK - Implied
+  01: ORA - (Zero Page, X)
+  02: CLE - Implied
+  03: SEE - Implied
+  04: TSB - Zero Page
+  05: ORA - Zero Page
+  06: ASL - Zero Page
+  07: RMB0 - Zero Page
+  08: PHP - Implied
+  09: ORA - Immediate
+  0A: ASL - Implied
+  0B: TSY - Implied
+  0C: TSB - Absolute
+  0D: ORA - Absolute
+  0E: ASL - Absolute
+  0F: BBR0 - Zero Page, Relative
+  10: BPL - Relative
+  11: ORA - (Zero Page), Y
+  12: ORA - (Zero Page), Z
+  13: BPL - RelativeLong
+  14: TRB - Zero Page
+  15: ORA - Zero Page, X
+  16: ASL - Zero Page, X
+  17: RMB1 - Zero Page
+  18: CLC - Implied
+  19: ORA - Absolute, Y
+  1A: INC - Implied
+  1B: INZ - Implied
+  1C: TRB - Absolute
+  1D: ORA - Absolute, X
+  1E: ASL - Absolute, X
+  1F: BBR1 - Zero Page, Relative
+  20: JSR - Absolute
+  21: AND - (Zero Page, X)
+  22: JSR - (Absolute)
+  23: JSR - (Absolute, X)
+  24: BIT - Zero Page
+  25: AND - Zero Page
+  26: ROL - Zero Page
+  27: RMB2 - Zero Page
+  28: PLP - Implied
+  29: AND - Immediate
+  2A: ROL - Implied
+  2B: TYS - Implied
+  2C: BIT - Absolute
+  2D: AND - Absolute
+  2E: ROL - Absolute
+  2F: BBR2 - Zero Page, Relative
+  30: BMI - Relative
+  31: AND - (Zero Page), Y
+  32: AND - (Zero Page), Z
+  33: BMI - RelativeLong
+  34: BIT - Zero Page, X
+  35: AND - Zero Page, X
+  36: ROL - Zero Page, X
+  37: RMB3 - Zero Page
+  38: SEC - Implied
+  39: AND - Absolute, Y
+  3A: DEA - Implied; DEC - Implied
+  3B: DEZ - Implied
+  3C: BIT - Absolute, X
+  3D: AND - Absolute, X
+  3E: ROL - Absolute, X
+  3F: BBR3 - Zero Page, Relative
+  40: RTI - Implied
+  41: EOR - (Zero Page, X)
+  42: NEG - Implied
+  43: ASR - Implied
+  44: ASR Zero Page
+  45: EOR - Zero Page
+  46: LSR - Zero Page
+  47: RMB4 - Zero Page
+  48: PHA - Implied
+  49: EOR - Immediate
+  4A: LSR - Implied
+  4B: TAZ - Implied
+  4C: JMP - Absolute
+  4D: EOR - Absolute
+  4E: LSR - Absolute
+  4F: BBR4 - Zero Page, Relative
+  50: BVC - Relative
+  51: EOR - (Zero Page), Y
+  52: EOR - (Zero Page), Z
+  53: BVC - RelativeLong
+  54: ASR - Zero Page, X
+  55: EOR - Zero Page, X
+  56: LSR - Zero Page, X
+  57: RMB5 - Zero Page
+  58: CLI - Implied
+  59: EOR - Absolute, Y
+  5A: PHY - Implied
+  5B: TAB - Implied
+  5C: MAP - Implied
+  5D: EOR - Absolute, X
+  5E: LSR - Absolute, X
+  5F: BBR5 - Zero Page, Relative
+  60: RTS - Implied
+  61: ADC - (Zero Page, X)
+  62: RTS - Immediate
+  63: BSR - RelativeLong
+  64: STZ - Zero Page
+  65: ADC - Zero Page
+  66: ROR - Zero Page
+  67: RMB6 - Zero Page
+  68: PLA - Implied
+  69: ADC - Immediate
+  6A: ROR - Implied
+  6B: TZA - Implied
+  6C: JMP - (Absolute)
+  6D: ADC - Absolute
+  6E: ROR - Absolute
+  6F: BBR6 - Zero Page, Relative
+  70: BVS - Relative
+  71: ADC - (Zero Page), Y
+  72: ADC - (Zero Page), Z
+  73: BVS - RelativeLong
+  74: STZ - Zero Page, X
+  75: ADC - Zero Page, X
+  76: ROR - Zero Page, X
+  77: RMB7 - Zero Page
+  78: SEI - Implied
+  79: ADC - Absolute, Y
+  7A: PLY - Implied
+  7B: TBA - Implied
+  7C: JMP - (Absolute, X)
+  7D: ADC - Absolute, X
+  7E: ROR - Absolute, X
+  7F: BBR7 - Zero Page, Relative
+  80: BRA - Relative
+  81: STA - (Zero Page, X)
+  82: STA - (Zero Page, SP), Y
+  83: BRA - RelativeLong
+  84: STY - Zero Page
+  85: STA - Zero Page
+  86: STX - Zero Page
+  87: SMB0 - Zero Page
+  88: DEY - Implied
+  89: BIT - Immediate
+  8A: TXA - Implied
+  8B: STY - Absolute, X
+  8C: STY - Absolute
+  8D: STA - Absolute
+  8E: STX - Absolute
+  8F: BBS0 - Zero Page, Relative
+  90: BCC - Relative
+  91: STA - (Zero Page), Y
+  92: STA - (Zero Page), Z
+  93: BCC - RelativeLong
+  94: STY - Zero Page, X
+  95: STA - Zero Page, X
+  96: STX - Zero Page, Y
+  97: SMB1 - Zero Page
+  98: TYA - Implied
+  99: STA - Absolute, Y
+  9A: TXS - Implied
+  9B: STX - Absolute, Y
+  9C: STZ - Absolute
+  9D: STA - Absolute, X
+  9E: STZ - Absolute, X
+  9F: BBS1 - Zero Page, Relative
+  A0: LDY - Immediate
+  A1: LDA - (Zero Page, X)
+  A2: LDX - Immediate
+  A3: LDZ - Immediate
+  A4: LDY - Zero Page
+  A5: LDA - Zero Page
+  A6: LDX - Zero Page
+  A7: SMB2 - Zero Page
+  A8: TAY - Implied
+  A9: LDA - Immediate
+  AA: TAX - Implied
+  AB: LDZ - Absolute
+  AC: LDY - Absolute
+  AD: LDA - Absolute
+  AE: LDX - Absolute
+  AF: BBS2 - Zero Page, Relative
+  B0: BCS - Relative
+  B1: LDA - (Zero Page), Y
+  B2: LDA - (Zero Page), Z
+  B3: BCS - RelativeLong
+  B4: LDY - Zero Page, X
+  B5: LDA - Zero Page, X
+  B6: LDX - Zero Page, Y
+  B7: SMB3 - Zero Page
+  B8: CLV - Implied
+  B9: LDA - Absolute, Y
+  BA: TSX - Implied
+  BB: LDZ - Absolute, X
+  BC: LDY - Absolute, X
+  BD: LDA - Absolute, X
+  BE: LDX - Absolute, Y
+  BF: BBS3 - Zero Page, Relative
+  C0: CPY - Immediate
+  C1: CMP - (Zero Page, X)
+  C2: CPZ - Immediate
+  C3: DEW - Absolute
+  C4: CPY - Zero Page
+  C5: CMP - Zero Page
+  C6: DEC - Zero Page
+  C7: SMB4 - Zero Page
+  C8: INY - Implied
+  C9: CMP - Immediate
+  CA: DEX - Implied
+  CB: ASW - Absolute
+  CC: CPY - Absolute
+  CD: CMP - Absolute
+  CE: DEC - Absolute
+  CF: BBS4 - Zero Page, Relative
+  D0: BNE - Relative
+  D1: CMP - (Zero Page), Y
+  D2: CMP - (Zero Page), Z
+  D3: BNE - RelativeLong
+  D4: CPZ - Zero Page
+  D5: CMP - Zero Page, X
+  D6: DEC - Zero Page, X
+  D7: SMB5 - Zero Page
+  D8: CLD - Implied
+  D9: CMP - Absolute, Y
+  DA: PHX - Implied
+  DB: PHZ - Implied
+  DC: CPZ - Absolute
+  DD: CMP - Absolute, X
+  DE: DEC - Absolute, X
+  DF: BBS5 - Zero Page, Relative
+  E0: CPX - Immediate
+  E1: SBC - (Zero Page, X)
+  E2: LDA - (Zero Page, SP), Y
+  E3: INW - Absolute
+  E4: CPX - Zero Page
+  E5: SBC - Zero Page
+  E6: INC - Zero Page
+  E7: SMB6 - Zero Page
+  E8: INX - Implied
+  E9: SBC - Immediate
+  EA: NOP - Implied; EOM - Implied
+  EB: ROW - Absolute
+  EC: CPX - Absolute
+  ED: SBC - Absolute
+  EE: INC - Absolute
+  EF: BBS6 - Zero Page, Relative
+  F0: BEQ - Relative
+  F1: SBC - (Zero Page), Y
+  F2: SBC - (Zero Page), Z
+  F3: BEQ - RelativeLong
+  F4: PHW - Immediate.W
+  F5: SBC - Zero Page, X
+  F6: INC - Zero Page, X
+  F7: SMB7 - Zero Page
+  F8: SED - Implied
+  F9: SBC - Absolute, Y
+  FA: PLX - Implied
+  FB: PLZ - Implied
+  FC: PHW - Absolute
+  FD: SBC - Absolute, X
+  FE: INC - Absolute, X
+  FF: BBS7 - Zero Page, Relative

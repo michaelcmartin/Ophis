@@ -104,6 +104,8 @@ def run_ophis(args):
         Ophis.Opcodes.opcodes.update(Ophis.Opcodes.undocops)
     elif Ophis.CmdLine.enable_65c02_exts:
         Ophis.Opcodes.opcodes.update(Ophis.Opcodes.c02extensions)
+    elif Ophis.CmdLine.enable_4502_exts:
+        Ophis.Opcodes.opcodes.update(Ophis.Opcodes.csg4502extensions)
 
     Ophis.CorePragmas.reset()
     return run_all()
