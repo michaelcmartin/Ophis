@@ -22,6 +22,7 @@ print_labels = False
 infiles = None
 outfile = None
 listfile = None
+mapfile = None
 
 
 def parse_args(raw_args):
@@ -31,7 +32,7 @@ def parse_args(raw_args):
     global warn_on_branch_extend
     global print_summary, print_loaded_files
     global print_pass, print_ir, print_labels
-    global infiles, outfile, listfile
+    global infiles, outfile, listfile, mapfile
 
     parser = optparse.OptionParser(
         usage="Usage: %prog [options] srcfile [srcfile ...]",
@@ -41,6 +42,8 @@ def parse_args(raw_args):
                       help="Output filename (default 'ophis.bin')")
     parser.add_option("-l", default=None, dest="listfile",
                       help="Listing filename (not created by default)")
+    parser.add_option("-m", default=None, dest="mapfile",
+                      help="Label-address map filename (not created by default)")
 
     ingrp = optparse.OptionGroup(parser, "Input options")
     ingrp.add_option("-u", "--undoc", action="store_true", default=False,
@@ -83,6 +86,7 @@ def parse_args(raw_args):
     infiles = args
     outfile = options.outfile
     listfile = options.listfile
+    mapfile = options.mapfile
     enable_branch_extend = options.enable_branch_extend
     enable_undoc_ops = options.undoc
     enable_65c02_exts = options.c02

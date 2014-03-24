@@ -755,8 +755,16 @@ class Assembler(Pass):
         else:
             self.listing = Listing.NullLister()
 
+    def go(self, node, env):
+        # record env, as we need it in postPass
+        self.env = env
+        super(Assembler, self).go(node, env)
+
     def postPass(self):
         self.listing.dump()
+        if Cmd.mapfile is not None:
+            with open(Cmd.mapfile, 'w') as f:
+                self.env.dump_mapfile(f)
         if Cmd.print_summary and Err.count == 0:
             print>>sys.stderr, "Assembly complete: %s bytes output " \
                                "(%s code, %s data, %s filler)" \
