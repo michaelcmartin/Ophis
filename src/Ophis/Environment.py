@@ -92,4 +92,4 @@ class Environment(object):
     def dump_mapfile(self, f):
         for d in self.dicts:
             for k in d:
-                f.write("{0:<30}      ${1:04X}\n".format(k, d[k]))
+                f.write("${1:04X} {0:<30}\n".format(k, d[k]))
