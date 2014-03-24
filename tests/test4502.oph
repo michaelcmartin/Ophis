@@ -82,7 +82,7 @@
 	LDY	$BCBC,X		;  BC: LDY - Absolute, X
 	BBS3	$BF, ^-$3E	;  BF: BBS3 - Zero Page, Relative
 	CPZ	#$C2 		;  C2: CPZ - Immediate
-	DEW	$C3C3		;  C3: DEW - Absolute
+	DEW	$C3		;  C3: DEW - Zero Page
 	SMB4	$C7		;  C7: SMB4 - Zero Page
 	ASW	$CBCB		;  CB: ASW - Absolute
 	BBS4	$CF, ^-$2E	;  CF: BBS4 - Zero Page, Relative
@@ -92,7 +92,7 @@
 	PHZ			;  DB: PHZ - Implied
 	BBS5	$DF, ^-$1E	;  DF: BBS5 - Zero Page, Relative
 	LDA 	($E2,SP),Y	;  E2: LDA - (Zero Page, SP), Y
-	INW	$E3E3		;  E3: INW - Absolute
+	INW	$E3		;  E3: INW - Zero Page
 	PHW	#$E4E4		;  E4: PHW - ImmediateLong
 	SMB6	$E7		;  E7: SMB6 - Zero Page
 	EOM			;  EA: EOM - Implied
