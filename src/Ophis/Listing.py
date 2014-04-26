@@ -55,7 +55,7 @@ class Listing(object):
                     dataline += (" %02X" * len(row)) % tuple(row)
                     charline = ""
                     for c in row:
-                        if c < 31 or c > 127:
+                        if c < 32 or c > 126:
                             charline += "."
                         else:
                             charline += chr(c)
