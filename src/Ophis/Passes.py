@@ -743,8 +743,25 @@ class LabelMapper(PCTracker):
 
     def visitLabel(self, node, env):
         (label, val) = node.data
+        if label.startswith("_"):
+            try:
+                macroarg = int(label[1:], 10)
+                # If that didn't throw, this is a macro argument
+                # and we don't want to track it.
+                return
+            except ValueError:
+                pass
+            if label.startswith("_*"):
+                return
+        if label.startswith("*"):
+            label = "*"
         location = val.value(env)
-        self.labeldata.append((label, str(node.ppt), location))
+        shortlocs = []
+        for loc in str(node.ppt).split('->'):
+            shortloc = loc.split('/')[-1]
+            shortloc = shortloc.split('\\')[-1]
+            shortlocs.append(shortloc)
+        self.labeldata.append((location, label, '->'.join(shortlocs)))
 
     def visitUnknown(self, node, env):
         pass
@@ -753,13 +770,11 @@ class LabelMapper(PCTracker):
         # TODO: Maybe fold all this into the listing file
         if Cmd.mapfile is not None:
             maxlabellen = 0
-            maxsrcloclen = 0
-            for (label, srcloc, loc) in self.labeldata:
+            self.labeldata.sort()
+            for (loc, label, srcloc) in self.labeldata:
                 if len(label) > maxlabellen:
                     maxlabellen = len(label)
-                if len(srcloc) > maxsrcloclen:
-                    maxsrcloclen = len(srcloc)
-            formatstr = "%%-%ds  %%-%ds  $%%04X\n" % (maxlabellen, maxsrcloclen)
+            formatstr = "$%%04X | %%-%ds | %%s\n" % (maxlabellen)
             f = open(Cmd.mapfile, 'w')
             for l in self.labeldata:
                 f.write(formatstr % l)
