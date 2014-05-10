@@ -88,8 +88,3 @@ class Environment(object):
         if len(self.stack) == 1:
             Err.log("Unmatched .scend")
         self.stack.pop(0)
-
-    def dump_mapfile(self, f):
-        for d in self.dicts:
-            for k in d:
-                f.write("{0:<30}      ${1:04X}\n".format(k, d[k]))

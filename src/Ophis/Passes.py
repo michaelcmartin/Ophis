@@ -733,6 +733,39 @@ class NormalizeModes(Pass):
         pass
 
 
+class LabelMapper(PCTracker):
+    """Collect the value and source definition location for each label
+    in the source."""
+    name = "Label Mapping Pass"
+
+    def prePass(self):
+        self.labeldata = []
+
+    def visitLabel(self, node, env):
+        (label, val) = node.data
+        location = val.value(env)
+        self.labeldata.append((label, str(node.ppt), location))
+
+    def visitUnknown(self, node, env):
+        pass
+
+    def postPass(self):
+        # TODO: Maybe fold all this into the listing file
+        if Cmd.mapfile is not None:
+            maxlabellen = 0
+            maxsrcloclen = 0
+            for (label, srcloc, loc) in self.labeldata:
+                if len(label) > maxlabellen:
+                    maxlabellen = len(label)
+                if len(srcloc) > maxsrcloclen:
+                    maxsrcloclen = len(srcloc)
+            formatstr = "%%-%ds  %%-%ds  $%%04X\n" % (maxlabellen, maxsrcloclen)
+            f = open(Cmd.mapfile, 'w')
+            for l in self.labeldata:
+                f.write(formatstr % l)
+            f.close()
+
+
 class Assembler(Pass):
     """Converts the IR into a list of bytes, suitable for writing to
     a file."""
@@ -755,16 +788,8 @@ class Assembler(Pass):
         else:
             self.listing = Listing.NullLister()
 
-    def go(self, node, env):
-        # record env, as we need it in postPass
-        self.env = env
-        super(Assembler, self).go(node, env)
-
     def postPass(self):
         self.listing.dump()
-        if Cmd.mapfile is not None:
-            with open(Cmd.mapfile, 'w') as f:
-                self.env.dump_mapfile(f)
         if Cmd.print_summary and Err.count == 0:
             print>>sys.stderr, "Assembly complete: %s bytes output " \
                                "(%s code, %s data, %s filler)" \
