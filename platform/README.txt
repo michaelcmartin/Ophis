@@ -6,11 +6,13 @@ c64_0.oph:     A Commodore 64 equivalent to a modern compiler's "crt0.s" - it
                contains a .PRG file header, a short BASIC program that launches
                the machine language program, and a prologue and epilogue that
                prepare memory for your use and then clean it up again when you
-               are done. Memory locations $02 through $7F on the zero page are
+               are done. Memory locations $02 through $8F on the zero page are
                available for your use, and the program lives at the beginning
-               a contiguous block of RAM from $0800 through $CF81. The BASIC
+               a contiguous block of RAM from $0800 through $CFFF. The BASIC
                ROM is swapped out of memory (leaving $A000-$BFFF as RAM) for
-               the duration of your program.
+               the duration of your program. BASIC's working storage on the
+               zero page is backed up in the RAM underneath the KERNAL ROM
+               while your program runs.
 
 c64kernal.oph: A collection of standard aliases for the KERNAL routines on the
                Commodore 64. Names for these routines have been chosen to match

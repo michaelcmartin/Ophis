@@ -5,8 +5,8 @@
 ;; Include this at the TOP of your C64 program, and it will handle
 ;; hiding away the BASIC ROM and data and restoring it at the end.
 ;;
-;; You will have a contiguous block of RAM from $0800 to $CF81, and
-;; Zero Page access from $02 to $7F in the segment "zp".
+;; You will have a contiguous block of RAM from $0800 to $CFFF, and
+;; Zero Page access from $02 to $8F in the segment "zp".
 
 .word $0801
 .org  $0801
@@ -24,11 +24,16 @@ _next:	.word 0			; End of program
 .text
 
 .scope
-	; Cache BASIC zero page at top of available RAM
-	ldx	#$7E
-*	lda	$01, x
-	sta	$CF81, x
-	dex
+	; Cache BASIC zero page underneath the KERNAL, while also
+	; making RAM copies of the NMI routines
+	ldx	#$00
+*	lda	$00, x
+	sta	$e000, x
+	lda	$fe00, x
+	sta	$fe00, x
+	lda	$ff00, x
+	sta	$ff00, x
+	inx
 	bne	-
 
 	; Swap out the BASIC ROM for RAM
@@ -40,20 +45,41 @@ _next:	.word 0			; End of program
 	; Run the real program
 	jsr	_main
 
-	; Restore BASIC ROM
-	lda	$01
-	ora	#$07
+	; Swap out KERNAL to expose cached BASIC ZP values
+	; Block IRQs during this period. NMIs cannot be blocked,
+	; but we copied enough of the processing code into the
+	; RAM under the KERNAL that we can disable NMI processing
+	; during this period
+	sei				; Disable IRQs
+	lda	#$c1			; Defang NMIs
+	sta	$318
+
+	lda	$01			; Swap out KERNAL
+	and	#$fd
 	sta	$01
 
 	; Restore BASIC zero page
-	ldx	#$7E
-*	lda	$CF81, x
+	ldx	#$8E
+*	lda	$e001, x
 	sta	$01, x
 	dex
 	bne	-
 
-	; Back to BASIC
-	rts
+	; Restore BASIC ROM, KERNAL, and interrupts
+	lda	$01
+	ora	#$07
+	sta	$01
+	lda	#$47		; Restore NMI vector
+	sta	$318
+	cli			; Re-enable interrupts
+
+	; Back to BASIC. We do this by clearing the keyboard
+	; buffer and then jumping through the warm start
+	; vector. This will more cleanly handle case where
+	; the program has somehow modified BASIC's state,
+	; such as running through PUCRUNCH or a onefiler.
+	stx	$c6		; .X is zero from previous loop
+	jmp	($a002)
 
 _main:
 	; Program follows...
