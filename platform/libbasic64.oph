@@ -1,0 +1,170 @@
+;;; LIBBASIC64.OPH
+
+;;; This is a collection of routines inside the BASIC ROM that can
+;;; be repurposed to do floating-point math inside your machine
+;;; language programs. It is currently VERY EXPERIMENTAL. The documentation
+;;; available for this is spotty at best and disassembly confirms that
+;;; a lot of hidden invariants may lurk.
+
+;;; There's a general TODO here to generate a relatively safe and
+;;; easy to use set of macros that will do more or less what you want.
+
+	;; BASIC functions
+	.alias	abs_fac1	$bc58
+	.alias	atn_fac1	$e30e
+	.alias	cos_fac1	$e264
+	.alias	exp_fac1	$bfed
+	.alias	int_fac1	$bccc
+	.alias	log_fac1	$b9ea
+	.alias	rnd_fac1	$e097
+	.alias	sgn_fac1	$bc39
+	.alias	sin_fac1	$e26b
+	.alias	tan_fac1	$e2b4
+
+	;; Getting data in and out of the FACs
+	.alias	ld_fac1_a	$bc3c
+	.alias	ld_fac1_s16	$b391
+	.alias	ld_fac1_mem	$bba2
+	.alias	ld_fac1_fac2	$bbfc
+	.alias	fac1_to_string	$bddd
+	.alias	fac1_to_s32	$bc9b
+	.alias	fac1_to_57	$bbca
+	.alias	fac1_to_5c	$bbc7
+
+	.alias	ld_fac2_mem	$ba8c
+	.alias	ld_fac2_fac1	$bc0c
+
+	;; Unlike sgn_fac1, this returns the -1/0/1 in
+	;; the accumulator
+	.alias	fac1_sign	$bc2b
+
+	;; FP operators. These are all FAC2 OP FAC1
+	;; with the result in FAC1.
+	.alias	f_plus		$b86a
+	.alias	f_minus		$b853
+	.alias	f_times		$ba2b
+	.alias	f_div		$bb12
+	.alias	f_pow		$bf7b
+	.alias	f_and		$afe9
+	.alias	f_or		$afe6
+
+	;; Memory-based FP operations. All are MEM OP FAC1.
+	;; These seem safer; FAC2 seems to have some slippery
+	;; invariants in it.
+	.alias f_add		$b867
+	.alias f_subtract	$b850
+	.alias f_multiply	$ba28
+	.alias f_divide		$bb0f
+
+	;; Useful FP constants that live in the ROM.
+	;; It's plausible that ld_fac1_a or ld_fac1_s16
+	;; would be more convenient than ld_fac1_mem
+	;; with f_1 or f_10, but when doing memory-based
+	;; generic stuff, these will still be useful
+	.alias	f_0_5		$bf11		;  0.5
+	.alias	f_1		$b9bc		;  1.0
+	.alias	f_pi		$aea8		;  3.1415926
+	.alias	f_10		$baf9		; 10.0
+
+	;; Macros to make our lives easier
+.macro	f_move
+	ldx	#$00
+_fmvlp:	lda	_2,x
+	sta	_1,x
+	inx
+	cpx	#$05
+	bne	_fmvlp
+.macend
+
+.macro	print_str
+	lda	#<_1
+	ldy	#>_1
+	jsr	strout
+.macend
+
+.macro	ld_fac1
+	lda	#<_1
+	ldy	#>_1
+	jsr	ld_fac1_mem
+.macend
+
+.macro	ld_fac2
+	lda	#<_1
+	ldy	#>_1
+	jsr	ld_fac2_mem
+.macend
+
+.macro	st_fac1
+	lda	#<_1
+	ldy	#>_1
+	jsr	fac1_to_mem
+.macend
+
+.macro	print_f
+	`ld_fac1 _1
+	jsr	fac1out
+.macend
+
+ld_fac1_ti:
+	jsr	$ffde		; RDTIM
+	sty	$63
+	stx	$64
+	sta	$65
+	;; Once the requirements on .Y and $68 are better
+	;; understood, this might be exportable as
+	;; ld_fac1_s32, but there are still some dragons
+	;; lurking
+	ldy	#$00		; Clear out intermediary values
+	sta	$62
+	sta	$68
+	jmp	$bcd5
+
+fac1_to_mem:
+	sta	$fd
+	sty	$fe
+	jsr	fac1_to_5c
+	ldy	#$00
+*	lda	$5c,y
+	sta	($fd),y
+	iny
+	cpy	#$05
+	bne	-
+	rts
+
+fac1out:
+	ldy	#$00		; Clean out overflow
+	sty	$68
+	sty	$70
+	jsr	fac1_to_string
+	ldy	#$01
+	;; Skip the first character if it's not "-"
+	lda	$100
+	sec
+	sbc	#$2d
+	beq	strout
+	lda	#$01
+	;; Fall through to strout
+
+;;; The BASIC ROM already has a STROUT routine - $ab1e - but
+;;; it makes use of BASIC's own temporary string handling. We
+;;; don't want it to ever touch its notion of temporary strings
+;;; here, so we provide our own short routine to do this.
+strout:	sta	$fd
+	sty	$fe
+	ldy	#$00
+*	lda	($fd),y
+	beq	+
+	jsr	$ffd2		; CHROUT
+	iny
+	bne	-
+*	rts
+
+randomize:
+	jsr	ld_fac1_ti
+	lda	#$ff
+	sta	$66		; Force sign negative
+	jmp	rnd_fac1	; RND(-TI)
+
+rnd:	lda	#$01
+	jsr	ld_fac1_a
+	jmp	rnd_fac1
