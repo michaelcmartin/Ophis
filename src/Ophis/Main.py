@@ -63,7 +63,6 @@ def run_all():
     passes.append(instruction_select)
     passes.extend([Ophis.Passes.NormalizeModes(),
                    Ophis.Passes.UpdateLabels(),
-                   Ophis.Passes.LabelMapper(),
                    a])
 
     for p in passes:

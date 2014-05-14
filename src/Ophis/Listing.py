@@ -78,3 +78,63 @@ class NullLister(object):
 
     def dump(self):
         pass
+
+
+class LabelMapper(object):
+    """Encapsulates the label map. Accepts label names, string
+    representations of program points, and the location."""
+    def __init__(self, fname):
+        self.labeldata = []
+        self.filename = fname
+
+    def mapLabel(self, label, ppt, location):
+        if label.startswith("_"):
+            try:
+                macroarg = int(label[1:], 10)
+                # If that didn't throw, this is a macro argument
+                # and we don't want to track it.
+                return
+            except ValueError:
+                pass
+            if label.startswith("_*"):
+                # This is the caller side of the macro arguments,
+                # and we don't want to track that either.
+                return
+        if label.startswith("*"):
+            # Unprocess anonymous labels
+            label = "*"
+        shortlocs = []
+        # Filenames tend to become absolute paths for better
+        # error processing, but that's a disaster in these
+        # charts. We split out the leafs here and then re-join
+        # the macro application arrows.
+        for loc in ppt.split('->'):
+            shortloc = loc.split('/')[-1]
+            shortloc = shortloc.split('\\')[-1]
+            shortlocs.append(shortloc)
+        self.labeldata.append((location, label, '->'.join(shortlocs)))
+
+    def dump(self):
+        if self.filename == "-":
+            out = sys.stdout
+        else:
+            out = file(self.filename, "w")
+        maxlabellen = 0
+        self.labeldata.sort()
+        for (loc, label, srcloc) in self.labeldata:
+            if len(label) > maxlabellen:
+                maxlabellen = len(label)
+        formatstr = "$%%04X | %%-%ds | %%s\n" % (maxlabellen)
+        for l in self.labeldata:
+            out.write(formatstr % l)
+        if self.filename != "-":
+            out.close()
+
+
+class NullLabelMapper(object):
+    "A dummy LabelMapper that actually does nothing."
+    def mapLabel(self, label, ppt, location):
+        pass
+
+    def dump(self):
+        pass

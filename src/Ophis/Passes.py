@@ -733,54 +733,6 @@ class NormalizeModes(Pass):
         pass
 
 
-class LabelMapper(PCTracker):
-    """Collect the value and source definition location for each label
-    in the source."""
-    name = "Label Mapping Pass"
-
-    def prePass(self):
-        self.labeldata = []
-
-    def visitLabel(self, node, env):
-        (label, val) = node.data
-        if label.startswith("_"):
-            try:
-                macroarg = int(label[1:], 10)
-                # If that didn't throw, this is a macro argument
-                # and we don't want to track it.
-                return
-            except ValueError:
-                pass
-            if label.startswith("_*"):
-                return
-        if label.startswith("*"):
-            label = "*"
-        location = val.value(env)
-        shortlocs = []
-        for loc in str(node.ppt).split('->'):
-            shortloc = loc.split('/')[-1]
-            shortloc = shortloc.split('\\')[-1]
-            shortlocs.append(shortloc)
-        self.labeldata.append((location, label, '->'.join(shortlocs)))
-
-    def visitUnknown(self, node, env):
-        pass
-
-    def postPass(self):
-        # TODO: Maybe fold all this into the listing file
-        if Cmd.mapfile is not None:
-            maxlabellen = 0
-            self.labeldata.sort()
-            for (loc, label, srcloc) in self.labeldata:
-                if len(label) > maxlabellen:
-                    maxlabellen = len(label)
-            formatstr = "$%%04X | %%-%ds | %%s\n" % (maxlabellen)
-            f = open(Cmd.mapfile, 'w')
-            for l in self.labeldata:
-                f.write(formatstr % l)
-            f.close()
-
-
 class Assembler(Pass):
     """Converts the IR into a list of bytes, suitable for writing to
     a file."""
@@ -802,9 +754,14 @@ class Assembler(Pass):
             self.listing = Listing.Listing(Cmd.listfile)
         else:
             self.listing = Listing.NullLister()
+        if Cmd.mapfile is not None:
+            self.mapper = Listing.LabelMapper(Cmd.mapfile)
+        else:
+            self.mapper = Listing.NullLabelMapper()
 
     def postPass(self):
         self.listing.dump()
+        self.mapper.dump()
         if Cmd.print_summary and Err.count == 0:
             print>>sys.stderr, "Assembly complete: %s bytes output " \
                                "(%s code, %s data, %s filler)" \
@@ -1043,7 +1000,9 @@ class Assembler(Pass):
         self.assemble(node, Ops.modes.index("Zero Page, Relative"), env)
 
     def visitLabel(self, node, env):
-        pass
+        (label, val) = node.data
+        location = val.value(env)
+        self.mapper.mapLabel(label, str(node.ppt), location)
 
     def visitByte(self, node, env):
         created = []
