@@ -8,15 +8,7 @@
 ;; You will have a contiguous block of RAM from $0800 to $CFFF, and
 ;; Zero Page access from $02 to $8F in the segment "zp".
 
-.word $0801
-.org  $0801
-
-; BASIC program that just calls our machine language code
-.scope
-	.word _next, 10		; Next line and current line number
-	.byte $9e," 2062",0	; SYS 2062
-_next:	.word 0			; End of program
-.scend
+.include "c64header.oph"
 
 .data zp ; Zero Page memory segment.
 .org $0002
