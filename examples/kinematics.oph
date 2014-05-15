@@ -1,0 +1,129 @@
+.include "../platform/c64header.oph"
+.include "../platform/c64kernal.oph"
+
+	`print_str angle_prompt
+	jsr	get_num
+	`fp_multiply f_pi
+	`fp_divide f_180
+	`fp_store theta
+
+	`print_str speed_prompt
+	jsr	get_num
+	`fp_store speed
+
+	`fp_load theta
+	jsr	sin_fac1
+	`fp_multiply speed
+	`fp_store v_y
+
+	`fp_load theta
+	jsr	cos_fac1
+	`fp_multiply speed
+	`fp_store v_x
+
+	;; Compute impact time
+	`fp_load v_y
+	`print_str impact_time_1
+	`fp_divide f_0_5
+	`fp_divide f_9_8
+	`fp_store time
+	jsr	fac1out
+	`print_str impact_time_2
+
+	`print_str impact_point_1
+	`fp_load time
+	`fp_multiply v_x
+	jsr	fac1out
+	`print_str impact_point_2
+
+	`print_str height_1
+	`fp_load f_0_5
+	`fp_multiply v_y
+	`fp_multiply v_y
+	`fp_divide f_9_8
+	jsr	fac1out
+	`print_str impact_point_2
+
+	rts
+
+angle_prompt:
+	.byte "CHOOSE FIRING ANGLE (1-90): ",0
+
+speed_prompt:
+	.byte "CHOOSE FIRING SPEED (1-100): ",0
+
+impact_time_1:
+	.byte "IMPACT AT ",0
+
+impact_time_2:
+	.byte " SECONDS",13,0
+
+impact_point_1:
+	.byte "IMPACT AT ",0
+
+impact_point_2:
+	.byte " METERS",13,0
+
+height_1:
+	.byte "MAXIMUM HEIGHT OF ",0
+
+f_0_125: .byte 126,0,0,0,0
+f_9_8:	.byte 132,28,204,204,204
+f_180:	.byte 136,52,0,0,0
+
+get_num:
+.scope
+	lda	#$00		; Turn on blinky cursor
+	sta	$cc
+	sta	numindx
+_lp:	jsr	getin
+	cmp	#$14		; DEL?
+	bne	+
+	ldx	numindx
+	beq	_lp
+	dex
+	stx	numindx
+	jsr	$ffd2
+	jmp	_lp
+*	cmp	#$0d		; RETURN?
+	bne	+
+	ldx	numindx
+	beq	_lp
+	bne	_got
+*	cmp	#'0		; digit?
+	bcc	_lp
+	cmp	#'9+1
+	bcs	_lp
+	ldx	numindx		; Room for character?
+	cpx	#$0f
+	beq	_lp
+	sta	numbuf,x
+	inx
+	stx	numindx
+	jsr	$ffd2
+	jmp	_lp
+_got:	ldx	numindx
+	lda	#$00
+	sta	numbuf,x
+	lda	#$01		; Disable blinky cursor again
+	sta	$cc
+	lda	#$20
+	jsr	$ffd2
+	lda	#$0d
+	jsr	$ffd2
+	lda	#<numbuf
+	ldy	#>numbuf
+	jmp	ld_fac1_string
+.scend
+
+.include "../platform/libbasic64.oph"
+
+;;; Post-program data space
+
+.space	numindx	1
+.space	numbuf	16
+.space	speed	5
+.space	theta	5
+.space	v_x	5
+.space	v_y	5
+.space	time	5
