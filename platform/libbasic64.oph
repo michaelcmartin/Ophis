@@ -40,21 +40,26 @@
 
 	;; FP operators. These are all FAC2 OP FAC1
 	;; with the result in FAC1.
-	.alias	f_plus		$b86a
-	.alias	f_minus		$b853
-	.alias	f_times		$ba2b
-	.alias	f_div		$bb12
-	.alias	f_pow		$bf7b
-	.alias	f_and		$afe9
-	.alias	f_or		$afe6
+	;; PRECONDITIONS: All of these operations but AND and
+	;; OR require you to have the contents of $61 in the
+	;; accumulator. calling one of the ld_fac* routines
+	;; will do that for you automatically. f_add_op also
+	;; requires that $6F be set properly; only ld_fac2_mem
+	;; does this.
+	.alias	f_add_op	$b86a
+	.alias	f_subtract_op	$b853
+	.alias	f_multiply_op	$ba2b
+	.alias	f_divide_op	$bb12
+	.alias	f_pow_op	$bf7b
+	.alias	f_and_op	$afe9
+	.alias	f_or_op		$afe6
 
 	;; Memory-based FP operations. All are MEM OP FAC1.
-	;; These seem safer; FAC2 seems to have some slippery
-	;; invariants in it.
-	.alias f_add		$b867
-	.alias f_subtract	$b850
-	.alias f_multiply	$ba28
-	.alias f_divide		$bb0f
+	;; These are usually safer than the *_op routines.
+	.alias f_add_mem	$b867
+	.alias f_subtract_mem	$b850
+	.alias f_multiply_mem	$ba28
+	.alias f_divide_mem	$bb0f
 
 	;; Useful FP constants that live in the ROM.
 	;; It's plausible that ld_fac1_a or ld_fac1_s16
@@ -100,9 +105,63 @@ _fmvlp:	lda	_2,x
 	jsr	fac1_to_mem
 .macend
 
-.macro	print_f
+.macro	fp_load
+	`ld_fac1 _1
+.macend
+
+.macro	fp_store
+	`st_fac1 _1
+.macend
+
+.macro	fp_print
 	`ld_fac1 _1
 	jsr	fac1out
+.macend
+
+.macro	fp_read
+	lda	#<_1
+	ldy	#>_1
+	jsr	ld_fac1_string
+.macend
+
+.macro	fp_add
+	lda	#<_1
+	ldy	#>_1
+	jsr	f_add_mem
+.macend
+
+.macro	fp_subtract
+	jsr	ld_fac2_fac1
+	`ld_fac1 _1
+	jsr	f_subtract_op
+.macend
+
+.macro	fp_multiply
+	lda	#<_1
+	ldy	#>_1
+	jsr	f_multiply_mem
+.macend
+
+.macro	fp_divide
+	jsr	ld_fac2_fac1
+	`ld_fac1 _1
+	jsr	f_divide_op
+.macend
+
+.macro	fp_pow
+	jsr	ld_fac2_fac1
+	`ld_fac1 _1
+	jsr	f_pow_op
+.macend
+
+.macro	fp_and
+	`ld_fac2 _1
+	jsr	f_and_op
+.macend
+
+.macro	fp_or
+	`ld_fac2 _1
+	jsr	f_or_op
 .macend
 
 ld_fac1_ti:
@@ -129,6 +188,22 @@ fac1_to_mem:
 	iny
 	cpy	#$05
 	bne	-
+	rts
+
+ld_fac1_string:
+	ldx	$7a
+	sta	$7a
+	txa
+	pha
+	lda	$7b
+	pha
+	sty	$7b
+	jsr	$79
+	jsr	$bcf3
+	pla
+	sta	$7b
+	pla
+	sta	$7a
 	rts
 
 fac1out:
