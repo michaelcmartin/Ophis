@@ -1,15 +1,43 @@
 .include "../platform/c64header.oph"
 .include "../platform/c64kernal.oph"
 
-	`print_str angle_prompt
+*	`print_str angle_prompt
 	jsr	get_num
+	`fp_store theta
+
+	;; Range-check result: 1-90
+	`fp_subtract f_1
+	jsr	fac1_sign
+	cmp	#$ff
+	beq	-
+
+	`fp_load theta
+	`fp_subtract f_90
+	jsr	fac1_sign
+	cmp	#$01
+	beq	-
+
+	;; Range check passes, convert to radians
+	`fp_load theta
 	`fp_multiply f_pi
 	`fp_divide f_180
 	`fp_store theta
 
-	`print_str speed_prompt
+*	`print_str speed_prompt
 	jsr	get_num
 	`fp_store speed
+
+	;; Range-check result: 1-100
+	`fp_subtract f_1
+	jsr	fac1_sign
+	cmp	#$ff
+	beq	-
+
+	`fp_load speed
+	`fp_subtract f_100
+	jsr	fac1_sign
+	cmp	#$01
+	beq	-
 
 	`fp_load theta
 	jsr	sin_fac1
@@ -69,6 +97,8 @@ height_1:
 
 f_0_125: .byte 126,0,0,0,0
 f_9_8:	.byte 132,28,204,204,204
+f_90:	.byte 135,52,0,0,0
+f_100:	.byte 135,72,0,0,0
 f_180:	.byte 136,52,0,0,0
 
 get_num:
