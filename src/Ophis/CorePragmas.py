@@ -10,7 +10,7 @@ import Ophis.CmdLine
 import Ophis.IR as IR
 import Ophis.Frontend as FE
 import Ophis.Errors as Err
-import os.path
+import math, os.path
 
 basecharmap = "".join([chr(x) for x in range(256)])
 currentcharmap = basecharmap
@@ -217,6 +217,40 @@ def pragmaData(ppt, line, result):
     else:
         segment = "*data-default*"
     result.append(IR.Node(ppt, "DataSegment", segment))
+
+
+def pragmaCbmfloat(ppt, line, result):
+    "Parses a string into a CBM BASIC format floating point number"
+    data = []
+    while True:
+        try:
+            v_str = line.expect("STRING").value
+            v = float(v_str)
+            if v == 0.0:
+                data.extend([0,0,0,0,0])
+            else:
+                if v < 0.0:
+                    sign = 128
+                    v = -v
+                else:
+                    sign = 0
+                expt = math.floor(math.log(v, 2))
+                if expt >= -128 and expt <= 126:
+                    mantissa = v / (2**expt)
+                    m1 = (mantissa - 1.0) * 128 + sign
+                    m2 = m1 * 256
+                    m3 = m2 * 256
+                    m4 = m3 * 256
+                    data.extend([int(x) % 256 for x in [expt+129,m1,m2,m3,m4]])
+                else:
+                    Err.log("Floating point constant out of range")
+        except ValueError:
+            Err.log("Expected: floating point")
+        next = line.expect(',', 'EOL').type
+        if next == 'EOL':
+            break
+    bytes = [IR.ConstantExpr(x) for x in data]
+    result.append(IR.Node(ppt, "Byte", *bytes))
 
 
 def readData(line):

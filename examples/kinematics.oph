@@ -95,11 +95,11 @@ impact_point_2:
 height_1:
 	.byte "MAXIMUM HEIGHT OF ",0
 
-f_0_125: .byte 126,0,0,0,0
-f_9_8:	.byte 132,28,204,204,204
-f_90:	.byte 135,52,0,0,0
-f_100:	.byte 135,72,0,0,0
-f_180:	.byte 136,52,0,0,0
+f_0_125: .cbmfloat "0.125"
+f_9_8:	.cbmfloat "9.8"
+f_90:	.cbmfloat "90"
+f_100:	.cbmfloat "100"
+f_180:	.cbmfloat "180"
 
 get_num:
 .scope

@@ -1,5 +1,5 @@
-; This data file just dumps out $00-$0F repeatedly with different forms,
-; bracketed by $00s and then $60s.
+; This part of the file just dumps out $00-$0F repeatedly with
+; different forms, bracketed by $00s and then $60s.
 .advance $10, ^
 .byte 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 .word 256, $0302, $0504, $0706, $0908, $0b0a, $0d0c, $0f0e
@@ -7,3 +7,21 @@
 .wordbe 1, $0203, $0405, $0607, $0809, $0a0b, $0c0d, $0e0f
 .dwordbe $010203, $04050607, $08090a0b, $0c0d0e0f
 .advance $70, ^
+
+; To verify that that these numbers match up, we use the following
+; BASIC program, which works on both the C64 and the VIC-20.
+
+; 10 clr:v=0:pv=peek(45)+256*peek(46)+2
+; 20 input "convert what";v
+; 30 for i=0 to 4:print peek(pv+i);:next i
+; 40 print:if v<>0 then 10
+
+.cbmfloat "0.0", "0.125","9.8","90","100","180"
+
+; The program tells us that these are the right answers.
+; We'd like to test more exotic choices like the 4.3e12 or what have you,
+; but the fact that these are two different kinds of floating point
+; results in slight variations at the very bottom of the mantissa.
+; caveat emptor.
+; .byte 0,0,0,0,0,126,0,0,0,0,132,28,204,204,204,135,52,0,0,0
+; .byte 135,72,0,0,0,136,52,0,0,0
