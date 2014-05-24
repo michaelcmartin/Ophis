@@ -460,5 +460,7 @@ if __name__ == '__main__':
 
     if failed > 0:
         print "\nTotal test case failures: %d" % failed
+        sys.exit(1)
     else:
         print "\nAll test cases succeeded"
+        sys.exit(0)
