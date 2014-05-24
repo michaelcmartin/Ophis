@@ -20,6 +20,19 @@ c64kernal.oph: A collection of standard aliases for the KERNAL routines on the
                constants are defined for the character codes for color changes
                and case-changing.
 
+libbasic64.oph:A still-experimental set of macros and routines for exploiting
+               the software floating point routines in the Commodore 64
+               BASIC ROM.
+
+c64header.oph: A much simpler Commodore 64 header that does nothing but jump
+               directly to your code. Useful for small programs or those that
+               intend to interface with BASIC.
+
+vic20.oph:     A simple header for the unexpanded VIC-20. Equivalent in
+               behavior to c64header.oph.
+
+vic20x.oph:    A simple header like the two above, but for expanded VIC-20.
+
 nes.oph:       A somewhat skeletal collection of aliases for the PPU registers
                on the Nintendo Entertainment System. These names were chosen
                to match the constant names given on the NESdev Wiki.
