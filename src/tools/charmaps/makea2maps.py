@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import struct
 
 x = ''.join([chr(x) for x in range(256)])
