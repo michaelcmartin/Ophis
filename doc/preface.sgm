@@ -5,8 +5,8 @@
     chip used in the vast majority of the classic 8-bit computers and
     consoles. Its primary design goals are code readability and output
     flexibility - Ophis has successfully been used to create programs
-    for the Nintendo Entertainment System, the Atari 2600, and the
-    Commodore 64.
+    for the Nintendo Entertainment System, the Atari 2600, and various
+    8-bit Commodore machines.
   </para>
   <para>
     Ophis's syntax is noticably different from the formats
@@ -67,6 +67,12 @@
       toolchains. It was this process that led to Ophis 2.
     </para>
     <para>
+      After its release Ophis 2 was picked up by a number of
+      developers work with actual hardware from the period, including
+      prototype machines that never saw production. Some of their
+      contributions have refined the code generators for version 2.1.
+    </para>
+    <para>
       This is an updated edition of <emphasis>Programming With
       Ophis</emphasis>, including documentation for all new features
       introduced and expanding the examples to include simple
@@ -114,7 +120,10 @@
   <section>
     <title>About the examples</title>
     <para>
-      Versions of the examples in this book are available from the Ophis site. Windows users will find them packaged with the distribution; all other users can get them as a separate download or pull them directly from github.
+      Versions of the examples in this book are available from the
+      Ophis site. Windows users will find them packaged with the
+      distribution; all other users can get them as a separate
+      download or pull them directly from github.
     </para>
     <para>
       The code in this book is available in

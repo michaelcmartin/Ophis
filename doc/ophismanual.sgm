@@ -6,6 +6,7 @@
   <!ENTITY part5 SYSTEM "tutor5.sgm">
   <!ENTITY part6 SYSTEM "tutor6.sgm">
   <!ENTITY part7 SYSTEM "tutor7.sgm">
+  <!ENTITY part8 SYSTEM "tutor8.sgm">
   <!ENTITY samplecode SYSTEM "samplecode.sgm">
   <!ENTITY pre1 SYSTEM "preface.sgm">
   <!ENTITY cmdref SYSTEM "cmdref.sgm">
@@ -42,6 +43,7 @@
     &part5;
     &part6;
     &part7;
+    &part8;
   </part>
   <part label="II">
     <title>To HLL and Back</title>

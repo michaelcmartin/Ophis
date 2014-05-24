@@ -296,8 +296,11 @@ hello:  .byte "HELLO, WORLD!", 0
         </thead>
         <tbody>
           <row><entry><option>-o FILE</option></entry><entry>Overrides the default filename for output.</entry></row>
+          <row><entry><option>-l FILE</option></entry><entry>Specifies an optional listing file that gives the emitted binary in human-readable form, with disassembly.</entry></row>
+          <row><entry><option>-m FILE</option></entry><entry>Specifies an optional map file that gives the in-source names for every label used in the program.</entry></row>
           <row><entry><option>-u</option></entry><entry>Allows the 6510 undocumented opcodes as listed in the VICE documentation.</entry></row>
           <row><entry><option>-c</option></entry><entry>Allows opcodes and addressing modes added by the 65C02.</entry></row>
+          <row><entry><option>-4</option></entry><entry>Allows opcodes and addressing modes added by the 4502. (Experimental.)</entry></row>
           <row><entry><option>-q</option></entry><entry>Quiet operation.  Only reports warnings and errors.</entry></row>
           <row><entry><option>-v</option></entry><entry>Verbose operation.  Reports files as they are loaded.</entry></row>
         </tbody>
@@ -315,14 +318,16 @@ Loading hello1.oph
 Assembly complete: 45 bytes output (14 code, 29 data, 2 filler)
     </screen>
     <para>
-      This will produce a file named <filename>hello.prg</filename>. If
-      your emulator can run <filename>PRG</filename> files directly,
-      this file will now run (and print <computeroutput>HELLO,
-      WORLD!</computeroutput>) as many times as you
-      type <userinput>RUN</userinput>.  Otherwise, use
-      a <filename>D64</filename> management utility to put
-      the <filename>PRG</filename> on a <filename>D64</filename>, then
-      load and run the file off that.
+      This will produce a file
+      named <filename>hello.prg</filename>. If your emulator can
+      run <filename>PRG</filename> files directly, this file will now
+      run (and print <computeroutput>HELLO, WORLD!</computeroutput>)
+      as many times as you type <userinput>RUN</userinput>.
+      Otherwise, use a <filename>D64</filename> management utility to
+      put the <filename>PRG</filename> on a <filename>D64</filename>,
+      then load and run the file off that. If you have access to a
+      device like the 1541 Ultimate II, you can even load the file
+      directly into the actual hardware.
     </para>
   </section>
 </chapter>

@@ -1,0 +1,211 @@
+<chapter>
+  <title>Platform-Specific Techniques</title>
+
+  <para>
+    Ophis is intended to produce cross-assembled binaries that will
+    run in a variety of contexts. The expectation is that most users
+    will be writing for emulated versions of hardware from when the
+    6502 chip was current, and producing files either for those
+    emulators or for devices that will transfer the results to real
+    hardware. This chapter describes the support routines and examples
+    to make those tasks easier.
+  </para>
+
+  <section>
+    <title>The Commodore 64 and VIC-20</title>
+
+    <para>
+      In a real sense, the Commodore 64 is the &quot;native&quot;
+      target platform for Ophis. It was the first platform targeted
+      and it's the one that has received the most additional
+      support. It's also one where the developer needs to take the
+      most care about exactly what kind of program they are
+      writing.
+    </para>
+
+    <itemizedlist>
+      <listitem>
+        <para>
+          <literal>c64kernal.oph</literal> actually defines no
+          code. It merely sets up the customary names for the KERNAL
+          jump table routines so that you may refer to routines
+          like <literal>chrout</literal> and <literal>rdtim</literal>
+          by name.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>c64header.oph</literal> is an absolutely minimal
+          C64 header program; it contains the one-line BASIC program
+          and nothing else. Smaller programs that do not require more
+          than four bytes of zero page do not need to do any
+          bankswitching or zero page caching and don't need any more
+          than this. The aliases provided
+          in <literal>c64kernal.oph</literal> may be useful, but are
+          not included in this header.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>c64_0.oph</literal> is suitable for larger and more
+          sophisticated programs. It is an enhancement of the header
+          file developed in the previous chapter. It stores the saved
+          zero page values in the RAM shadowed by the KERNAL ROM, and
+          it also uses a different mechanism for returning to BASIC
+          when done that is more robust in the face of self-modifying
+          programs such as those produced by self-extracting
+          compressed executables or onefiled multipart programs. It is
+          used like the other header files&mdash;just include it at
+          the top of your source file and use <literal>RTS</literal>
+          to end your program&mdash;but programs that use this header
+          file will have all of the zero page from $02-$8F and a
+          contiguous chunk of program RAM from $0800-$CFFF.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>libbasic64.oph</literal> is an experimental set of
+          macros and routines to permit the assembly programmer to
+          make use of the software floating point routines provided by
+          BASIC. It is, for obvious reasons, not compatible
+          with <literal>c64_0.oph</literal>, because it needs to make
+          use of BASIC's workspace and the ROM itself. If you wish to
+          use this file you should include it near the end of your
+          program.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>vic20.oph</literal> is a header that will work for
+          the <emphasis>unexpanded</emphasis> VIC-20. Memory expansion
+          slots change where BASIC programs load, and since these
+          headers load in the machine language program in as the
+          suffix to a BASIC program, that also changes where they are
+          themselves loaded. There is no trickery with bankswitching
+          ROMs in and out&mdash;the VIC-20 does not have enough RAM to
+          gain anything from these techniques.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>vic20x.oph</literal> does the same, but for a
+          VIC-20 with one or more memory expansions.
+        </para>
+      </listitem>
+    </itemizedlist>
+
+    <section>
+      <title>Using LIBBASIC64</title>
+
+      <para>
+        The 6502's arithmetic capabilities are rather limited. To
+        counteract this, BASICs of the era did floating point in
+        software and gave BASIC programmers the full suite of
+        arithmetic operations. These operations are largely
+        unavailable to machine language programmers.
+      </para>
+
+      <para>
+        The <literal>libbasic64.oph</literal> library is an attempt to
+        address this. It is currently considered highly experimental,
+        but initial results are very promising.
+      </para>
+
+      <para>
+        BASIC stores floating point numbers in a five-byte format, but
+        translates them into a seven-byte format to do actual work in
+        two Floating Point Accumulators (FAC1 and FAC2). Ophis will
+        let you specify 5-byte constants with
+        the <literal>.cbmfloat</literal> directive, which takes a
+        string and produces the requisite five-byte value.
+      </para>
+
+      <para>
+        The floating point functions in BASIC all operate on FAC1 and
+        are relatively reliable. The
+        functions <literal>abs_fac1</literal>, <literal>atn_fac1</literal>, <literal>cos_fac1</literal>, <literal>exp_fac1</literal>, <literal>int_fac1</literal>, <literal>log_fac1</literal>, <literal>rnd_fac1</literal>, <literal>sgn_fac1</literal>, <literal>sin_fac1</literal>,
+        and <literal>tan_fac1</literal> are all provided. Routines
+        that touch the FACs tend to be extremely finicky. This system
+        defines a set of macros and routines to manage that for you:
+      </para>
+
+      <itemizedlist>
+        <listitem><para><literal>`f_move</literal> <emphasis>dest, source</emphasis>: Copy a five-byte floating point value from <emphasis>source</emphasis> to <emphasis>dest</emphasis>.</para></listitem>
+        <listitem><para><literal>`fp_load</literal> <emphasis>src</emphasis>: Loads FAC1 with the floating point constant specified by <emphasis>src</emphasis>.</para></listitem>
+        <listitem><para><literal>`fp_store</literal> <emphasis>dest</emphasis>: Saves the value of FAC1 to the named memory location.</para></listitem>
+        <listitem><para><literal>`fp_print</literal> <emphasis>src</emphasis>: Prints out the value of FAC1 to the screen. You may want to call <literal>int_fac1</literal> first to round it. Unlike BASIC's <literal>PRINT</literal> statement, this routine will not bracket the number with blanks.</para></listitem>
+        <listitem><para><literal>`fp_read</literal> <emphasis>ptr</emphasis>: Attempts to convert a string to a floating point value in FAC1, in a manner similar to BASIC's <literal>VAL</literal> function.</para></listitem>
+        <listitem><para><literal>`fp_add</literal> <emphasis>operand</emphasis>: Adds the operand to FAC1.</para></listitem>
+        <listitem><para><literal>`fp_subtract</literal> <emphasis>operand</emphasis>: Subtracts the operand from FAC1.</para></listitem>
+        <listitem><para><literal>`fp_multiply</literal> <emphasis>operand</emphasis>: Multiplies the operand by FAC1.</para></listitem>
+        <listitem><para><literal>`fp_divide</literal> <emphasis>operand</emphasis>: Divides FAC1 by the operand.</para></listitem>
+        <listitem><para><literal>`fp_pow</literal> <emphasis>operand</emphasis>: Raises FAC1 to the operand's power.</para></listitem>
+        <listitem><para><literal>`fp_and</literal> <emphasis>operand</emphasis>: Juggles floating point-to-integer conversions to do a bitwise AND.</para></listitem>
+        <listitem><para><literal>`fp_or</literal> <emphasis>operand</emphasis>: Likewise, but for OR.</para></listitem>
+        <listitem><para><literal>jsr randomize</literal>: Calls RND(-TI) and leaves the (useless) result in FAC1. This seeds BASIC's random number generator with the number of clock ticks since poweron.</para></listitem>
+        <listitem><para><literal>jsr rnd</literal>: Calls RND(1) and leaves the result in FAC1, providing a random number between 0 and 1.</para></listitem>
+        <listitem><para><literal>jsr fac1_sign</literal>: Loads the SGN(FAC1) into the accumulator. This will be $01 if the accumulator is positive, $00 if it is zero, and $FF if it is negative. This routine is useful for branching based on the result of a floating point computation.</para></listitem>
+      </itemizedlist>
+
+      <para>
+        Other functions are available, but their preconditions are
+        hazier. The source file is commented with the current state of
+        knowledge.
+      </para>
+
+      <para>
+        To see some of these functions in action,
+        the <literal>examples</literal> directory includes a
+        program <literal>kinematics.oph</literal>, which reads numbers
+        in from input and computes trajectories based on them.
+      </para>
+    </section>
+  </section>
+
+  <section>
+    <title>The Nintendo Entertainment System</title>
+
+    <para>
+      The NES development community is somewhat more fragmented than
+      the others. A skeletal <literal>nes.oph</literal> file is
+      provided, but memory locations are not as consistently
+      named. Much sample code doesn't provide aliases for control
+      registers at all.
+    </para>
+
+    <para>
+      Conveniently creating runnable NES programs is somewhat
+      involved. Any given product was generally burned onto several
+      chips that were affixed to one of a large number of circuit
+      boards. These are often referred to as &quot;mappers&quot; by
+      developers because their effect is to implement various
+      bankswitching schemes. The result is a program built out of
+      parts, each with its own origin. A &quot;Hello World&quot;
+      sample program ships with Ophis. It does not use a bankswitcher,
+      but it does split its contents into a program chip and a
+      graphics chip, with one of two wrapper files to knit them
+      together into a file that other software will recognize. Samples
+      are given for the common iNES format and the defunct UNIF
+      format.
+    </para>
+  </section>
+
+  <section>
+    <title>The Atari 2600 VCS</title>
+
+    <para>
+      Of all the 8-bit development communities, the Atari developers
+      seem to be the most cohesive. The development documents
+      available are universal, and analysts and developers alike all
+      use the register names in the <emphasis>Stella Developer's
+      Guide</emphasis>. Ophis follows their lead, providing these
+      names in the header <literal>stella.oph</literal>.
+    </para>
+
+    <para>
+      The <literal>stella.oph</literal> header also replicates two
+      macros that appear in the header files distributed to budding
+      VCS developers. They are documented in the file.
+    </para>
+  </section>
+</chapter>

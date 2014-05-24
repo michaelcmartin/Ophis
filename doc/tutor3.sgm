@@ -100,7 +100,9 @@
       <para>
         No global or anonymous labels may be defined inside a macro:
         temporary labels only persist in the macro expansion itself.
-        (Each macro body has its own scope.)
+        (Each macro body has its own scope. A label map will trace
+        back through macro expansions to describe were a label inside
+        a macro body came from.)
       </para>
 
       <para>

@@ -79,7 +79,10 @@ _done:  rts
 
   <para>
     Note that we only have to name <literal>cache</literal> once, but
-    can use addition to refer to any offset from it.
+    can use addition to refer to any offset from it.<footnote><para>We
+    could spare ourselves some trouble here and use $fb instead of
+    $10, which BASIC does <emphasis>not</emphasis> use, but the
+    example is more thorough this way.</para></footnote>
   </para>
 
   <para>

@@ -2,11 +2,11 @@
   <title>Advanced Memory Segments</title>
 
   <para>
-    This is the last section of the Ophis tutorial.  By now we've
-    covered the basics of every command in the assembler; in this
-    final installment we show the full capabilities of
+    By now we've covered the basics of every command in the assembler;
+    in this final installment we show the full capabilities of
     the <literal>.text</literal> and <literal>.data</literal> commands
-    as we produce a final set of Commodore 64 header files.
+    as we produce a more sophisticated set of Commodore 64 header
+    files.
   </para>
 
   <section>
@@ -45,9 +45,9 @@
 
     <para>
       Now, actually, the rest of the zero page is reserved too:
-      locations $02-$7F are used by the BASIC interpreter, and
-      locations $80-$FF are used by the KERNAL.  We don't need the
-      BASIC interpreter, though, so we can back up all of $02-$7F at
+      locations $02-$8F are used by the BASIC interpreter, and
+      locations $90-$FF are used by the KERNAL.  We don't need the
+      BASIC interpreter, though, so we can back up all of $02-$8F at
       the start of our program and restore it all when we're done.
     </para>
 
@@ -60,9 +60,9 @@
 <programlisting>
 .scope
         ; Cache BASIC zero page at top of available RAM
-        ldx     #$7E
+        ldx     #$8e
 *       lda     $01, x
-        sta     $CF81, x
+        sta     $cf81, x
         dex
         bne     -
 
@@ -81,8 +81,8 @@
         sta     $01
 
         ; Restore BASIC zero page
-        ldx     #$7E
-*       lda     $CF81, x
+        ldx     #$8e
+*       lda     $cf81, x
         sta     $01, x
         dex
         bne     -
@@ -95,13 +95,6 @@ _main:
         ; which is actually outside of this scope
 .scend
 </programlisting>
-
-    <para>
-      The new, improved header file is <xref linkend="c64-2-src"
-      endterm="c64-2-fname">. This,
-      like <filename>c64kernal.oph</filename>, is available for use in
-      your own projects in the <literal>platform/</literal> directory.
-    </para>
 
     <para>
       Our <literal>print'str</literal> routine is then rewritten to
@@ -141,24 +134,8 @@ _done:  rts
 </programlisting>
 
     <para>
-      That concludes our tour.  The final source file
-      is <xref linkend="tutor7-src" endterm="tutor7-fname">.
-    </para>
-  </section>
-  <section>
-    <title>Where to go from here</title>
-    <para>
-      This tutorial has touched on everything that the assembler can
-      do, but it's not really well organized as a
-      reference.  <xref linkend="ref-link"> is a better place to look
-      up matters of syntax or consult lists of available commands.
-    </para>
-    <para>
-      If you're looking for projects to undertake, the Commodore 64
-      and Atari 2600 development communities are both very strong, and
-      the Apple II and NES development communities are still alive and
-      well as well.  There's an annual Minigame Competition that's
-      always looking for new entries.
+      The final source file is <xref linkend="tutor7-src"
+      endterm="tutor7-fname">.
     </para>
   </section>
 </chapter>

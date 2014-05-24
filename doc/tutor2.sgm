@@ -43,6 +43,13 @@ _next:  .word 0              ; End of program
 .advance 2064
 </programlisting>
 
+    <para>
+      It's possible to have multiple temporary labels with the same
+      name in different parts of the code. If you create a label map
+      in those cases, you will have to look at the sourcefile location
+      to distinguish them.
+    </para>
+
   </section>
   <section>
     <title>Anonymous labels</title>

@@ -405,6 +405,39 @@
          </listitem>
          <listitem>
            <para>
+             <literal>.cbmfloat</literal> <emphasis>string</emphasis>
+             [ , <emphasis>string</emphasis>, ... ]: Specifies a
+             series of strings, which are interpreted as floating
+             point constants, and then included in the 5-byte floating
+             point format used by the Commodore BASICs. This format is
+             8 bits of exponent, followed by a sign bit and a 31-bit
+             big-endian mantissa fraction. (The 1 in front of the
+             binary point is presumed to be present.) An exponent of 0
+             specifies a constant of 0, and the exponent is shifted up
+             by 129 before being stored.
+           </para>
+           <para>
+             Because IEEE-754 doesn't perfectly match the Commodore's
+             system, if you wish to precisely replicate individual
+             constants that cannot be represented exactly you may have
+             better luck with the following program, which will run on
+             both the Commodore 64 and VIC-20:
+           </para>
+<programlisting>
+10 CLR:V=0:PV=PEEK(45)+256*PEEK(46)+2
+20 INPUT "NUMBER (0 TO QUIT)";V
+30 IF V=0 THEN END
+40 PRINT ".BYTE";
+50 FOR I=0 TO 4
+60 IF I>0 THEN PRINT CHR$(157);",";
+70 PRINT PEEK(PV+I);:NEXT I:PRINT:GOTO 20
+</programlisting>
+           <para>This program will print out
+           a <literal>.byte</literal> directive for you to include in
+           your program to represent that number.</para>
+         </listitem>
+         <listitem>
+           <para>
              <literal>.checkpc</literal> <emphasis>address</emphasis>:
              Ensures that the program counter is less than or equal to
              the address specified, and emits an assemble-time error
