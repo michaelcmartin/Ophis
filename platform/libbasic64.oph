@@ -6,10 +6,10 @@
 ;;; available for this is spotty at best and disassembly confirms that
 ;;; a lot of hidden invariants may lurk.
 
-;;; There's a general TODO here to generate a relatively safe and
-;;; easy to use set of macros that will do more or less what you want.
-
-	;; BASIC functions
+;;; BASIC function equivalents. These operate on FAC1 and are pretty
+;;; clean overall. They take their input in FAC1 and put their output
+;;; there too. While it is not *guaranteed* it is probably best to
+;;; assume that these functions trash the value in FAC2.
 	.alias	abs_fac1	$bc58
 	.alias	atn_fac1	$e30e
 	.alias	cos_fac1	$e264
@@ -21,31 +21,54 @@
 	.alias	sin_fac1	$e26b
 	.alias	tan_fac1	$e2b4
 
-	;; Getting data in and out of the FACs
+;;; Getting useful information into the FACs
+
+	;; Treat the accumulator as a signed byte, load that value
+	;; into FAC1
 	.alias	ld_fac1_a	$bc3c
+
+	;; Load the signed 16-bit value with A as the *high* byte and
+	;; Y as the *low* byte into FAC1. This is backwards from pretty
+	;; much everything else.
 	.alias	ld_fac1_s16	$b391
+
+	;; Load a 5-byte value from memory into FAC1.
 	.alias	ld_fac1_mem	$bba2
+
+	;; Copy FAC2 into FAC1.
 	.alias	ld_fac1_fac2	$bbfc
+
+	;; Translate FAC1 into a string that is at $0100.
 	.alias	fac1_to_string	$bddd
+
+	;; Convert FAC1 into a 32-bit *big-endian* signed integer at
+	;; $62-$65 (where the mantissa usually goes in FAC1).
 	.alias	fac1_to_s32	$bc9b
+
+	;; Store out FAC1 to $57-$5B, converting it back into the five-byte
+	;; floating-point format.
 	.alias	fac1_to_57	$bbca
+
+	;; Do the same but at $5c-$60.
 	.alias	fac1_to_5c	$bbc7
 
+	;; Load a 5-byte value into FAC2.
 	.alias	ld_fac2_mem	$ba8c
+
+	;; Copy FAC1 to FAC2. FAC1 has some extra precision that is
+	;; rounded away when you do this.
 	.alias	ld_fac2_fac1	$bc0c
 
-	;; Unlike sgn_fac1, this returns the -1/0/1 in
-	;; the accumulator
+;;; Comparison operator.
+	;; Like sgn_fac1, but returns the -1/0/1 in the accumulator as
+	;; an integer.
 	.alias	fac1_sign	$bc2b
 
-	;; FP operators. These are all FAC2 OP FAC1
-	;; with the result in FAC1.
-	;; PRECONDITIONS: All of these operations but AND and
-	;; OR require you to have the contents of $61 in the
-	;; accumulator. calling one of the ld_fac* routines
-	;; will do that for you automatically. f_add_op also
-	;; requires that $6F be set properly; only ld_fac2_mem
-	;; does this.
+;;; FP operators. These are all FAC2 OP FAC1 with the result in FAC1.
+;;; PRECONDITIONS: All of these operations but AND and OR require you to
+;;; have the contents of $61 in the accumulator. calling one of the ld_fac*
+;;; routines will do that for you automatically. f_add_op also requires that
+;;; $6F be set properly; only ld_fac2_mem does this.
 	.alias	f_add_op	$b86a
 	.alias	f_subtract_op	$b853
 	.alias	f_multiply_op	$ba2b
@@ -54,24 +77,24 @@
 	.alias	f_and_op	$afe9
 	.alias	f_or_op		$afe6
 
-	;; Memory-based FP operations. All are MEM OP FAC1.
-	;; These are usually safer than the *_op routines.
+;;; Memory-based FP operations. All are MEM OP FAC1. These are usually safer
+;;; than the *_op routines.
 	.alias f_add_mem	$b867
 	.alias f_subtract_mem	$b850
 	.alias f_multiply_mem	$ba28
 	.alias f_divide_mem	$bb0f
 
-	;; Useful FP constants that live in the ROM.
-	;; It's plausible that ld_fac1_a or ld_fac1_s16
-	;; would be more convenient than ld_fac1_mem
-	;; with f_1 or f_10, but when doing memory-based
-	;; generic stuff, these will still be useful
+;;; Useful FP constants that live in the ROM. It's plausible that ld_fac1_a
+;;; or ld_fac1_s16 would be more convenient than ld_fac1_mem with f_1 or f_10,
+;;; but when doing memory-based generic stuff, these will still be useful.
 	.alias	f_0_5		$bf11		;  0.5
 	.alias	f_1		$b9bc		;  1.0
 	.alias	f_pi		$aea8		;  3.1415926
 	.alias	f_10		$baf9		; 10.0
 
-	;; Macros to make our lives easier
+;;; Macros for using these routines more safely.
+
+;; Copy 5-byte values around in memory without touching the FACs.
 .macro	f_move
 	ldx	#$00
 _fmvlp:	lda	_2,x
@@ -81,6 +104,8 @@ _fmvlp:	lda	_2,x
 	bne	_fmvlp
 .macend
 
+;;; These next few macros really exist just to save us the trouble of loading
+;;; addresses into registers
 .macro	print_str
 	lda	#<_1
 	ldy	#>_1
@@ -124,6 +149,10 @@ _fmvlp:	lda	_2,x
 	jsr	ld_fac1_string
 .macend
 
+;;; Arithmetic macros. These serve mainly to make the operations work left-
+;;; to-right as one generally would prefer. They also guarantee the obscure
+;;; preconditions hold.
+
 .macro	fp_add
 	lda	#<_1
 	ldy	#>_1
@@ -164,6 +193,8 @@ _fmvlp:	lda	_2,x
 	jsr	f_or_op
 .macend
 
+;;; Utility routine for converting the system clock to a floating point
+;;; value.
 ld_fac1_ti:
 	jsr	$ffde		; RDTIM
 	sty	$63
@@ -178,6 +209,9 @@ ld_fac1_ti:
 	sta	$68
 	jmp	$bcd5
 
+;;; FAC1 can only be stored out to two locations. We'd prefer to be able
+;;; to store anywhere. This routine is a support routine that allows that.
+;;; It will normally only be called by the fp_store macro.
 fac1_to_mem:
 	sta	$fd
 	sty	$fe
@@ -190,6 +224,10 @@ fac1_to_mem:
 	bne	-
 	rts
 
+;;; The VAL function uses the CHRGET routine copied to the zero page to read
+;;; strings in. That's a fragile operation if we don't want to confuse BASIC
+;;; later, so this routine juggles the values we need to preserve. It will
+;;; normally only be called by the fp_read macro.
 ld_fac1_string:
 	ldx	$7a
 	sta	$7a
@@ -206,6 +244,7 @@ ld_fac1_string:
 	sta	$7a
 	rts
 
+;;; Print out the contents of FAC1.
 fac1out:
 	ldy	#$00		; Clean out overflow
 	sty	$68
@@ -234,12 +273,15 @@ strout:	sta	$fd
 	bne	-
 *	rts
 
+;;; Execute RND(-TI), seeding the random number generator the traditional way.
 randomize:
 	jsr	ld_fac1_ti
 	lda	#$ff
 	sta	$66		; Force sign negative
 	jmp	rnd_fac1	; RND(-TI)
 
+
+;;; Return RND(1), a fresh random number between 0 and 1.
 rnd:	lda	#$01
 	jsr	ld_fac1_a
 	jmp	rnd_fac1
