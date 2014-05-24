@@ -1,0 +1,5 @@
+;;; Minimal header file for expanded VIC-20.
+;;; It translates to 10 SYS4621.
+.word	$1201
+.org	$1201
+.byte	$0b,$12,$0a,$00,$9e,$34,$36,$32,$31,$00,$00,$00
