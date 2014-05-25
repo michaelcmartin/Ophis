@@ -1,0 +1,358 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Macros</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Ophis Command Reference"
+HREF="a1167.html"><LINK
+REL="PREVIOUS"
+TITLE="Memory Model"
+HREF="x1309.html"><LINK
+REL="NEXT"
+TITLE="Assembler directives"
+HREF="x1394.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x1309.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Ophis Command Reference</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x1394.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN1354"
+>Macros</A
+></H1
+><P
+>         Assembly language is a powerful tool&#8212;however, there are
+         many tasks that need to be done repeatedly, and with
+         mind-numbing minor modifications.  Ophis includes a facility
+         for <I
+CLASS="EMPHASIS"
+>macros</I
+> to allow this.  Ophis macros
+         are very similar in form to function calls in higher level
+         languages.
+       </P
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN1358"
+>Defining Macros</A
+></H2
+><P
+>           Macros are defined with the <TT
+CLASS="LITERAL"
+>.macro</TT
+>
+           and <TT
+CLASS="LITERAL"
+>.macend</TT
+> commands.  Here's a
+           simple one that will clear the screen on a Commodore
+           64:
+         </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.macro clr'screen
+    lda #147
+    jsr $FFD2
+.macend</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN1364"
+>Invoking Macros</A
+></H2
+><P
+>           To invoke a macro, either use
+           the <TT
+CLASS="LITERAL"
+>.invoke</TT
+> command or backquote the
+           name of the routine.  The previous macro may be expanded
+           out in either of two ways, at any point in the
+           source:
+         </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.invoke clr'screen</PRE
+></TD
+></TR
+></TABLE
+><P
+>or</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>`clr'screen</PRE
+></TD
+></TR
+></TABLE
+><P
+>will work equally well.</P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN1372"
+>Passing Arguments to Macros</A
+></H2
+><P
+>           Macros may take arguments.  The arguments to a macro are
+           all of the <SPAN
+CLASS="QUOTE"
+>"word"</SPAN
+> type, though byte values may
+           be passed and used as bytes as well.  The first argument in
+           an invocation is bound to the label
+           <TT
+CLASS="LITERAL"
+>_1</TT
+>, the second
+           to <TT
+CLASS="LITERAL"
+>_2</TT
+>, and so on.  Here's a macro
+           for storing a 16-bit value into a word pointer:
+         </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.macro store16   ; `store16 dest, src
+        lda #&#60;_2
+        sta _1
+        lda #&#62;_2
+        sta _1+1
+.macend</PRE
+></TD
+></TR
+></TABLE
+><P
+>           Macro arguments behave, for the most part, as if they were
+           defined by <TT
+CLASS="LITERAL"
+>.alias</TT
+>
+           commands <I
+CLASS="EMPHASIS"
+>in the calling context</I
+>.
+           (They differ in that they will not produce duplicate-label
+           errors if those names already exist in the calling scope,
+           and in that they disappear after the call is
+           completed.)
+         </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN1382"
+>Features and Restrictions of the Ophis Macro Model</A
+></H2
+><P
+>           Unlike most macro systems (which do textual replacement),
+           Ophis macros evaluate their arguments and bind them into the
+           symbol table as temporary labels.  This produces some
+           benefits, but it also puts some restrictions on what kinds of
+           macros may be defined.
+         </P
+><P
+>           The primary benefit of this <SPAN
+CLASS="QUOTE"
+>"expand-via-binding"</SPAN
+>
+           discipline is that there are no surprises in the semantics.
+           The expression <TT
+CLASS="LITERAL"
+>_1+1</TT
+> in the macro above
+           will always evaluate to one more than the value that was
+           passed as the first argument, even if that first argument is
+           some immensely complex expression that an
+           expand-via-substitution method may accidentally
+           mangle.
+         </P
+><P
+>           The primary disadvantage of the expand-via-binding
+           discipline is that only fixed numbers of words and bytes
+           may be passed.  A substitution-based system could define a
+           macro including the line <TT
+CLASS="LITERAL"
+>LDA _1</TT
+> and
+           accept as arguments both <TT
+CLASS="LITERAL"
+>$C000</TT
+>
+           (which would put the value of memory location $C000 into
+           the accumulator) and <TT
+CLASS="LITERAL"
+>#$40</TT
+> (which
+           would put the immediate value $40 into the accumulator).
+           If you <I
+CLASS="EMPHASIS"
+>really</I
+> need this kind of
+           behavior, a run a C preprocessor over your Ophis source,
+           and use <TT
+CLASS="LITERAL"
+>#define</TT
+> to your heart's
+           content.
+         </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x1309.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x1394.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Memory Model</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="a1167.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Assembler directives</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

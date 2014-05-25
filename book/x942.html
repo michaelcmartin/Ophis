@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Comparison with the other indexed forms</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Pointers and Indirection"
+HREF="c885.html"><LINK
+REL="PREVIOUS"
+TITLE="What about Indexed Indirect?"
+HREF="x935.html"><LINK
+REL="NEXT"
+TITLE="Conclusion"
+HREF="x950.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x935.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Pointers and Indirection</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x950.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN942"
+>Comparison with the other indexed forms</A
+></H1
+><P
+>    Pointers are slow.  It sounds odd saying this, when C is the
+    fastest language around on modern machines precisely because of
+    its powerful and extensive use of pointers.  However, modern
+    architectures are designed to be optimized for C-style code (as an
+    example, the x86 architecture allows statements like <TT
+CLASS="LITERAL"
+>mov
+    eax, [bs+bx+4*di]</TT
+> as a single instruction), while the
+    6502 is not.  An (Indirect, Y) operation can take up to 6 cycles
+    to complete just on its own, while the preparation of that command
+    costs additional time <I
+CLASS="EMPHASIS"
+>and</I
+> scribbles over a
+    bunch of registers, meaning memory operations to save the values
+    and yet more time spent.  The simple code given at the beginning
+    of this essay&#8212;loading <TT
+CLASS="LITERAL"
+>*b</TT
+> into the
+    accumulator&#8212;takes 7 cycles, not counting the 6 it takes to
+    load b with the appropriate value to begin with.  If b is known to
+    contain a specific value, we can write a single Absolute mode
+    instruction to load its value, which takes only 4 cycles and also
+    preserves the value in the Y register.  Clearly, Absolute mode
+    should be used whenever possible.
+  </P
+><P
+>    One might be tempted to use self-modifying code to solve this
+    problem.  This actually doesn't pay off near enough for the hassle
+    it generates; for self-modifying code, the address must be
+    generated, then stored in the instruction, and then the data must
+    be loaded.  Cost: 16 cycles for 2 immediate loads, 2 absolute
+    stores, and 1 absolute load.  For the straight pointer
+    dereference, we generate the address, store it in the pointer,
+    clear the index, then dereference that.  Cost: 17 cycles for 3
+    immediate loads, 2 zero page stores, and 1 indexed indirect load.
+    Furthermore, unlike in the self-modifying case, loops where simple
+    arithmetic is being continuously performed only require repeating
+    the final load instruction, which allows for much greater time
+    savings over an equivalent self-modifying loop.
+  </P
+><P
+>    (This point is also completely moot for NES programmers or anyone
+    else whose programs are sitting in ROM, because programs stored on
+    a ROM cannot modify themselves.)
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x935.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x950.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>What about Indexed Indirect?</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c885.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Conclusion</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

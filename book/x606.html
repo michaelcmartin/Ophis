@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>The Nintendo Entertainment System</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Platform-Specific Techniques"
+HREF="c489.html"><LINK
+REL="PREVIOUS"
+TITLE="Platform-Specific Techniques"
+HREF="c489.html"><LINK
+REL="NEXT"
+TITLE="The Atari 2600 VCS"
+HREF="x611.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c489.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Platform-Specific Techniques</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x611.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN606"
+>The Nintendo Entertainment System</A
+></H1
+><P
+>      The NES development community is somewhat more fragmented than
+      the others. A skeletal <TT
+CLASS="LITERAL"
+>nes.oph</TT
+> file is
+      provided, but memory locations are not as consistently
+      named. Much sample code doesn't provide aliases for control
+      registers at all.
+    </P
+><P
+>      Conveniently creating runnable NES programs is somewhat
+      involved. Any given product was generally burned onto several
+      chips that were affixed to one of a large number of circuit
+      boards. These are often referred to as "mappers" by
+      developers because their effect is to implement various
+      bankswitching schemes. The result is a program built out of
+      parts, each with its own origin. A "Hello World"
+      sample program ships with Ophis. It does not use a bankswitcher,
+      but it does split its contents into a program chip and a
+      graphics chip, with one of two wrapper files to knit them
+      together into a file that other software will recognize. Samples
+      are given for the common iNES format and the defunct UNIF
+      format.
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c489.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x611.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Platform-Specific Techniques</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c489.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>The Atari 2600 VCS</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

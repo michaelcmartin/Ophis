@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>What about Indexed Indirect?</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Pointers and Indirection"
+HREF="c885.html"><LINK
+REL="PREVIOUS"
+TITLE="Pointer arithmetic"
+HREF="x919.html"><LINK
+REL="NEXT"
+TITLE="Comparison with the other indexed forms"
+HREF="x942.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x919.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Pointers and Indirection</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x942.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN935"
+>What about Indexed Indirect?</A
+></H1
+><P
+>    This essay has concerned itself almost exclusively with the
+    Indirect Indexed&#8212;or (Indirect), Y&#8212;mode.  What about Indexed
+    Indirect&#8212;(Indirect, X)?  This is a <I
+CLASS="EMPHASIS"
+>much</I
+>
+    less useful mode than the Y register's version.  While the Y
+    register indirection lets you implement pointers and arrays in
+    full generality, the X register is useful for pretty much only one
+    application: lookup tables for single byte values.
+  </P
+><P
+>    Even coming up with a motivating example for this is difficult,
+    but here goes.  Suppose you have multiple, widely disparate
+    sections of memory that you're watching for signals.  The
+    following routine takes a resource index in the accumulator and
+    returns the status byte for the corresponding resource.
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>; This data is sitting on the zero page somewhere
+resource_status_table: .word resource0_status, resource1_status,
+                       .word resource2_status, resource3_status,
+                       ; etc. etc. etc.
+
+; This is the actual program code
+.text
+getstatus:
+        clc   ; Multiply argument by 2 before putting it in X, so that it
+        asl   ; produces a value that's properly word-indexed
+        tax
+        lda (resource_status_table, x)
+        rts</PRE
+></TD
+></TR
+></TABLE
+><P
+>    Why having a routine such as this is better than just having the
+    calling routine access resourceN_status itself as an absolute
+    memory load is left as an exercise for the reader.  That aside,
+    this code fragment does serve as a reminder that when indexing an
+    array of anything other than bytes, you must multiply your index
+    by the size of the objects you want to index.  C does this
+    automatically&#8212;assembler does not.  Stay sharp.
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x919.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x942.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Pointer arithmetic</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c885.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Comparison with the other indexed forms</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

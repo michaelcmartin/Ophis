@@ -1,0 +1,530 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Platform-Specific Techniques</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Using the Ophis Assembler"
+HREF="p51.html"><LINK
+REL="PREVIOUS"
+TITLE="The Solution"
+HREF="x471.html"><LINK
+REL="NEXT"
+TITLE="The Nintendo Entertainment System"
+HREF="x606.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x471.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x606.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="AEN489"
+></A
+>Platform-Specific Techniques</H1
+><P
+>    Ophis is intended to produce cross-assembled binaries that will
+    run in a variety of contexts. The expectation is that most users
+    will be writing for emulated versions of hardware from when the
+    6502 chip was current, and producing files either for those
+    emulators or for devices that will transfer the results to real
+    hardware. This chapter describes the support routines and examples
+    to make those tasks easier.
+  </P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN492"
+>The Commodore 64 and VIC-20</A
+></H1
+><P
+>      In a real sense, the Commodore 64 is the "native"
+      target platform for Ophis. It was the first platform targeted
+      and it's the one that has received the most additional
+      support. It's also one where the developer needs to take the
+      most care about exactly what kind of program they are
+      writing.
+    </P
+><P
+></P
+><UL
+><LI
+><P
+>          <TT
+CLASS="LITERAL"
+>c64kernal.oph</TT
+> actually defines no
+          code. It merely sets up the customary names for the KERNAL
+          jump table routines so that you may refer to routines
+          like <TT
+CLASS="LITERAL"
+>chrout</TT
+> and <TT
+CLASS="LITERAL"
+>rdtim</TT
+>
+          by name.
+        </P
+></LI
+><LI
+><P
+>          <TT
+CLASS="LITERAL"
+>c64header.oph</TT
+> is an absolutely minimal
+          C64 header program; it contains the one-line BASIC program
+          and nothing else. Smaller programs that do not require more
+          than four bytes of zero page do not need to do any
+          bankswitching or zero page caching and don't need any more
+          than this. The aliases provided
+          in <TT
+CLASS="LITERAL"
+>c64kernal.oph</TT
+> may be useful, but are
+          not included in this header.
+        </P
+></LI
+><LI
+><P
+>          <TT
+CLASS="LITERAL"
+>c64_0.oph</TT
+> is suitable for larger and more
+          sophisticated programs. It is an enhancement of the header
+          file developed in the previous chapter. It stores the saved
+          zero page values in the RAM shadowed by the KERNAL ROM, and
+          it also uses a different mechanism for returning to BASIC
+          when done that is more robust in the face of self-modifying
+          programs such as those produced by self-extracting
+          compressed executables or onefiled multipart programs. It is
+          used like the other header files&#8212;just include it at
+          the top of your source file and use <TT
+CLASS="LITERAL"
+>RTS</TT
+>
+          to end your program&#8212;but programs that use this header
+          file will have all of the zero page from $02-$8F and a
+          contiguous chunk of program RAM from $0800-$CFFF.
+        </P
+></LI
+><LI
+><P
+>          <TT
+CLASS="LITERAL"
+>libbasic64.oph</TT
+> is an experimental set of
+          macros and routines to permit the assembly programmer to
+          make use of the software floating point routines provided by
+          BASIC. It is, for obvious reasons, not compatible
+          with <TT
+CLASS="LITERAL"
+>c64_0.oph</TT
+>, because it needs to make
+          use of BASIC's workspace and the ROM itself. If you wish to
+          use this file you should include it near the end of your
+          program.
+        </P
+></LI
+><LI
+><P
+>          <TT
+CLASS="LITERAL"
+>vic20.oph</TT
+> is a header that will work for
+          the <I
+CLASS="EMPHASIS"
+>unexpanded</I
+> VIC-20. Memory expansion
+          slots change where BASIC programs load, and since these
+          headers load in the machine language program in as the
+          suffix to a BASIC program, that also changes where they are
+          themselves loaded. There is no trickery with bankswitching
+          ROMs in and out&#8212;the VIC-20 does not have enough RAM to
+          gain anything from these techniques.
+        </P
+></LI
+><LI
+><P
+>          <TT
+CLASS="LITERAL"
+>vic20x.oph</TT
+> does the same, but for a
+          VIC-20 with one or more memory expansions.
+        </P
+></LI
+></UL
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN520"
+>Using LIBBASIC64</A
+></H2
+><P
+>        The 6502's arithmetic capabilities are rather limited. To
+        counteract this, BASICs of the era did floating point in
+        software and gave BASIC programmers the full suite of
+        arithmetic operations. These operations are largely
+        unavailable to machine language programmers.
+      </P
+><P
+>        The <TT
+CLASS="LITERAL"
+>libbasic64.oph</TT
+> library is an attempt to
+        address this. It is currently considered highly experimental,
+        but initial results are very promising.
+      </P
+><P
+>        BASIC stores floating point numbers in a five-byte format, but
+        translates them into a seven-byte format to do actual work in
+        two Floating Point Accumulators (FAC1 and FAC2). Ophis will
+        let you specify 5-byte constants with
+        the <TT
+CLASS="LITERAL"
+>.cbmfloat</TT
+> directive, which takes a
+        string and produces the requisite five-byte value.
+      </P
+><P
+>        The floating point functions in BASIC all operate on FAC1 and
+        are relatively reliable. The
+        functions <TT
+CLASS="LITERAL"
+>abs_fac1</TT
+>, <TT
+CLASS="LITERAL"
+>atn_fac1</TT
+>, <TT
+CLASS="LITERAL"
+>cos_fac1</TT
+>, <TT
+CLASS="LITERAL"
+>exp_fac1</TT
+>, <TT
+CLASS="LITERAL"
+>int_fac1</TT
+>, <TT
+CLASS="LITERAL"
+>log_fac1</TT
+>, <TT
+CLASS="LITERAL"
+>rnd_fac1</TT
+>, <TT
+CLASS="LITERAL"
+>sgn_fac1</TT
+>, <TT
+CLASS="LITERAL"
+>sin_fac1</TT
+>,
+        and <TT
+CLASS="LITERAL"
+>tan_fac1</TT
+> are all provided. Routines
+        that touch the FACs tend to be extremely finicky. This system
+        defines a set of macros and routines to manage that for you:
+      </P
+><P
+></P
+><UL
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`f_move</TT
+> <I
+CLASS="EMPHASIS"
+>dest, source</I
+>: Copy a five-byte floating point value from <I
+CLASS="EMPHASIS"
+>source</I
+> to <I
+CLASS="EMPHASIS"
+>dest</I
+>.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`fp_load</TT
+> <I
+CLASS="EMPHASIS"
+>src</I
+>: Loads FAC1 with the floating point constant specified by <I
+CLASS="EMPHASIS"
+>src</I
+>.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`fp_store</TT
+> <I
+CLASS="EMPHASIS"
+>dest</I
+>: Saves the value of FAC1 to the named memory location.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`fp_print</TT
+> <I
+CLASS="EMPHASIS"
+>src</I
+>: Prints out the value of FAC1 to the screen. You may want to call <TT
+CLASS="LITERAL"
+>int_fac1</TT
+> first to round it. Unlike BASIC's <TT
+CLASS="LITERAL"
+>PRINT</TT
+> statement, this routine will not bracket the number with blanks.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`fp_read</TT
+> <I
+CLASS="EMPHASIS"
+>ptr</I
+>: Attempts to convert a string to a floating point value in FAC1, in a manner similar to BASIC's <TT
+CLASS="LITERAL"
+>VAL</TT
+> function.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`fp_add</TT
+> <I
+CLASS="EMPHASIS"
+>operand</I
+>: Adds the operand to FAC1.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`fp_subtract</TT
+> <I
+CLASS="EMPHASIS"
+>operand</I
+>: Subtracts the operand from FAC1.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`fp_multiply</TT
+> <I
+CLASS="EMPHASIS"
+>operand</I
+>: Multiplies the operand by FAC1.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`fp_divide</TT
+> <I
+CLASS="EMPHASIS"
+>operand</I
+>: Divides FAC1 by the operand.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`fp_pow</TT
+> <I
+CLASS="EMPHASIS"
+>operand</I
+>: Raises FAC1 to the operand's power.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`fp_and</TT
+> <I
+CLASS="EMPHASIS"
+>operand</I
+>: Juggles floating point-to-integer conversions to do a bitwise AND.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>`fp_or</TT
+> <I
+CLASS="EMPHASIS"
+>operand</I
+>: Likewise, but for OR.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>jsr randomize</TT
+>: Calls RND(-TI) and leaves the (useless) result in FAC1. This seeds BASIC's random number generator with the number of clock ticks since poweron.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>jsr rnd</TT
+>: Calls RND(1) and leaves the result in FAC1, providing a random number between 0 and 1.</P
+></LI
+><LI
+><P
+><TT
+CLASS="LITERAL"
+>jsr fac1_sign</TT
+>: Loads the SGN(FAC1) into the accumulator. This will be $01 if the accumulator is positive, $00 if it is zero, and $FF if it is negative. This routine is useful for branching based on the result of a floating point computation.</P
+></LI
+></UL
+><P
+>        Other functions are available, but their preconditions are
+        hazier. The source file is commented with the current state of
+        knowledge.
+      </P
+><P
+>        To see some of these functions in action,
+        the <TT
+CLASS="LITERAL"
+>examples</TT
+> directory includes a
+        program <TT
+CLASS="LITERAL"
+>kinematics.oph</TT
+>, which reads numbers
+        in from input and computes trajectories based on them.
+      </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x471.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x606.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>The Solution</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="p51.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>The Nintendo Entertainment System</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

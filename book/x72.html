@@ -1,0 +1,431 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Producing Commodore 64 programs</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="The basics"
+HREF="c56.html"><LINK
+REL="PREVIOUS"
+TITLE="The basics"
+HREF="c56.html"><LINK
+REL="NEXT"
+TITLE="Related commands and options"
+HREF="x141.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c56.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>The basics</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x141.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN72"
+>Producing Commodore 64 programs</A
+></H1
+><P
+>       Commodore 64 programs are stored in
+       the <TT
+CLASS="FILENAME"
+>PRG</TT
+> format on disk.  Some emulators
+       (such as CCS64 or VICE) can run <TT
+CLASS="FILENAME"
+>PRG</TT
+>
+       programs directly; others need them to be transferred to
+       a <TT
+CLASS="FILENAME"
+>D64</TT
+> image first.
+    </P
+><P
+>      The <TT
+CLASS="FILENAME"
+>PRG</TT
+> format is ludicrously simple.  It
+      has two bytes of header data: This is a little-endian number
+      indicating the starting address.  The rest of the file is a
+      single continuous chunk of data loaded into memory, starting at
+      that address.  BASIC memory starts at memory location 2048, and
+      that's probably where we'll want to start.
+    </P
+><P
+>      Well, not quite.  We want our program to be callable from BASIC,
+      so we should have a BASIC program at the start.  We guess the
+      size of a simple one line BASIC program to be about 16 bytes.
+      Thus, we start our program at memory location 2064 ($0810), and
+      the BASIC program looks like this:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>10 SYS 2064
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>      We <KBD
+CLASS="USERINPUT"
+>SAVE</KBD
+> this program to a file, then
+      study it in a debugger.  It's 15 bytes long:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>1070:0100  01 08 0C 08 0A 00 9E 20-32 30 36 34 00 00 00
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>      The first two bytes are the memory location: $0801.  The rest of
+      the data breaks down as follows:
+    </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="AEN86"
+></A
+><P
+><B
+>Table 1. BASIC program breakdown</B
+></P
+><TABLE
+BORDER="1"
+BGCOLOR="#E0E0E0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+>Memory Locations</TH
+><TH
+ALIGN="CENTER"
+>Value</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>$0801-$0802</TD
+><TD
+>2-byte pointer to the next line of BASIC code ($080C).</TD
+></TR
+><TR
+><TD
+>$0803-$0804</TD
+><TD
+>2-byte line number ($000A = 10).</TD
+></TR
+><TR
+><TD
+>$0805</TD
+><TD
+>Byte code for the <KBD
+CLASS="USERINPUT"
+>SYS</KBD
+> command.</TD
+></TR
+><TR
+><TD
+>$0806-$080A</TD
+><TD
+>The rest of the line, which is just the string <SPAN
+CLASS="QUOTE"
+>" 2064"</SPAN
+>.</TD
+></TR
+><TR
+><TD
+>$080B</TD
+><TD
+>Null byte, terminating the line.</TD
+></TR
+><TR
+><TD
+>$080C-$080D</TD
+><TD
+>2-byte pointer to the next line of BASIC code ($0000 = end of program).</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>      That's 13 bytes.  We started at 2049, so we need 2 more bytes of
+      filler to make our code actually start at location 2064.  These
+      17 bytes will give us the file format and the BASIC code we need
+      to have our machine language program run.
+    </P
+><P
+>      These are just bytes&#8212;indistinguishable from any other sort of
+      data.  In Ophis, bytes of data are specified with
+      the <TT
+CLASS="LITERAL"
+>.byte</TT
+> command.  We'll also have to tell
+      Ophis what the program counter should be, so that it knows what
+      values to assign to our labels.  The <TT
+CLASS="LITERAL"
+>.org</TT
+>
+      (origin) command tells Ophis this.  Thus, the Ophis code for our
+      header and linking info is:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.byte $01, $08, $0C, $08, $0A, $00, $9E, $20
+.byte $32, $30, $36, $34, $00, $00, $00, $00
+.byte $00, $00
+.org $0810
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>       This gets the job done, but it's completely incomprehensible,
+       and it only uses two directives&#8212;not very good for a
+       tutorial.  Here's a more complicated, but much clearer, way of
+       saying the same thing.
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.word $0801
+.org  $0801
+
+        .word next, 10       ; Next line and current line number
+        .byte $9e," 2064",0  ; SYS 2064
+next:   .word 0              ; End of program
+
+.advance 2064
+    </PRE
+></TD
+></TR
+></TABLE
+><P
+>      This code has many advantages over the first.
+
+      <P
+></P
+><UL
+><LI
+><P
+> It describes better what is actually
+          happening.  The <TT
+CLASS="LITERAL"
+>.word</TT
+> directive at the
+          beginning indicates a 16-bit value stored in the typical
+          65xx way (small byte first).  This is followed by
+          an <TT
+CLASS="LITERAL"
+>.org</TT
+> statement, so we let the
+          assembler know right away where everything is supposed to
+          be.
+        </P
+></LI
+><LI
+><P
+>          Instead of hardcoding in the value $080C, we instead use a
+          label to identify the location it's pointing to.  Ophis
+          will compute the address of <TT
+CLASS="LITERAL"
+>next</TT
+> and
+          put that value in as data.  We also describe the line
+          number in decimal since BASIC line numbers
+          generally <I
+CLASS="EMPHASIS"
+>are</I
+> in decimal.  Labels are
+          defined by putting their name, then a colon, as seen in
+          the definition of <TT
+CLASS="LITERAL"
+>next</TT
+>.
+        </P
+></LI
+><LI
+><P
+>          Instead of putting in the hex codes for the string part of
+          the BASIC code, we included the string directly.  Each
+          character in the string becomes one byte.
+        </P
+></LI
+><LI
+><P
+>          Instead of adding the buffer ourselves, we
+          used <TT
+CLASS="LITERAL"
+>.advance</TT
+>, which outputs zeros until
+          the specified address is reached.  Attempting
+          to <TT
+CLASS="LITERAL"
+>.advance</TT
+> backwards produces an
+          assemble-time error. (If we wanted to output something
+          besides zeros, we could add it as a second
+          argument: <TT
+CLASS="LITERAL"
+>.advance 2064,$FF</TT
+>, for
+          instance.)
+        </P
+></LI
+><LI
+><P
+>          It has comments that explain what the data are for.  The
+          semicolon is the comment marker; everything from a semicolon
+          to the end of the line is ignored.
+        </P
+></LI
+></UL
+>
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c56.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x141.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>The basics</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c56.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Related commands and options</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

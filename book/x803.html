@@ -1,0 +1,449 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Data structures</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Structured Programming"
+HREF="c680.html"><LINK
+REL="PREVIOUS"
+TITLE="Variables"
+HREF="x758.html"><LINK
+REL="NEXT"
+TITLE="A modest example: Insertion sort on linked lists"
+HREF="x856.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x758.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Structured Programming</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x856.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN803"
+>Data structures</A
+></H1
+><P
+>    So far, we've been treating data as a bunch of one-byte values.
+    There really isn't a lot you can do just with bytes.  This section
+    talks about how to deal with larger and smaller elements.
+  </P
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN806"
+>Arrays</A
+></H2
+><P
+>      An <I
+CLASS="EMPHASIS"
+>array</I
+> is a bunch of data elements in a
+      row.  An array of bytes is very easy to handle with the 6502
+      chip, because the various indexed addressing modes handle it for
+      you.  Just load the index into the X or Y register and do an
+      absolute indexed load.  In general, these are going to be
+      zero-indexed (that is, a 32-byte array is indexed from 0 to 31.)
+      This code would initialize a byte array with 32 entries to
+      0:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   lda #$00
+   tax
+loop:
+   sta array,x
+   inx
+   cpx #$20
+   bne loop</PRE
+></TD
+></TR
+></TABLE
+><P
+>      (If you count down to save instructions, remember to adjust the
+      base address so that it's still writing the same memory
+      location.)
+    </P
+><P
+>      This approach to arrays has some limits.  Primary among them is
+      that we can't have arrays of size larger than 256; we can't fit
+      our index into the index register.  In order to address larger
+      arrays, we need to use the indirect indexed addressing mode.  We
+      use 16-bit addition to add the offset to the base pointer, then
+      set the Y register to 0 and then load the value
+      with <TT
+CLASS="LITERAL"
+>lda (ptr),y</TT
+>.
+    </P
+><P
+>      Well, actually, we can do better than that.  Suppose we want to
+      clear out 8K of ram, from $2000 to $4000.  We can use the Y
+      register to hold the low byte of our offset, and only update the
+      high bit when necessary.  That produces the following
+      loop:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   lda #$00  ; Set pointer value to base ($2000)
+   sta ptr
+   lda #$20
+   sta ptr+1
+   lda #$00  ; Storing a zero
+   ldx #$20  ; 8,192 ($2000) iterations: high byte
+   ldy #$00  ; low byte.
+loop:
+   sta (ptr),y
+   iny
+   bne loop  ; If we haven't wrapped around, go back
+   inc ptr+1 ; Otherwise update high byte
+   dex       ; bump counter
+   bne loop  ; and continue if we aren't done</PRE
+></TD
+></TR
+></TABLE
+><P
+>      This code could be optimized further; the loop prelude in
+      particular loads a lot of redundant values that could be
+      compressed down further:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   lda #$00
+   tay
+   ldx #$20
+   sta ptr
+   stx ptr+1</PRE
+></TD
+></TR
+></TABLE
+><P
+>      That's not directly relevant to arrays, but these sorts of
+      things are good things to keep in mind when writing your code.
+      Done well, they can make it much smaller and faster; done
+      carelessly, they can force a lot of bizarre dependencies on your
+      code and make it impossible to modify later.
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN819"
+>Records</A
+></H2
+><P
+>      A <I
+CLASS="EMPHASIS"
+>record</I
+> is a collection of values all
+      referred to as one variable.  This has no immediate
+      representation in assembler.  If you have a global variable
+      that's two bytes and a code pointer, this is exactly equivalent
+      to three seperate variables.  You can just put one label in
+      front of it, and refer to the first byte
+      as <TT
+CLASS="LITERAL"
+>label</TT
+>, the second
+      as <TT
+CLASS="LITERAL"
+>label+1</TT
+>, and the code pointer
+      a <TT
+CLASS="LITERAL"
+>label+2</TT
+>.
+    </P
+><P
+>      This really applies to all data structures that take up more
+      than one byte.  When dealing with the pointer, a 16-bit value,
+      we refer to the low byte as <TT
+CLASS="LITERAL"
+>ptr</TT
+>
+      (or <TT
+CLASS="LITERAL"
+>label+2</TT
+>, in the example above), and the
+      high byte as <TT
+CLASS="LITERAL"
+>ptr+1</TT
+>
+      (or <TT
+CLASS="LITERAL"
+>label+3</TT
+>).
+    </P
+><P
+>      Arrays of records are more interesting.  There are two
+      possibilities for these.  The way most high level languages
+      treat it is by keeping the records contiguous.  If you have an
+      array of two sixteen bit integers, then the records are stored
+      in order, one at a time.  The first is in location $1000, the
+      next in $1004, the next in $1008, and so on.  You can do this
+      with the 6502, but you'll probably have to use the indirect
+      indexed mode if you want to be able to iterate
+      conveniently.
+    </P
+><P
+>      Another, more unusual, but more efficient approach is to keep
+      each byte as a seperate array, just like in the arrays example
+      above.  To illustrate, here's a little bit of code to go through
+      a contiguous array of 16 bit integers, adding their values to
+      some <TT
+CLASS="LITERAL"
+>total</TT
+> variable:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   ldx #$10  ; Number of elements in the array
+   ldy #$00  ; Byte index from array start
+loop:
+   clc
+   lda array, y      ; Low byte
+   adc total
+   sta total
+   lda array+1, y    ; High byte
+   adc total+1
+   sta total+1
+   iny               ; Jump ahead to next entry
+   iny
+   dex               ; Check for loop termination
+   bne loop</PRE
+></TD
+></TR
+></TABLE
+><P
+>      And here's the same loop, keeping the high and low bytes in
+      seperate arrays:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   ldx #$00
+loop:
+   clc
+   lda lowbyte,x
+   adc total
+   sta total
+   lda highbyte,x
+   adc total+1
+   sta total+1
+   inx
+   cpx #$10
+   bne loop</PRE
+></TD
+></TR
+></TABLE
+><P
+>      Which approach is the right one depends on what you're doing.
+      For large arrays, the first approach is better, as you only need
+      to maintain one base pointer.  For smaller arrays, the easier
+      indexing makes the second approach more convenient.
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN838"
+>Bitfields</A
+></H2
+><P
+>      To store values that are smaller than a byte, you can save space
+      by putting multiple values in a byte.  To extract a sub-byte
+      value, use the bitmasking commands:
+    </P
+><P
+></P
+><UL
+><LI
+><P
+>To set bits, use the <TT
+CLASS="LITERAL"
+>ORA</TT
+> command.  <TT
+CLASS="LITERAL"
+>ORA #$0F</TT
+> sets the lower four bits to 1 and leaves the rest unchanged.</P
+></LI
+><LI
+><P
+>To clear bits, use the <TT
+CLASS="LITERAL"
+>AND</TT
+> command.  <TT
+CLASS="LITERAL"
+>AND #$F0</TT
+> sets the lower four bits to 0 and leaves the rest unchanged.</P
+></LI
+><LI
+><P
+>To reverse bits, use the <TT
+CLASS="LITERAL"
+>EOR</TT
+> command.  <TT
+CLASS="LITERAL"
+>EOR #$0F</TT
+> reverses the lower four bits and leaves the rest unchanged.</P
+></LI
+><LI
+><P
+>To test if a bit is 0, AND away everything but that bit, then see if the Zero bit was set.  If the bit is in the top two bits of a memory location, you can use the BIT command instead (which stores bit 7 in the Negative bit, and bit 6 in the Overflow bit).</P
+></LI
+></UL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x758.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x856.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Variables</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c680.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>A modest example: Insertion sort on linked lists</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
