@@ -1,0 +1,151 @@
+ 0000  00        BRK  
+ 0001  01 01     ORA  ($01, X)
+ 0003  05 05     ORA  $05
+ 0005  06 06     ASL  $06
+ 0007  08        PHP  
+ 0008  09 09     ORA  #$09
+ 000A  0A        ASL  
+ 000B  0D 0D 0D  ORA  $0D0D
+ 000E  0E 0E 0E  ASL  $0E0E
+ 0011  10 10     BPL  $0023
+ 0013  11 11     ORA  ($11), Y
+ 0015  15 15     ORA  $15, X
+ 0017  16 16     ASL  $16, X
+ 0019  18        CLC  
+ 001A  19 19 19  ORA  $1919, Y
+ 001D  1D 1D 1D  ORA  $1D1D, X
+ 0020  1E 1E 1E  ASL  $1E1E, X
+ 0023  20 20 20  JSR  $2020
+ 0026  21 21     AND  ($21, X)
+ 0028  24 24     BIT  $24
+ 002A  25 25     AND  $25
+ 002C  26 26     ROL  $26
+ 002E  28        PLP  
+ 002F  29 29     AND  #$29
+ 0031  2A        ROL  
+ 0032  2C 2C 2C  BIT  $2C2C
+ 0035  2D 2D 2D  AND  $2D2D
+ 0038  2E 2E 2E  ROL  $2E2E
+ 003B  30 30     BMI  $006D
+ 003D  31 31     AND  ($31), Y
+ 003F  35 35     AND  $35, X
+ 0041  36 36     ROL  $36, X
+ 0043  38        SEC  
+ 0044  39 39 39  AND  $3939, Y
+ 0047  3D 3D 3D  AND  $3D3D, X
+ 004A  3E 3E 3E  ROL  $3E3E, X
+ 004D  40        RTI  
+ 004E  41 41     EOR  ($41, X)
+ 0050  45 45     EOR  $45
+ 0052  46 46     LSR  $46
+ 0054  48        PHA  
+ 0055  49 49     EOR  #$49
+ 0057  4A        LSR  
+ 0058  4C 4C 4C  JMP  $4C4C
+ 005B  4D 4D 4D  EOR  $4D4D
+ 005E  4E 4E 4E  LSR  $4E4E
+ 0061  50 50     BVC  $00B3
+ 0063  51 51     EOR  ($51), Y
+ 0065  55 55     EOR  $55, X
+ 0067  56 56     LSR  $56, X
+ 0069  58        CLI  
+ 006A  59 59 59  EOR  $5959, Y
+ 006D  5D 5D 5D  EOR  $5D5D, X
+ 0070  5E 5E 5E  LSR  $5E5E, X
+ 0073  60        RTS  
+ 0074  61 61     ADC  ($61, X)
+ 0076  65 65     ADC  $65
+ 0078  66 66     ROR  $66
+ 007A  68        PLA  
+ 007B  69 69     ADC  #$69
+ 007D  6A        ROR  
+ 007E  6C 6C 6C  JMP  ($6C6C)
+ 0081  6D 6D 6D  ADC  $6D6D
+ 0084  6E 6E 6E  ROR  $6E6E
+ 0087  70 70     BVS  $00F9
+ 0089  71 71     ADC  ($71), Y
+ 008B  75 75     ADC  $75, X
+ 008D  76 76     ROR  $76, X
+ 008F  78        SEI  
+ 0090  79 79 79  ADC  $7979, Y
+ 0093  7D 7D 7D  ADC  $7D7D, X
+ 0096  7E 7E 7E  ROR  $7E7E, X
+ 0099  81 81     STA  ($81, X)
+ 009B  84 84     STY  $84
+ 009D  85 85     STA  $85
+ 009F  86 86     STX  $86
+ 00A1  88        DEY  
+ 00A2  8A        TXA  
+ 00A3  8C 8C 8C  STY  $8C8C
+ 00A6  8D 8D 8D  STA  $8D8D
+ 00A9  8E 8E 8E  STX  $8E8E
+ 00AC  90 90     BCC  $003E
+ 00AE  91 91     STA  ($91), Y
+ 00B0  94 94     STY  $94, X
+ 00B2  95 95     STA  $95, X
+ 00B4  96 96     STX  $96, Y
+ 00B6  98        TYA  
+ 00B7  99 99 99  STA  $9999, Y
+ 00BA  9A        TXS  
+ 00BB  9D 9D 9D  STA  $9D9D, X
+ 00BE  A0 A0     LDY  #$A0
+ 00C0  A1 A1     LDA  ($A1, X)
+ 00C2  A2 A2     LDX  #$A2
+ 00C4  A4 A4     LDY  $A4
+ 00C6  A5 A5     LDA  $A5
+ 00C8  A6 A6     LDX  $A6
+ 00CA  A8        TAY  
+ 00CB  A9 A9     LDA  #$A9
+ 00CD  AA        TAX  
+ 00CE  AC AC AC  LDY  $ACAC
+ 00D1  AD AD AD  LDA  $ADAD
+ 00D4  AE AE AE  LDX  $AEAE
+ 00D7  B0 B0     BCS  $0089
+ 00D9  B1 B1     LDA  ($B1), Y
+ 00DB  B4 B4     LDY  $B4, X
+ 00DD  B5 B5     LDA  $B5, X
+ 00DF  B6 B6     LDX  $B6, Y
+ 00E1  B8        CLV  
+ 00E2  B9 B9 B9  LDA  $B9B9, Y
+ 00E5  BA        TSX  
+ 00E6  BC BC BC  LDY  $BCBC, X
+ 00E9  BD BD BD  LDA  $BDBD, X
+ 00EC  BE BE BE  LDX  $BEBE, Y
+ 00EF  C0 C0     CPY  #$C0
+ 00F1  C1 C1     CMP  ($C1, X)
+ 00F3  C4 C4     CPY  $C4
+ 00F5  C5 C5     CMP  $C5
+ 00F7  C6 C6     DEC  $C6
+ 00F9  C8        INY  
+ 00FA  C9 C9     CMP  #$C9
+ 00FC  CA        DEX  
+ 00FD  CC CC CC  CPY  $CCCC
+ 0100  CD CD CD  CMP  $CDCD
+ 0103  CE CE CE  DEC  $CECE
+ 0106  D0 D0     BNE  $00D8
+ 0108  D1 D1     CMP  ($D1), Y
+ 010A  D5 D5     CMP  $D5, X
+ 010C  D6 D6     DEC  $D6, X
+ 010E  D8        CLD  
+ 010F  D9 D9 D9  CMP  $D9D9, Y
+ 0112  DD DD DD  CMP  $DDDD, X
+ 0115  DE DE DE  DEC  $DEDE, X
+ 0118  E0 E0     CPX  #$E0
+ 011A  E1 E1     SBC  ($E1, X)
+ 011C  E4 E4     CPX  $E4
+ 011E  E5 E5     SBC  $E5
+ 0120  E6 E6     INC  $E6
+ 0122  E8        INX  
+ 0123  E9 E9     SBC  #$E9
+ 0125  EA        NOP  
+ 0126  EC EC EC  CPX  $ECEC
+ 0129  ED ED ED  SBC  $EDED
+ 012C  EE EE EE  INC  $EEEE
+ 012F  F0 F0     BEQ  $0121
+ 0131  F1 F1     SBC  ($F1), Y
+ 0133  F5 F5     SBC  $F5, X
+ 0135  F6 F6     INC  $F6, X
+ 0137  F8        SED  
+ 0138  F9 F9 F9  SBC  $F9F9, Y
+ 013B  FD FD FD  SBC  $FDFD, X
+ 013E  FE FE FE  INC  $FEFE, X

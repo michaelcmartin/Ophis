@@ -892,11 +892,11 @@ class Assembler(Pass):
             mask = 0xFF
             # Relative is a full address in a byte, so it also has the
             # 0xFFFF mask.
-            if arglen == 2 or mode == 17:
+            if arglen == 2 or mode == Ops.modes.index("Relative"):
                 mask = 0xFFFF
             return fmt % (val1 & mask)
         else:
-            # Mode is 15: Zero Page, Relative
+            # Mode is "Zero Page, Relative"
             return fmt % (val1 & 0xFF, val2 & 0xFFFF)
 
     def assemble(self, node, mode, env):
