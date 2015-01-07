@@ -1,0 +1,391 @@
+;;; ---------- COLOR TEST ----------
+;;;      Michael Martin, 2014
+;;;
+;;; This is a sample program for the Atari 2600 VCS that lets you
+;;; explore the 128-color palette the system provides. This is
+;;; presented mainly as a more sophisticated example program to
+;;; supplement "hi_stella".
+;;;
+;;; It makes use of every graphical element but the Ball, and also
+;;; makes use of multicolor asymmetric playfields.
+
+.require "../../platform/stella.oph"
+.outfile "colortest.bin"
+
+.data
+.org	$0080
+        .space  startcol        1 ; Starting color for the striped playfield
+        .space  subrow          1 ; Counting lines per "tall pixel"
+        .space  curcol          1 ; The color number we are focusing on at the moment
+        .space  high_nybble     2 ; Pointer to graphic data for 16s hexit
+        .space  low_nybble      2 ; Pointer to graphic data for ones hexit
+        .space  input_allowed   1 ; Flag for whether or not to ignore input.
+
+.text
+        ;; Start at $f800 - 2KB ROMs are the smallest size available.
+.org	$f800
+
+reset:	`clean'start
+
+        ;; We offer 1c as the initial color. It's a nice yellow shade.
+        lda     #$1c
+        sta     curcol
+
+
+frame:	`vertical'sync          ; Beginning of the frame. Set up the timer
+	lda	#43             ; to count out the length of VBLANK while
+	sta	TIM64T          ; we do the processing for the display.
+
+        ;; Place the player and missile graphics appropriately. We
+        ;; count cycles and write the missile and player reset registers
+        ;; at the closest times we can manage. Due to the way the TIA
+        ;; timing works, the formula for the pixel they will show up at
+        ;; is N*3-55+P, where N is the number of cycles from the end of
+        ;; the latest STA WSYNC and the end of the STA RES* instruction,
+        ;; and P is 1 for player sprites and 0 for missiles and the ball.
+        ;;
+        ;; The line after that we can strobe HMOVE to adjust them the
+        ;; rest of the way into place.
+        ;;
+        ;; We will be using the missiles to draw the left and right
+        ;; sides of a largish square and the player sprites to display a
+        ;; byte value (the current color) as two hex digits (one per
+        ;; player). All the rest of our graphics will be done via the
+        ;; playfield registers.
+        ;;
+        ;; The missile graphics are being targeted to pixels 40 and 116
+        ;; and will be 4 pixels wide each. The player graphics will be
+        ;; 8 pixels wide and are targeting pixels 72 and 80.
+        sta     WSYNC
+        sta     WSYNC           ;    =  0
+        ldy     #$06            ; +2 =  2
+*       dey                     ; +2 =  4- 9-14-19-24-29
+        bne     -               ; +3 =  7-12-17-22-27-31
+        sta     RESM0           ; +3 = 34  (31*3-55 = 38. Needs to move 2 pixels right.)
+        lda     #$E0            ; +2 = 36
+        sta     HMCLR           ; +3 = 39 - reset the fine-move registers
+        sta     HMM0            ; +3 = 42 - set M0 to move 2 right
+        sta     RESP0           ; +3 = 45 (42*3-54 = 72. Placed perfectly.)
+        sta     RESP1           ; +3 = 48 (45*3-54 = 81. Needs to move 1 pixel left.)
+        lda     #$10            ; +2 = 50 
+        sta     HMP1            ; +3 = 53 - and set P1 to move 1 left.
+        nop                     ; +2 = 55
+        nop                     ; +2 = 57
+        sta     RESM1           ; +3 = 60 (57*3-55 = 116. Placed perfectly.)
+        sta     WSYNC
+        sta     HMOVE           ; Next scanline, execute the fine moves.
+
+        lda     #$20
+        sta     NUSIZ0          ; Quad-size missiles, single copy of single player
+        sta     NUSIZ1          ; M1 and P1 are the same
+
+        ;; Read the input
+        lda     #$00
+        sta     SWACNT
+        lda     SWCHA
+        bit     input_allowed
+        bmi     true_input_read
+        ;; Wait for neutral stick so we can re-enable input.
+        and     #$f0
+        cmp     #$f0
+        bne     input_done
+        ;; Bits are set if the direction isn't active, so we only get
+        ;; here if the stick was neutral. this also means the accumulator
+        ;; has #$f0 in it now, which means we can store it directly and
+        ;; the BIT/BMI above will start succeeding next frame.
+        sta     input_allowed
+        beq     input_done
+true_input_read:
+        ;; Now we rotate it through the carry bit to see what
+        ;; direction was pushed. We advance the color 2 or 16 at a time,
+        ;; depending. (The least significant bit in the color register is
+        ;; the one ignored, so we are not missing anything here.)
+        ror                     ; Skip P2 input
+        ror
+        ror
+        ror
+        ror                     ; Carry clear if up
+        bcs     +
+        inc     curcol          ; If up, increase color by 2
+        inc     curcol
+        jmp     input_found
+*       ror                     ; Carry clear if down
+        bcs     +
+        dec     curcol          ; If down, decrease color by 2
+        dec     curcol
+        jmp     input_found
+*       ror                     ; Carry clear if left
+        bcs     +
+        lda     curcol
+        sec
+        sbc     #$10            ; Left decreases color by 16
+        sta     curcol
+        jmp     input_found
+*       ror                     ; Carry clear if right
+        bcs     input_done
+        lda     curcol
+        adc     #$10            ; Right increases color by 16
+        sta     curcol
+input_found:
+        lda     #$00
+        sta     input_allowed
+
+input_done:
+        ;; Clear the playfield while we wait, and make it asymmetric
+        lda     #$00
+        sta     PF0
+        sta     PF1
+        sta     PF2
+        sta     CTRLPF
+
+        ;; alter playfield color so we get a rotating effect
+        dec     startcol
+
+        ;; prepare numeric sprite values
+        lda     curcol
+        lsr
+        lsr
+        lsr
+        lsr
+        tay
+        lda     digits_low, y
+        sta     high_nybble
+        lda     curcol
+        and     #$0f
+        tay
+        lda     digits_low, y
+        sta     low_nybble
+        lda     #$ff
+        sta     low_nybble+1
+        sta     high_nybble+1
+
+	;; Wait for VBLANK to finish, then turn off the VBLANK signal.
+*	lda	INTIM
+	bne	-
+	sta	WSYNC
+	sta	VBLANK
+
+        ;; Display kernel.
+        ;; Top blank: 4 lines
+        ldx     #4
+        stx     subrow
+*       sta     WSYNC
+        dex
+        bne     -
+
+        ;; Header graphics: 20 lines
+        ldy     #5
+        ldx     startcol
+header_loop:
+        sta     WSYNC
+        stx     COLUPF          ; +3 =  3
+        lda     pf0_left-1,y    ; +4 =  7
+        sta     PF0             ; +3 = 10
+        lda     pf1_left-1,y    ; +4 = 14
+        sta     PF1             ; +3 = 17
+        lda     pf2_left-1,y    ; +4 = 21
+        sta     PF2             ; +3 = 24
+        cmp     $80             ; +3 = 27   (3-cycle no-op)
+        lda     pf0_right-1,y   ; +4 = 31
+        sta     PF0             ; +3 = 34
+        lda     pf1_right-1,y   ; +4 = 38
+        sta     PF1             ; +3 = 41
+        lda     pf2_right-1,y   ; +4 = 45
+        sta     PF2             ; +3 = 48   ** MUST STORE PF2 2ND TIME ON EXACTLY CYCLE 48 **
+        inx                     ; +2 = 50
+        inx                     ; +2 = 52
+        dec     subrow          ; +5 = 57
+        bne     header_loop     ; +2 = 59
+        dey                     ; +2 = 61
+        beq     header_done     ; +2 = 63
+        lda     #4              ; +2 = 65
+        sta     subrow          ; +3 = 68
+        bne     header_loop     ; +3 = 71
+        ;; We've cut it very fine here! We only have 76 cycles per
+        ;; scanline and we use nearly all of them.
+header_done:
+        ;; Ruled split between title and data (8 lines)
+        ldy     #$00            ; Clear playfield now that we're done (+2 = 72)
+        ldx     #$0c            ; Default status color is light grey (+2 = 74)
+        sta     WSYNC           ; Rest of previous line
+        sty     PF0
+        sty     PF1
+        sty     PF2
+        stx     COLUPF
+        stx     COLUP0
+        stx     COLUP1
+        dey
+        ldx     #$f0
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        stx     PF0             ; Fill playfield completely
+        sty     PF1
+        sty     PF2
+
+        ldy     #$01
+        sty     CTRLPF          ; Symmetric PF
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        dey
+        sty     PF0             ; Clear playfield again
+        sty     PF1
+        sty     PF2
+
+        ldy     #$08            ; 32 lines (for letters; 8, 16, 8)
+*       sta     WSYNC
+        dey
+        bne     -
+        ldy     #$06
+*       lda     (high_nybble), y
+        sta     GRP0
+        lda     (low_nybble), y
+        sta     GRP1
+        sta     WSYNC
+        sta     WSYNC
+        dey
+        bpl     -
+        iny
+        sty     GRP0
+        sty     GRP1
+        ldy     #$0A
+*       sta     WSYNC
+        dey
+        bne     -
+
+        ;; Top border (12 lines)
+        lda     #$03
+        sta     PF1
+        lda     #$ff
+        sta     PF2
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        ldx     #$00
+        stx     PF1
+        stx     PF2
+        ldx     #$02            ; Turn on walls (the missiles)
+        stx     ENAM0
+        stx     ENAM1
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     PF2
+        lda     curcol
+        sta     COLUPF
+
+        ;; Color blob (96 lines)
+        ldx     #96
+*       sta     WSYNC
+        dex
+        bne     -
+
+        ;; Bottom border (12 lines)
+        stx     PF2
+        lda     #$0c
+        sta     COLUPF
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        stx     ENAM0            ; Turn off walls (the missles)
+        stx     ENAM1
+        lda     #$03
+        sta     PF1
+        lda     #$ff
+        sta     PF2
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        sta     WSYNC
+        stx     PF1
+        stx     PF2
+        ldx     #$08
+*       sta     WSYNC
+        dex
+        bne     -
+
+	; Turn on VBLANK, do 30 lines of Overscan
+	lda	#$02
+	sta	VBLANK
+	ldy	#30
+*	sta	WSYNC
+	dey
+	bne	-
+	jmp	frame	; And the frame is done, back to VSYNC.
+
+;;; Graphical data. Notice that we have to start not on a page
+;;; boundary, but with all graphics in each group on one page.
+        .advance $FF01
+pf0_left:
+        .byte $e0,$20,$20,$20,$e0
+
+pf1_left:
+        .byte $77,$54,$54,$54,$74
+
+pf2_left:
+        .byte $ae,$6a,$ea,$aa,$ee
+
+pf0_right:
+        .byte $00,$00,$00,$00,$00
+
+pf1_right:
+        .byte $4e,$48,$4c,$48,$ee
+
+pf2_right:
+        .byte $27,$24,$27,$21,$77
+
+        ;; We don't need a digits_high. It's always $FF!
+digits_low:
+        .byte <digit_0, <digit_1, <digit_2, <digit_3
+        .byte <digit_4, <digit_5, <digit_6, <digit_7
+        .byte <digit_8, <digit_9, <digit_a, <digit_b
+        .byte <digit_c, <digit_d, <digit_e, <digit_f
+
+digit_0:
+        .byte $3c,$66,$66,$76,$6e,$66,$3c
+digit_1:
+        .byte $7e,$18,$18,$18,$38,$18,$18
+digit_2:
+        .byte $7e,$60,$30,$0c,$06,$66,$3c
+digit_3:
+        .byte $3c,$66,$06,$1c,$06,$66,$3c
+digit_4:
+        .byte $06,$06,$7f,$66,$1e,$0e,$06
+digit_5:
+        .byte $3c,$66,$06,$06,$7c,$60,$7e
+digit_6:
+        .byte $3c,$66,$66,$7c,$60,$66,$3c
+digit_7:
+        .byte $18,$18,$18,$18,$0c,$66,$7e
+digit_8:
+        .byte $3c,$66,$66,$3c,$66,$66,$3c
+digit_9:
+        .byte $3c,$66,$06,$3e,$66,$66,$3c
+digit_a:
+        .byte $66,$66,$66,$7e,$66,$3c,$18
+digit_b:
+        .byte $7c,$66,$66,$7c,$66,$66,$7c
+digit_c:
+        .byte $3c,$66,$60,$60,$60,$66,$3c
+digit_d:
+        .byte $78,$6c,$66,$66,$66,$6c,$78
+digit_e:
+        .byte $7e,$60,$60,$78,$60,$60,$7e
+digit_f:
+        .byte $60,$60,$60,$78,$60,$60,$7e
+;;; Interrupt vectors.
+        .advance $FFFA
+	.word	reset, reset, reset

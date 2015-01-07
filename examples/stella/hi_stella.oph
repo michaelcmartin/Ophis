@@ -9,37 +9,42 @@
 .space	counter	1
 
 .text
-.org	$FF00
+.org	$F800
 
 reset:	`clean'start
 
 	; Initialize the player sprites.
 
 	; We're going to use quad-sized players for our
-	; letters. With 160 color clocks, and letters
-	; twenty clocks wide, and a 68 color clock HBLANK,
-	; we want to place the two letters at color clock
-	; 68+80-20-2 = 126 and 68+80+2 = 150. Those
-	; translate to cycle counts 42 and 50.
+	; letters, and each one is 5 notional pixels wide.
+	; When we write RESP*, the start cycle after WSYNC
+	; determines the pixel it appears at with the
+	; formula 3N - 54 (minimum 1). Cycles 36 and 44
+	; get us close. We end up 4 pixels too far left.
 
 	; While we wait, we set up our sprites to be
 	; quad-sized and initialize the independent
 	; color-counters for each sprite.
 
-	sta	WSYNC	; 3
-	lda	#$07	; 5
-	sta	NUSIZ0	; 7
-	sta	NUSIZ1	; 10
-	lda	#$20	; 13
-	ldy	#5	; 15
+	sta	WSYNC
+	lda	#$07	; +2= 2
+	sta	NUSIZ0	; +3= 5
+	sta	NUSIZ1	; +3= 8
+	lda	#$20	; +2=10
+	ldy	#5	; +2=12
 *	dey
-	bne	-	; 20-25-30-35-39
-	sta	RESP0	; 42 - color clock 126
-	sta	col'0	; 45
-	eor	#$80	; 47
-	sta	RESP1	; 50 - color clock 150
+	bne	-	; 17-22-27-32-36
+	sta	RESP0	; +3=39 (P0 at pixel 54)
+	sta	col'0	; +3=42
+	eor	#$80	; +2=44
+	sta	RESP1	;       (P1 at pixel 78)
 	sta	col'1
 	sta	temp
+	lda	#$C0	; HMOVE us 4 right
+	sta	HMP0
+	sta	HMP1
+	sta	WSYNC
+	sta	HMOVE
 
 frame:	`vertical'sync
 	lda	#43
@@ -117,7 +122,7 @@ frame:	`vertical'sync
 	dey		; loop.
 	bne	-
 
-	; Clear out the player graphics,,,
+	; Clear out the player graphics...
 	lda	#$00
 	sta	GRP0
 	sta	GRP1
