@@ -401,6 +401,9 @@ class PCTracker(Pass):
     def visitPointerY(self, node, env):
         env.incPC(3)
 
+    def visitPointerZ(self, node, env):
+        env.incPC(3)
+
     def visitCheckPC(self, node, env):
         pass
 
@@ -475,6 +478,10 @@ class Collapse(PCTracker):
     def visitPointerY(self, node, env):
         self.changed |= collapse_y_ind(node, env)
         PCTracker.visitPointerY(self, node, env)
+
+    def visitPointerZ(self, node, env):
+        self.changed |= collapse_z_ind(node, env)
+        PCTracker.visitPointerZ(self, node, env)
 
     # Previously zero-paged elements may end up un-zero-paged by
     # the branch extension pass. Force them to Absolute equivalents
