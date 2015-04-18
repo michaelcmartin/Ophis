@@ -32,11 +32,13 @@ modes = ["Implied",
          "(Zero Page), Z",
          "Relative",
          "RelativeLong",
-         "Zero Page, Relative"]
+         "Zero Page, Relative",
+         "Absolute, Z",
+         "Zero Page, Z"]
 
 
 # Lengths of the argument
-lengths = [0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2]
+lengths = [0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2,2,1]
 
 opcodes = {
            'adc': [None, 0x69, None, 0x65, 0x75, None, 0x6D, 0x7D,
@@ -52,27 +54,27 @@ opcodes = {
            'asl.w': [None, None, None, None, None, None, 0x0E, 0x1E,
                      None, None, None, None, None, None, None, None, None, None, None, None, None],
            'bcc': [None, None, None, None, None, None, None, None,
-                   None, None, None, None, None, None, None, None, None, None, 0x90, None, None],
+                   None, None, None, None, None, None, None, None, None, None, 0x90, 0x93, None],
            'bcs': [None, None, None, None, None, None, None, None,
-                   None, None, None, None, None, None, None, None, None, None, 0xB0, None, None],
+                   None, None, None, None, None, None, None, None, None, None, 0xB0, 0xB3, None],
            'beq': [None, None, None, None, None, None, None, None,
-                   None, None, None, None, None, None, None, None, None, None, 0xF0, None, None],
+                   None, None, None, None, None, None, None, None, None, None, 0xF0, 0xF3, None],
            'bit': [None, None, None, 0x24, None, None, 0x2C, None,
                    None, None, None, None, None, None, None, None, None, None, None, None, None],
            'bit.w': [None, None, None, None, None, None, 0x2C, None,
                      None, None, None, None, None, None, None, None, None, None, None, None, None],
            'bmi': [None, None, None, None, None, None, None, None,
-                   None, None, None, None, None, None, None, None, None, None, 0x30, None, None],
+                   None, None, None, None, None, None, None, None, None, None, 0x30, 0x33, None],
            'bne': [None, None, None, None, None, None, None, None,
-                   None, None, None, None, None, None, None, None, None, None, 0xD0, None, None],
+                   None, None, None, None, None, None, None, None, None, None, 0xD0, 0xD3, None],
            'bpl': [None, None, None, None, None, None, None, None,
-                   None, None, None, None, None, None, None, None, None, None, 0x10, None, None],
+                   None, None, None, None, None, None, None, None, None, None, 0x10, 0x13, None],
            'brk': [0x00, None, None, None, None, None, None, None,
                    None, None, None, None, None, None, None, None, None, None, None, None, None],
            'bvc': [None, None, None, None, None, None, None, None,
-                   None, None, None, None, None, None, None, None, None, None, 0x50, None, None],
+                   None, None, None, None, None, None, None, None, None, None, 0x50, 0x53, None],
            'bvs': [None, None, None, None, None, None, None, None,
-                   None, None, None, None, None, None, None, None, None, None, 0x70, None, None],
+                   None, None, None, None, None, None, None, None, None, None, 0x70, 0x73, None],
            'clc': [0x18, None, None, None, None, None, None, None,
                    None, None, None, None, None, None, None, None, None, None, None, None, None],
            'cld': [0xD8, None, None, None, None, None, None, None,
