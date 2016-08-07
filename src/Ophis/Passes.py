@@ -900,7 +900,7 @@ class Assembler(Pass):
             arg += 65536
         return IR.ConstantExpr(arg)
 
-    def listing_string(self, pc, binary, mode, opcode, val1, val2):
+    def listing_string(self, pc, binary, mode, opcode, val1, val2, ppt):
         base = " %04X " % pc
         base += (" %02X" * len(binary)) % tuple(binary)
         formats = ["",
@@ -924,7 +924,7 @@ class Assembler(Pass):
                    "$%04X",
                    "$%04X",
                    "$%02X, $%04X"]
-        fmt = ("%-16s %-5s" % (base, opcode.upper())) + formats[mode]
+        fmt = ("%-16s %-5s %-14s | %s" % (base, opcode.upper(), formats[mode], ppt))
         if val1 is None:
             return fmt
         elif val2 is None:
@@ -972,7 +972,7 @@ class Assembler(Pass):
         self.listing.listInstruction(self.listing_string(env.getPC(),
                                                          inst_bytes,
                                                          mode, opcode,
-                                                         val1, val2))
+                                                         val1, val2, node.ppt))
         env.incPC(1 + arglen)
         self.code += 1 + arglen
 
