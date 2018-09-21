@@ -238,7 +238,7 @@ header_done:
 *       sta     WSYNC
         dey
         bne     -
-        ldy     #$06
+        ldy     #$05
 *       lda     (high_nybble), y
         sta     GRP0
         lda     (low_nybble), y
@@ -312,7 +312,7 @@ header_done:
         sta     WSYNC
         stx     PF1
         stx     PF2
-        ldx     #$08
+        ldx     #$0a
 *       sta     WSYNC
         dex
         bne     -
@@ -355,37 +355,37 @@ digits_low:
         .byte <digit_c, <digit_d, <digit_e, <digit_f
 
 digit_0:
-        .byte $3c,$66,$66,$76,$6e,$66,$3c
+        .byte $3c,$66,$76,$6e,$66,$3c
 digit_1:
-        .byte $7e,$18,$18,$18,$38,$18,$18
+        .byte $7e,$18,$18,$18,$38,$18
 digit_2:
-        .byte $7e,$60,$30,$0c,$06,$66,$3c
+        .byte $7e,$30,$18,$0c,$66,$3c
 digit_3:
-        .byte $3c,$66,$06,$1c,$06,$66,$3c
+        .byte $3c,$66,$0c,$18,$0c,$7e
 digit_4:
-        .byte $06,$06,$7f,$66,$1e,$0e,$06
+        .byte $0c,$7e,$6c,$3c,$1c,$0c
 digit_5:
-        .byte $3c,$66,$06,$06,$7c,$60,$7e
+        .byte $3c,$66,$06,$7c,$60,$7e
 digit_6:
-        .byte $3c,$66,$66,$7c,$60,$66,$3c
+        .byte $3c,$66,$66,$7c,$60,$3c
 digit_7:
-        .byte $18,$18,$18,$18,$0c,$66,$7e
+        .byte $30,$30,$18,$0c,$06,$7e
 digit_8:
-        .byte $3c,$66,$66,$3c,$66,$66,$3c
+        .byte $3c,$66,$66,$3c,$66,$3c
 digit_9:
-        .byte $3c,$66,$06,$3e,$66,$66,$3c
+        .byte $38,$0c,$06,$3e,$66,$3c
 digit_a:
-        .byte $66,$66,$66,$7e,$66,$3c,$18
+        .byte $66,$7e,$66,$66,$3c,$18
 digit_b:
-        .byte $7c,$66,$66,$7c,$66,$66,$7c
+        .byte $7c,$66,$66,$7c,$66,$7c
 digit_c:
-        .byte $3c,$66,$60,$60,$60,$66,$3c
+        .byte $3c,$66,$60,$60,$66,$3c
 digit_d:
-        .byte $78,$6c,$66,$66,$66,$6c,$78
+        .byte $78,$6c,$66,$66,$6c,$78
 digit_e:
-        .byte $7e,$60,$60,$78,$60,$60,$7e
+        .byte $7e,$60,$60,$7c,$60,$7e
 digit_f:
-        .byte $60,$60,$60,$78,$60,$60,$7e
+        .byte $60,$60,$60,$7c,$60,$7e
 ;;; Interrupt vectors.
         .advance $FFFA
 	.word	reset, reset, reset
