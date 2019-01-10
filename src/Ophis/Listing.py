@@ -43,7 +43,7 @@ class Listing(object):
             out = file(self.filename, "w")
         for x in self.listing:
             if type(x) is str:
-                print>>out, x
+                print(x, file=out)
             elif type(x) is tuple:
                 i = 0
                 pc = x[0]
@@ -59,7 +59,7 @@ class Listing(object):
                             charline += "."
                         else:
                             charline += chr(c)
-                    print>>out, "%-54s  |%-16s|" % (dataline, charline)
+                    print("%-54s  |%-16s|" % (dataline, charline), file=out)
                     i += 16
         if self.filename != "-":
             out.close()

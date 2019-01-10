@@ -18,14 +18,14 @@ def log(err):
 the global error count."""
     global count
     count = count + 1
-    print>>sys.stderr, currentpoint + ": " + err
+    print(currentpoint + ": " + err, file=sys.stderr)
 
 
 def report():
     "Print out the number of errors."
     if count == 0:
-        print>>sys.stderr, "No errors"
+        print("No errors", file=sys.stderr)
     elif count == 1:
-        print>>sys.stderr, "1 error"
+        print("1 error", file=sys.stderr)
     else:
-        print>>sys.stderr, str(count) + " errors"
+        print(str(count) + " errors", file=sys.stderr)

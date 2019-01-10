@@ -55,7 +55,7 @@ def expandMacro(ppt, name, arglist):
         Err.log("Undefined macro '%s'" % name)
         return IR.NullNode
     argexprs = [IR.Node(ppt, "Label", "_*%d" % i, arg)
-                for (i, arg) in zip(xrange(1, sys.maxint), arglist)]
+                for (i, arg) in zip(range(1, sys.maxsize), arglist)]
     bindexprs = [IR.Node(ppt, "Label", "_%d" % i, IR.LabelExpr("_*%d" % i))
                  for i in range(1, len(arglist) + 1)]
     body = [IR.Node("%s->%s" % (ppt, node.ppt), node.nodetype, *node.data)
@@ -70,7 +70,7 @@ def dump():
     global macros
     for mac in macros:
         body = macros[mac]
-        print>>sys.stderr, "Macro: " + mac
+        print("Macro: " + mac, file=sys.stderr)
         for node in body:
-            print>>sys.stderr, node
-        print>>sys.stderr, ""
+            print(node, file=sys.stderr)
+        print("", file=sys.stderr)

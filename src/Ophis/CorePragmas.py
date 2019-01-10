@@ -10,7 +10,8 @@ import Ophis.CmdLine
 import Ophis.IR as IR
 import Ophis.Frontend as FE
 import Ophis.Errors as Err
-import math, os.path
+import math
+import os.path
 
 basecharmap = "".join([chr(x) for x in range(256)])
 currentcharmap = basecharmap
@@ -68,7 +69,7 @@ def pragmaIncbin(ppt, line, result):
     line.expect("EOL")
     if type(filename) == str:
         try:
-            f = file(os.path.join(FE.context_directory, filename), "rb")
+            f = open(os.path.join(FE.context_directory, filename), "rb")
             if offset.hardcoded and (size is None or size.hardcoded):
                 # We know how big it will be, we can just use the values.
                 # First check to make sure they're sane
@@ -94,7 +95,7 @@ def pragmaIncbin(ppt, line, result):
                     size = IR.ConstantExpr(-1)
                 f.seek(offset.value())
                 bytes = f.read(size.value())
-                bytes = [IR.ConstantExpr(ord(x)) for x in bytes]
+                bytes = [IR.ConstantExpr(x) for x in bytes]
                 result.append(IR.Node(ppt, "Byte", *bytes))
             else:
                 # offset or length could change based on label placement.
@@ -103,7 +104,7 @@ def pragmaIncbin(ppt, line, result):
                 # alias. Don't use symbolic aliases when extracting tiny
                 # pieces out of humongous files, I guess.
                 bytes = f.read()
-                bytes = [IR.ConstantExpr(ord(x)) for x in bytes]
+                bytes = [IR.ConstantExpr(x) for x in bytes]
                 if size is None:
                     size = IR.SequenceExpr([IR.ConstantExpr(len(bytes)),
                                             "-",
@@ -141,7 +142,7 @@ def pragmaCharmapbin(ppt, line, result):
     line.expect("EOL")
     if type(filename) == str:
         try:
-            f = file(os.path.join(FE.context_directory, filename), "rb")
+            f = open(os.path.join(FE.context_directory, filename), "rb")
             bytes = f.read()
             f.close()
         except IOError:

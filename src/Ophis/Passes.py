@@ -67,18 +67,18 @@ class Pass(object):
         printing debugging information."""
         if Err.count == 0:
             if Cmd.print_pass:
-                print>>sys.stderr, "Running: " + self.name
+                print("Running: " + self.name, file=sys.stderr)
             env.reset()
             self.prePass()
             node.accept(self, env)
             self.postPass()
             env.reset()
             if Cmd.print_labels:
-                print>>sys.stderr, "Current labels:"
-                print>>sys.stderr, env
+                print("Current labels:", file=sys.stderr)
+                print(env, file=sys.stderr)
             if Cmd.print_ir:
-                print>>sys.stderr, "Current IR:"
-                print>>sys.stderr, node
+                print("Current IR:", file=sys.stderr)
+                print(node, file=sys.stderr)
 
 
 class FixPoint(object):
@@ -92,7 +92,7 @@ class FixPoint(object):
     def go(self, node, env):
         """Runs this FixPoint's passes, in order, until the fixpoint
         is true.  Always runs the passes at least once."""
-        for i in xrange(100):
+        for i in range(100):
             if Err.count != 0:
                 break
             for p in self.passes:
@@ -102,7 +102,7 @@ class FixPoint(object):
             if self.fixpoint():
                 break
             if Cmd.print_pass:
-                print>>sys.stderr, "Fixpoint failed, looping back"
+                print("Fixpoint failed, looping back", file=sys.stderr)
         else:
             Err.log("Can't make %s converge!  Maybe there's a recursive "
                     "dependency somewhere?" % self.name)
@@ -120,7 +120,7 @@ class DefineMacros(Pass):
         if self.inDef:
             Err.log("Unmatched .macro")
         elif Cmd.print_ir:
-            print>>sys.stderr, "Macro definitions:"
+            print("Macro definitions:", file=sys.stderr)
             Macro.dump()
 
     def visitMacroBegin(self, node, env):
@@ -197,11 +197,11 @@ class InitLabels(Pass):
             env[label] = 0
             self.changed = True
         if label in ['a', 'x', 'y'] and self.runcount == 1:
-            print>>sys.stderr, str(node.ppt) + ": WARNING: " \
-                "using register name as label"
+            print(str(node.ppt) + ": WARNING: " \
+                "using register name as label", file=sys.stderr)
         if label in Ops.opcodes and self.runcount == 1:
-            print>>sys.stderr, str(node.ppt) + ": WARNING: " \
-                "using opcode name as label"
+            print(str(node.ppt) + ": WARNING: " \
+                "using opcode name as label", file=sys.stderr)
 
     def visitUnknown(self, node, env):
         pass
@@ -636,16 +636,16 @@ class ExtendBranches(PCTracker):
             if Cmd.enable_4502_exts:
                 node.nodetype = "RelativeLong"
                 if Cmd.warn_on_branch_extend:
-                    print>>sys.stderr, str(node.ppt) + ": WARNING: " \
-                        "branch out of range, replacing with 16-bit relative branch"
+                    print(str(node.ppt) + ": WARNING: " \
+                        "branch out of range, replacing with 16-bit relative branch", file=sys.stderr)
             else:
                 if opcode == 'bra':
                     # If BRA - BRanch Always - is out of range, it's a JMP.
                     node.data = ('jmp', expr, None)
                     node.nodetype = "Absolute"
                     if Cmd.warn_on_branch_extend:
-                        print>>sys.stderr, str(node.ppt) + ": WARNING: " \
-                            "bra out of range, replacing with jmp"
+                        print(str(node.ppt) + ": WARNING: " \
+                            "bra out of range, replacing with jmp", file=sys.stderr)
                 else:
                     # Otherwise, we replace it with a 'macro' of sorts by hand:
                     # $branch LOC -> $reversed_branch ^+5; JMP LOC
@@ -661,11 +661,11 @@ class ExtendBranches(PCTracker):
                     node.nodetype = 'SEQUENCE'
                     node.data = expansion
                     if Cmd.warn_on_branch_extend:
-                        print>>sys.stderr, str(node.ppt) + ": WARNING: " + \
+                        print(str(node.ppt) + ": WARNING: " + \
                                        opcode + " out of range, " \
                                        "replacing with " + \
                                        ExtendBranches.reversed[opcode] + \
-                                       "/jmp combo"
+                                       "/jmp combo", file=sys.stderr)
                     self.changed = True
                     node.accept(self, env)
         else:
@@ -690,11 +690,11 @@ class ExtendBranches(PCTracker):
             node.nodetype = 'SEQUENCE'
             node.data = expansion
             if Cmd.warn_on_branch_extend:
-                print>>sys.stderr, str(node.ppt) + ": WARNING: " + \
+                print(str(node.ppt) + ": WARNING: " + \
                     opcode + " out of range, " \
                     "replacing with " + \
                     ExtendBranches.reversed[opcode] + \
-                    "/jmp combo"
+                    "/jmp combo", file=sys.stderr)
             self.changed = True
             node.accept(self, env)
         else:
@@ -763,10 +763,10 @@ class Assembler(Pass):
         self.listing.dump()
         self.mapper.dump()
         if Cmd.print_summary and Err.count == 0:
-            print>>sys.stderr, "Assembly complete: %s bytes output " \
+            print("Assembly complete: %s bytes output " \
                                "(%s code, %s data, %s filler)" \
                                % (len(self.output),
-                                  self.code, self.data, self.filler)
+                                  self.code, self.data, self.filler), file=sys.stderr)
 
     def outputbyte(self, expr, env, tee=None):
         'Outputs a byte, with range checking'
@@ -799,7 +799,7 @@ class Assembler(Pass):
         'Outputs a little-endian dword, with range checking'
         if self.writeOK:
             val = expr.value(env)
-            if val < 0x00000000 or val > 0xFFFFFFFFL:
+            if val < 0x00000000 or val > 0xFFFFFFFF:
                 Err.log("DWord constant " + str(expr) + " out of range")
                 val = 0
             self.output.append(int(val & 0xFF))
@@ -829,7 +829,7 @@ class Assembler(Pass):
         'Outputs a big-endian dword, with range checking'
         if self.writeOK:
             val = expr.value(env)
-            if val < 0x00000000 or val > 0xFFFFFFFFL:
+            if val < 0x00000000 or val > 0xFFFFFFFF:
                 Err.log("DWord constant " + str(expr) + " out of range")
                 val = 0
             self.output.append(int((val >> 24) & 0xFF))
@@ -1083,7 +1083,7 @@ class Assembler(Pass):
                     (pc, target))
         else:
             created = []
-            for i in xrange(target - pc):
+            for i in range(target - pc):
                 self.outputbyte(node.data[1], env, created)
             self.filler += target - pc
             self.registerData(created, env.getPC())

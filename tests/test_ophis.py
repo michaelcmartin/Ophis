@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import subprocess
@@ -20,14 +20,14 @@ failed = 0
 
 
 def assembled(raw):
-    return ' '.join(["%02X" % ord(c) for c in raw])
+    return ' '.join(["%02X" % c for c in raw])
 
 
 def assemble_raw(asm="", options=[]):
     p = subprocess.Popen([pythonpath, ophispath] + options,
                          stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
-    return p.communicate(asm)
+    return p.communicate(asm.encode("UTF-8"))
 
 
 def assemble_string(asm, options=[]):
@@ -37,15 +37,15 @@ def assemble_string(asm, options=[]):
 def test_string(test_name, asm, expected, options=[]):
     (out, err) = assemble_string(asm, options)
     if out == expected:
-        print "%s: SUCCESS" % test_name
+        print("%s: SUCCESS" % test_name)
     else:
         global failed
         failed += 1
-        print "%s: FAILED" % test_name
-        print "Assembled code: ", assembled(out)
-        print "Expected code:  ", assembled(expected)
+        print("%s: FAILED" % test_name)
+        print("Assembled code: ", assembled(out))
+        print("Expected code:  ", assembled(expected))
     if err != '':
-        print "Error output:\n%s" % err
+        print("Error output:\n%s" % err.decode(sys.stderr.encoding))
 
 
 def test_file(test_name, fname, ename, options=[]):
@@ -57,7 +57,7 @@ def test_file(test_name, fname, ename, options=[]):
         expected = f.read()
         f.close()
     else:  # a test where we expect failure
-        expected = ''
+        expected = b''
     test_string(test_name, asm, expected, options)
 
 
@@ -66,16 +66,16 @@ def test_file(test_name, fname, ename, options=[]):
 # on, then we start running through the features.
 
 def test_basic():
-    print
-    print "==== BASIC OPERATION ===="
+    print()
+    print("==== BASIC OPERATION ====")
     test_string('Basic Ophis operation', '.byte "Hello, world!"',
-                'Hello, world!')
+                b'Hello, world!')
     test_string('Newline/EOF passthrough', '.byte 10,26,13,4,0,"Hi",13,10',
-                '\n\x1a\r\x04\x00Hi\r\n')
+                b'\n\x1a\r\x04\x00Hi\r\n')
     # Normally these would go in Expressions but we need them to run the
     # tests for relative instructions.
-    test_string('Program counter recognition', '.org $41\nlda #^\n', '\xa9A')
-    test_string('Program counter math', '.org $41\nlda #^+3\n', '\xa9D')
+    test_string('Program counter recognition', '.org $41\nlda #^\n', b'\xa9A')
+    test_string('Program counter math', '.org $41\nlda #^+3\n', b'\xa9D')
     if failed == 0:
         test_file('Basic instructions', 'testbase.oph', 'testbase.bin')
         test_file('Basic data pragmas', 'testdata.oph', 'testdata.bin')
@@ -100,13 +100,13 @@ def test_basic():
 
 def test_outfile():
     global failed
-    print "\n==== INPUT AND OUTPUT ===="
+    print("\n==== INPUT AND OUTPUT ====")
     if os.path.exists("ophis.bin"):
-        print "TEST SUITE FAILED: unclean test environment (ophis.bin exists)"
+        print("TEST SUITE FAILED: unclean test environment (ophis.bin exists)")
         failed += 1
         return
     elif os.path.exists("custom.bin"):
-        print "TEST SUITE FAILED: unclean test environment (custom.bin exists)"
+        print("TEST SUITE FAILED: unclean test environment (custom.bin exists)")
         failed += 1
         return
 
@@ -114,45 +114,46 @@ def test_outfile():
     try:
         assemble_raw('.byte "Hello, world!", 10', ['-'])
         f = open('ophis.bin', 'rb')
-        if f.read() != 'Hello, world!\n':
-            print "Default output filename: FAILED (bad output)"
+        if f.read() != b'Hello, world!\n':
+            print("Default output filename: FAILED (bad output)")
             failed += 1
         else:
-            print "Default output filename: SUCCESS"
+            print("Default output filename: SUCCESS")
         f.close()
         os.unlink('ophis.bin')
     except:
-        print "Default output filename: FAILED (exception)"
+        print("Default output filename: FAILED (exception)")
         failed += 1
+        raise
 
     # Test 2: Command line override
     try:
         assemble_raw('.byte "Hello, world!", 10', ['-', '-o', 'custom.bin'])
         f = open('custom.bin', 'rb')
-        if f.read() != 'Hello, world!\n':
-            print "Commandline output filename: FAILED (bad output)"
+        if f.read() != b'Hello, world!\n':
+            print("Commandline output filename: FAILED (bad output)")
             failed += 1
         else:
-            print "Commandline output filename: SUCCESS"
+            print("Commandline output filename: SUCCESS")
         f.close()
         os.unlink('custom.bin')
     except:
-        print "Commandline output filename: FAILED (exception)"
+        print("Commandline output filename: FAILED (exception)")
         failed += 1
 
     # Test 3: Pragma override
     try:
         assemble_raw('.outfile "custom.bin"\n.byte "Hello, world!", 10', ['-'])
         f = open('custom.bin', 'rb')
-        if f.read() != 'Hello, world!\n':
-            print "Commandline output filename: FAILED (bad output)"
+        if f.read() != b'Hello, world!\n':
+            print("Commandline output filename: FAILED (bad output)")
             failed += 1
         else:
-            print "Commandline output filename: SUCCESS"
+            print("Commandline output filename: SUCCESS")
         f.close()
         os.unlink('custom.bin')
     except:
-        print "Commandline output filename: FAILED (exception)"
+        print("Commandline output filename: FAILED (exception)")
         failed += 1
 
     # Test 4: Command line override of .outfile
@@ -160,15 +161,15 @@ def test_outfile():
         assemble_raw('.outfile "custom2.bin"\n'
                      '.byte "Hello, world!", 10', ['-', '-o', 'custom.bin'])
         f = open('custom.bin', 'rb')
-        if f.read() != 'Hello, world!\n':
-            print "Commandline override of pragma: FAILED (bad output)"
+        if f.read() != b'Hello, world!\n':
+            print("Commandline override of pragma: FAILED (bad output)")
             failed += 1
         else:
-            print "Commandline override of pragma: SUCCESS"
+            print("Commandline override of pragma: SUCCESS")
         f.close()
         os.unlink('custom.bin')
     except:
-        print "Commandline override of pragma: FAILED (exception)"
+        print("Commandline override of pragma: FAILED (exception)")
         failed += 1
 
     # Test 5: Pragma repetition priority
@@ -177,15 +178,15 @@ def test_outfile():
                      '.outfile "custom2.bin"\n'
                      '.byte "Hello, world!", 10', ['-'])
         f = open('custom.bin', 'rb')
-        if f.read() != 'Hello, world!\n':
-            print "Pragma repetition: FAILED (bad output)"
+        if f.read() != b'Hello, world!\n':
+            print("Pragma repetition: FAILED (bad output)")
             failed += 1
         else:
-            print "Pragma repetition: SUCCESS"
+            print("Pragma repetition: SUCCESS")
         f.close()
         os.unlink('custom.bin')
     except:
-        print "Pragma repetition: FAILED (exception)"
+        print("Pragma repetition: FAILED (exception)")
         failed += 1
 
     # Test 6: multiple input files
@@ -200,73 +201,73 @@ def test_outfile():
         s += f.read()
         f.close()
         if out != s:
-            print "Multiple input files: FAILED (bad output)"
+            print("Multiple input files: FAILED (bad output)")
             failed += 1
         else:
-            print "Multiple input files: SUCCESS"
+            print("Multiple input files: SUCCESS")
     except:
-        print "Multiple input files: FAILED (exception)"
+        print("Multiple input files: FAILED (exception)")
         failed += 1
 
 
 def test_transforms():
-    print "\n==== BINARY TRANSFORM PASSES ===="
-    print "Simple zero page selection: SUCCESS (covered in basic tests)"
+    print("\n==== BINARY TRANSFORM PASSES ====")
+    print("Simple zero page selection: SUCCESS (covered in basic tests)")
     test_string('Chained collapse', '.org $fa \n lda + \n lda ^ \n * rts \n',
-                '\xa5\xfe\xa5\xfc\x60')
+                b'\xa5\xfe\xa5\xfc\x60')
     test_string('Reversible collapse', '.org $fb \n bne ^+200 \n lda ^ \n',
-                '\xf0\x03\x4c\xc5\x01\xad\x00\x01')
+                b'\xf0\x03\x4c\xc5\x01\xad\x00\x01')
 
 
 def test_expressions():
-    print "\n==== EXPRESSIONS AND LABELS ===="
-    test_string('Basic addition', '.byte 3+2', '\x05')
-    test_string('Basic subtraction', '.byte 3-2', '\x01')
-    test_string('Basic multiplication', '.byte 3*2', '\x06')
-    test_string('Basic division', '.byte 6/2', '\x03')
-    test_string('Basic bit-union', '.byte 5|9', '\x0d')
-    test_string('Basic bit-intersection', '.byte 5&9', '\x01')
-    test_string('Basic bit-toggle', '.byte 5^9', '\x0c')
-    test_string('Division truncation', '.byte 5/2', '\x02')
-    test_string('Overflow', '.byte $FF*$10', '')
-    test_string('Multibyte overflow', '.word $FF*$10', '\xf0\x0f')
-    test_string('Masked overflow', '.byte $FF*$10&$FF', '\xf0')
-    test_string('Underflow', '.byte 2-3', '')
-    test_string('Masked underflow', '.byte 2-3&$FF', '\xff')
-    test_string('Arithmetic precedence', '.byte 2+3*4-6/2', '\x0b')
-    test_string('Parentheses', '.byte [2+3]*[4-6/2]', '\x05')
+    print("\n==== EXPRESSIONS AND LABELS ====")
+    test_string('Basic addition', '.byte 3+2', b'\x05')
+    test_string('Basic subtraction', '.byte 3-2', b'\x01')
+    test_string('Basic multiplication', '.byte 3*2', b'\x06')
+    test_string('Basic division', '.byte 6/2', b'\x03')
+    test_string('Basic bit-union', '.byte 5|9', b'\x0d')
+    test_string('Basic bit-intersection', '.byte 5&9', b'\x01')
+    test_string('Basic bit-toggle', '.byte 5^9', b'\x0c')
+    test_string('Division truncation', '.byte 5/2', b'\x02')
+    test_string('Overflow', '.byte $FF*$10', b'')
+    test_string('Multibyte overflow', '.word $FF*$10', b'\xf0\x0f')
+    test_string('Masked overflow', '.byte $FF*$10&$FF', b'\xf0')
+    test_string('Underflow', '.byte 2-3', b'')
+    test_string('Masked underflow', '.byte 2-3&$FF', b'\xff')
+    test_string('Arithmetic precedence', '.byte 2+3*4-6/2', b'\x0b')
+    test_string('Parentheses', '.byte [2+3]*[4-6/2]', b'\x05')
     test_string('String escapes',
                 '.byte "The man said, \\"The \\\\ is Windowsy.\\""',
-                'The man said, "The \\ is Windowsy."')
+                b'The man said, "The \\ is Windowsy."')
     test_string('Byte selector precedence',
                 '.byte >$d000+32,>[$d000+32],<[$D000-275]',
-                '\xf0\xd0\xed')
-    test_string('Named labels', '.org $6948\nl: .word l', 'Hi')
-    test_string('.alias directive (basic)', '.alias hi $6948\n.word hi', 'Hi')
+                b'\xf0\xd0\xed')
+    test_string('Named labels', '.org $6948\nl: .word l', b'Hi')
+    test_string('.alias directive (basic)', '.alias hi $6948\n.word hi', b'Hi')
     test_string('.alias directive (derived)',
-                '.alias hi $6948\n.alias ho hi+$600\n.word hi,ho', 'HiHo')
+                '.alias hi $6948\n.alias ho hi+$600\n.word hi,ho', b'HiHo')
     test_string('.alias directive (circular)',
                 '.alias a c+1\n.alias b a+3\n.alias c b-4\n.word a, b, c',
-                '')
+                b'')
     test_string('.advance directive (basic)',
                 'lda #$05\n.advance $05\n.byte ^',
-                '\xa9\x05\x00\x00\x00\x05')
+                b'\xa9\x05\x00\x00\x00\x05')
     test_string('.advance directive (filler)',
                 'lda #$05\nf: .advance $05,f+3\n.byte ^',
-                '\xa9\x05\x05\x05\x05\x05')
+                b'\xa9\x05\x05\x05\x05\x05')
     test_string('.advance no-op', 'lda #$05\n.advance $02\n.byte ^',
-                '\xa9\x05\x02')
-    test_string('.advance failure', 'lda #$05\n.advance $01\n.byte ^', '')
-    test_string('.checkpc, space > 0', 'lda #$05\n.checkpc $10', '\xa9\x05')
-    test_string('.checkpc, space = 0', 'lda #$05\n.checkpc 2', '\xa9\x05')
-    test_string('.checkpc, space < 0', 'lda $05\n.checkpc 1', '')
+                b'\xa9\x05\x02')
+    test_string('.advance failure', 'lda #$05\n.advance $01\n.byte ^', b'')
+    test_string('.checkpc, space > 0', 'lda #$05\n.checkpc $10', b'\xa9\x05')
+    test_string('.checkpc, space = 0', 'lda #$05\n.checkpc 2', b'\xa9\x05')
+    test_string('.checkpc, space < 0', 'lda $05\n.checkpc 1', b'')
     test_string('A X Y usable as labels',
                 '.alias a 1\n.alias x 2\n.alias y 3\n'
                 'lda (a+x+y),y\nlda (x+y,x)',
-                '\xb1\x06\xa1\x05')
+                b'\xb1\x06\xa1\x05')
     test_string('Opcodes usable as labels',
                 'ldy #$00\n dey: dey\n bne dey',
-                '\xa0\x00\x88\xd0\xfd')
+                b'\xa0\x00\x88\xd0\xfd')
 
 
 def test_segments():
@@ -277,18 +278,18 @@ def test_segments():
                 '.org $61\n'
                 'd:\n'
                 '.text\n'
-                'l: .byte l, d', 'Aa')
-    test_string('Data cleanliness', '.byte 65\n.data\n.byte 65', '')
+                'l: .byte l, d', b'Aa')
+    test_string('Data cleanliness', '.byte 65\n.data\n.byte 65', b'')
     test_string('.space directive',
                 '.data\n.org $41\n.space a 2\n.space b 1\n.space c 1\n'
-                '.text\n.byte a, b, c\n', 'ACD')
+                '.text\n.byte a, b, c\n', b'ACD')
     test_string('Multiple named segments',
                 '.data\n.org $41\n.data a\n.org $61\n.data b\n.org $4a\n'
                 '.data\n.space q 1\n.data a\n.space r 1\n.data b\n.space s 1\n'
                 '.text\n.org $10\n.text a\n.org $20\n'
                 '.text\n.byte ^,q,r,s\n'
                 '.text a\n.byte ^,q,r,s\n',
-                '\x10AaJ\x20AaJ')
+                b'\x10AaJ\x20AaJ')
 
 
 def test_scopes():
@@ -300,13 +301,13 @@ def test_scopes():
                 '.scend\n'
                 '.scope\n'
                 '_l: .byte _l\n'
-                '.scend\n', 'AB')
+                '.scend\n', b'AB')
     test_string('Data hiding outside of scope',
                 '.org $41\n'
                 '.scope\n'
                 '_l: .byte _l\n'
                 '.scend\n'
-                '    .byte _l\n', '')
+                '    .byte _l\n', b'')
     test_string('Repeated labels, nested scopes',
                 '.org $41\n'
                 '.scope\n'
@@ -315,17 +316,17 @@ def test_scopes():
                 '_l: .byte _l\n'
                 '.scend\n'
                 '    .byte _l\n'
-                '.scend\n', 'ABA')
+                '.scend\n', b'ABA')
     test_string('Anonymous labels (basic)',
                 '.org $41\n'
                 '* .byte -, +\n'
-                '* .byte -, --\n', 'ACCA')
+                '* .byte -, --\n', b'ACCA')
     test_string('Anonymous labels (across scopes)',
                 '.org $41\n'
                 '* .byte -, +\n'
                 '.scope\n'
                 '* .byte -, --\n'
-                '.scend\n', 'ACCA')
+                '.scend\n', b'ACCA')
 
 
 def test_macros():
@@ -334,12 +335,12 @@ def test_macros():
                 '.macro greet\n'
                 '  .byte "hi"\n'
                 '.macend\n'
-                '`greet\n.invoke greet', "hihi")
+                '`greet\n.invoke greet', b"hihi")
     test_string('Macros with arguments',
                 '.macro greet\n'
                 '  .byte "hi",_1\n'
                 '.macend\n'
-                "`greet 'A\n.invoke greet 'B", "hiAhiB")
+                "`greet 'A\n.invoke greet 'B", b"hiAhiB")
     test_string('Macros invoking macros',
                 '.macro inner\n'
                 '  .byte " there"\n'
@@ -348,7 +349,7 @@ def test_macros():
                 '  .byte "hi"\n'
                 '  `inner\n'
                 '.macend\n'
-                "`greet", "hi there")
+                "`greet", b"hi there")
     test_string('Macros defining macros (illegal)',
                 '.macro greet\n'
                 '.macro inner\n'
@@ -357,7 +358,7 @@ def test_macros():
                 '  .byte "hi"\n'
                 '  `inner\n'
                 '.macend\n'
-                "`greet", "")
+                "`greet", b"")
     test_string('Fail on infinite recursion',
                 '.macro inner\n'
                 '  .byte " there"\n'
@@ -367,75 +368,75 @@ def test_macros():
                 '  .byte "hi"\n'
                 '  `inner\n'
                 '.macend\n'
-                "`greet", "")
+                "`greet", b"")
 
 
 def test_subfiles():
     print("\n==== COMPILATION UNITS ====")
-    test_string(".include pragma", '.include "baseinc.oph"', 'BASIC\n')
+    test_string(".include pragma", '.include "baseinc.oph"', b'BASIC\n')
     test_string(".include repeated",
                 '.include "baseinc.oph"\n.include "baseinc.oph"',
-                'BASIC\nBASIC\n')
-    test_string(".require pragma", '.require "baseinc.oph"', 'BASIC\n')
+                b'BASIC\nBASIC\n')
+    test_string(".require pragma", '.require "baseinc.oph"', b'BASIC\n')
     test_string(".include before .require",
                 '.include "baseinc.oph"\n.require "baseinc.oph"',
-                'BASIC\n')
+                b'BASIC\n')
     test_string(".require before .include",
                 '.require "baseinc.oph"\n.include "baseinc.oph"',
-                'BASIC\nBASIC\n')
+                b'BASIC\nBASIC\n')
     test_string(".require same file twice with different paths",
                 '.include "baseinc.oph"\n.include "sub/baseinc.oph"',
-                'BASIC\nSUB 1 START\nSUB 1 END\n')
+                b'BASIC\nSUB 1 START\nSUB 1 END\n')
     test_string(".require different files with identical paths",
                 '.include "sub/sub/sub.oph"',
-                'SUB 2 START\nSUB 1 START\nBASIC\nSUB 1 END\nSUB 2 END\n')
+                b'SUB 2 START\nSUB 1 START\nBASIC\nSUB 1 END\nSUB 2 END\n')
     test_string(".charmap (basic)",
                 '.charmap \'A, "abcdefghijklmnopqrstuvwxyz"\n'
                 '.charmap \'a, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\n'
-                '.byte "hELLO, wORLD!"', "Hello, World!")
+                '.byte "hELLO, wORLD!"', b"Hello, World!")
     test_string(".charmap (reset)",
                 '.charmap \'A, "abcdefghijklmnopqrstuvwxyz"\n'
                 '.charmap \'a, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\n'
                 '.byte "hELLO, wORLD!",10\n'
                 '.charmap\n'
                 '.byte "hELLO, wORLD!",10\n',
-                "Hello, World!\nhELLO, wORLD!\n")
+                b"Hello, World!\nhELLO, wORLD!\n")
     test_string(".charmap (out of range)",
                 '.charmap 250, "ABCDEFGHIJKLM"\n.byte 250,251',
-                '')
+                b'')
     test_string(".charmapbin (basic)",
                 '.charmapbin "../examples/petscii.map"\n.byte "hELLO, wORLD!"',
-                "Hello, World!")
+                b"Hello, World!")
     test_string(".charmapbin (illegal)",
-                '.charmapbin "baseinc.bin"\n.byte "hELLO, wORLD!"', '')
-    test_string(".incbin (basic)", '.incbin "baseinc.bin"', "BASIC\n")
+                '.charmapbin "baseinc.bin"\n.byte "hELLO, wORLD!"', b'')
+    test_string(".incbin (basic)", '.incbin "baseinc.bin"', b"BASIC\n")
     test_string(".incbin (hardcoded offset)",
-                '.incbin "baseinc.bin",3', "IC\n")
+                '.incbin "baseinc.bin",3', b"IC\n")
     test_string(".incbin (hardcoded offset and length)",
-                '.incbin "baseinc.bin",3,2', "IC")
+                '.incbin "baseinc.bin",3,2', b"IC")
     test_string(".incbin (softcoded offset and length)",
                 '.alias off len+1\n.alias len 2\n'
-                '.incbin "baseinc.bin",off,len', "IC")
+                '.incbin "baseinc.bin",off,len', b"IC")
     test_string(".incbin (length too long)",
-                '.byte 65\n.incbin "baseinc.bin",3,4', "")
+                '.byte 65\n.incbin "baseinc.bin",3,4', b"")
     test_string(".incbin (negative offset)",
-                '.byte 65\n.incbin "baseinc.bin",1-5,4', "")
+                '.byte 65\n.incbin "baseinc.bin",1-5,4', b"")
     test_string(".incbin (offset = size)",
-                '.byte 65\n.incbin "baseinc.bin",6', "A")
+                '.byte 65\n.incbin "baseinc.bin",6', b"A")
     test_string(".incbin (offset > size)",
-                '.byte 65\n.incbin "baseinc.bin",7', "")
+                '.byte 65\n.incbin "baseinc.bin",7', b"")
     test_string(".incbin (softcoded length too long)",
                 '.alias off len\n.alias len 4\n'
-                '.byte 65\n.incbin "baseinc.bin",off,len', "")
+                '.byte 65\n.incbin "baseinc.bin",off,len', b"")
     test_string(".incbin (softcoded negative offset)",
                 '.alias off 1-5\n'
-                '.byte 65\n.incbin "baseinc.bin",off,4', "")
+                '.byte 65\n.incbin "baseinc.bin",off,4', b"")
     test_string(".incbin (softcoded offset = size)",
                 '.alias off 6\n'
-                '.byte 65\n.incbin "baseinc.bin",off', "A")
+                '.byte 65\n.incbin "baseinc.bin",off', b"A")
     test_string(".incbin (softcoded offset > size)",
                 '.alias off 7\n'
-                '.byte 65\n.incbin "baseinc.bin",off', "")
+                '.byte 65\n.incbin "baseinc.bin",off', b"")
 
 
 def test_systematic():
@@ -449,18 +450,18 @@ def test_systematic():
 
 
 if __name__ == '__main__':
-    print "Using Python interpreter:", pythonpath
+    print("Using Python interpreter:", pythonpath)
 
     test_basic()
     os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
     if failed == 0:
         test_systematic()
     else:
-        print "\nBasic test cases failed, aborting test."
+        print("\nBasic test cases failed, aborting test.")
 
     if failed > 0:
-        print "\nTotal test case failures: %d" % failed
+        print("\nTotal test case failures: %d" % failed)
         sys.exit(1)
     else:
-        print "\nAll test cases succeeded"
+        print("\nAll test cases succeeded")
         sys.exit(0)

@@ -72,7 +72,7 @@ def run_all():
         try:
             outfile = Ophis.CmdLine.outfile
             if outfile == '-':
-                output = sys.stdout
+                output = sys.stdout.buffer
                 if sys.platform == "win32":
                     # We can't dump our binary in text mode; that would be
                     # disastrous. So, we'll do some platform-specific
@@ -80,16 +80,16 @@ def run_all():
                     import msvcrt
                     msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
             elif outfile is None:
-                output = file('ophis.bin', 'wb')
+                output = open('ophis.bin', 'wb')
             else:
-                output = file(outfile, 'wb')
-            output.write("".join(map(chr, a.output)))
+                output = open(outfile, 'wb')
+            output.write(bytes(a.output))
             output.flush()
             if outfile != '-':
                 output.close()
             return 0
         except IOError:
-            print>>sys.stderr, "Could not write to " + outfile
+            print("Could not write to " + outfile, file=sys.stderr)
             return 1
     else:
         Err.report()

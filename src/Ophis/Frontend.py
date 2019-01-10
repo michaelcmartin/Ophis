@@ -70,7 +70,7 @@ def lex(point, line):
             return
         elif firstchar in bases:
             try:
-                result.append(Lexeme("NUM", long(rest, bases[firstchar][1])))
+                result.append(Lexeme("NUM", int(rest, bases[firstchar][1])))
                 return
             except ValueError:
                 Err.log('Invalid ' + bases[firstchar][0] + ' constant: ' +
@@ -79,7 +79,7 @@ def lex(point, line):
                 return
         elif firstchar.isdigit():
             try:
-                result.append(Lexeme("NUM", long(token)))
+                result.append(Lexeme("NUM", int(token)))
             except ValueError:
                 Err.log('Identifiers may not begin with a number')
                 result.append(Lexeme("LABEL", "ERROR"))
@@ -403,19 +403,19 @@ def parse_file(ppt, filename, load_once=False):
                                                     filename))
         if load_once and filename in loadedfiles:
             if Cmd.print_loaded_files:
-                print>>sys.stderr, "Skipping " + filename
+                print("Skipping " + filename, file=sys.stderr)
             return IR.NullNode
         loadedfiles[filename] = True
     if Cmd.print_loaded_files:
         if filename != '-':
-            print>>sys.stderr, "Loading " + filename
+            print("Loading " + filename, file=sys.stderr)
         else:
-            print>>sys.stderr, "Loading from standard input"
+            print("Loading from standard input", file=sys.stderr)
     try:
         if filename != '-':
             if context_directory is not None:
                 filename = os.path.join(context_directory, filename)
-            f = file(filename)
+            f = open(filename, "rt")
             linelist = f.readlines()
             f.close()
             context_directory = os.path.abspath(os.path.dirname(filename))
@@ -423,8 +423,8 @@ def parse_file(ppt, filename, load_once=False):
             context_directory = os.getcwd()
             linelist = sys.stdin.readlines()
         pptlist = ["%s:%d" % (filename, i + 1) for i in range(len(linelist))]
-        lexlist = map(lex, pptlist, linelist)
-        IRlist = map(parse_line, pptlist, lexlist)
+        lexlist = list(map(lex, pptlist, linelist))
+        IRlist = list(map(parse_line, pptlist, lexlist))
         IRlist = [node for node in IRlist if node is not IR.NullNode]
         context_directory = old_context
         return IR.SequenceNode(ppt, IRlist)

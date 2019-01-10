@@ -179,7 +179,7 @@ class SequenceExpr(Expr):
         return True
 
     def value(self, env=None):
-        subs = map((lambda x: x.value(env)), self.operands)
+        subs = list(map((lambda x: x.value(env)), self.operands))
         result = subs[0]
         index = 1
         for op in self.operators:
