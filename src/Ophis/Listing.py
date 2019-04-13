@@ -40,7 +40,7 @@ class Listing(object):
         if self.filename == "-":
             out = sys.stdout
         else:
-            out = file(self.filename, "w")
+            out = open(self.filename, "wt")
         for x in self.listing:
             if type(x) is str:
                 print(x, file=out)
@@ -118,7 +118,7 @@ class LabelMapper(object):
         if self.filename == "-":
             out = sys.stdout
         else:
-            out = file(self.filename, "w")
+            out = open(self.filename, "wt")
         maxlabellen = 0
         self.labeldata.sort()
         for (loc, label, srcloc) in self.labeldata:
