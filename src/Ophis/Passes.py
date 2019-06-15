@@ -12,7 +12,6 @@
 # license: See README for details.
 
 import sys
-import traceback
 import Ophis.Errors as Err
 import Ophis.IR as IR
 import Ophis.Opcodes as Ops
