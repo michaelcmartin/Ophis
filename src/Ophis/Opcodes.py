@@ -292,7 +292,7 @@ c02extensions = {
                  'jmp': [None, None, None, None, None, None, 0x4C, None,
                          None, 0x6C, 0x7C, None, None, None, None, None, None, None, None, None, None],
                  'lda': [None, 0xA9, None, 0xA5, 0xB5, None, 0xAD, 0xBD,
-                         0xB9, None, None, None, None, None, 0xA1, 0xB1, None, 0xB2, None, None, None],
+                         0xB9, None, None, None, None, 0xB2, 0xA1, 0xB1, None, None, None, None, None],
                  'ora': [None, 0x09, None, 0x05, 0x15, None, 0x0D, 0x1D,
                          0x19, None, None, None, None, 0x12, 0x01, 0x11, None, None, None, None, None],
                  'phx': [0xDA, None, None, None, None, None, None, None,
