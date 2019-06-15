@@ -12,6 +12,7 @@
 # license: See README for details.
 
 import sys
+import traceback
 import Ophis.Errors as Err
 import Ophis.IR as IR
 import Ophis.Opcodes as Ops
@@ -275,6 +276,11 @@ class EasyModes(Pass):
             if not collapse_y(node, env):
                 node.nodetype = "AbsoluteY"
 
+    def visitMemoryZ(self, node, env):
+        if node.data[1].hardcoded:
+            if not collapse_z(node, env):
+                node.nodetype = "AbsoluteZ"
+
     def visitMemory2(self, node, env):
         node.nodetype = "ZPRelative"
 
@@ -371,6 +377,9 @@ class PCTracker(Pass):
     def visitAbsoluteY(self, node, env):
         env.incPC(3)
 
+    def visitAbsoluteZ(self, node, env):
+        env.incPC(3)
+
     def visitAbsIndX(self, node, env):
         env.incPC(3)
 
@@ -399,6 +408,9 @@ class PCTracker(Pass):
         env.incPC(3)
 
     def visitPointerY(self, node, env):
+        env.incPC(3)
+
+    def visitPointerZ(self, node, env):
         env.incPC(3)
 
     def visitCheckPC(self, node, env):
@@ -516,6 +528,15 @@ class Collapse(PCTracker):
                 return
         PCTracker.visitZeroPageY(self, node, env)
 
+    def visitZeroPageZ(self, node, env):
+        if node.data[1].value(env) >= 0x100:
+            if Ops.opcodes[node.data[0]][Ops.modes.index("Absolute, Z")] is not None:
+                node.nodetype = "AbsoluteZ"
+                PCTracker.visitAbsoluteZ(self, node, env)
+                self.changed = True
+                return
+        PCTracker.visitZeroPageZ(self, node, env)
+
 
 def collapse_no_index(node, env):
     """Transforms a Memory node into a ZeroPage one if possible.
@@ -543,6 +564,15 @@ def collapse_y(node, env):
     if node.data[1].value(env) < 0x100:
         if Ops.opcodes[node.data[0]][Ops.modes.index("Zero Page, Y")] is not None:
             node.nodetype = "ZeroPageY"
+            return True
+    return False
+
+def collapse_z(node, env):
+    """Transforms a MemoryZ node into a ZeroPageZ one if possible.
+    Returns boolean indicating whether or not it made the collapse."""
+    if node.data[1].value(env) < 0x100:
+        if Ops.opcodes[node.data[0]][Ops.modes.index("Zero Page, Z")] is not None:
+            node.nodetype = "ZeroPageZ"
             return True
     return False
 
@@ -714,6 +744,9 @@ class NormalizeModes(Pass):
 
     def visitMemoryY(self, node, env):
         node.nodetype = "AbsoluteY"
+
+    def visitMemoryZ(self, node, env):
+        node.nodetype = "AbsoluteZ"
 
     def visitPointer(self, node, env):
         node.nodetype = "Indirect"
@@ -954,6 +987,9 @@ class Assembler(Pass):
     def visitZeroPageY(self, node, env):
         self.assemble(node,  Ops.modes.index("Zero Page, Y"), env)
 
+    def visitZeroPageZ(self, node, env):
+        self.assemble(node,  Ops.modes.index("Zero Page, Z"), env)
+
     def visitAbsolute(self, node, env):
         self.assemble(node,  Ops.modes.index("Absolute"), env)
 
@@ -962,6 +998,9 @@ class Assembler(Pass):
 
     def visitAbsoluteY(self, node, env):
         self.assemble(node,  Ops.modes.index("Absolute, Y"), env)
+
+    def visitAbsoluteZ(self, node, env):
+        self.assemble(node,  Ops.modes.index("Absolute, Z"), env)
 
     def visitIndirect(self, node, env):
         self.assemble(node,  Ops.modes.index("(Absolute)"), env)
