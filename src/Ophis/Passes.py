@@ -474,6 +474,7 @@ class Collapse(PCTracker):
         PCTracker.visitMemoryY(self, node, env)
 
     def visitMemoryZ(self, node, env):
+        self.changed |= collapse_z(node, env)
         PCTracker.visitMemoryZ(self, node, env)
 
     def visitPointer(self, node, env):
@@ -487,6 +488,10 @@ class Collapse(PCTracker):
     def visitPointerY(self, node, env):
         self.changed |= collapse_y_ind(node, env)
         PCTracker.visitPointerY(self, node, env)
+
+    def visitPointerZ(self, node, env):
+        self.changed |= collapse_z_ind(node, env)
+        PCTracker.visitPointerZ(self, node, env)
 
     # Previously zero-paged elements may end up un-zero-paged by
     # the branch extension pass. Force them to Absolute equivalents
@@ -621,6 +626,9 @@ def collapse_z_ind(node, env):
         if Ops.opcodes[node.data[0]][Ops.modes.index("(Zero Page), Z")] is not None:
             node.nodetype = "IndirectZ"
             return True
+    else:
+        print("Value too big for (ZP),Z",file=sys.stderr)
+ 
     return False
 
 
