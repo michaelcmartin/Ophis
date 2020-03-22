@@ -41,6 +41,7 @@ class Listing(object):
         filelines = {}
         prevline = None
         prevfile = None
+        prevrow = None
         if self.filename == "-":
             out = sys.stdout
         else:
@@ -49,6 +50,7 @@ class Listing(object):
             if type(x) is str:
                 print(x, file=out)
             elif type(x) is list:
+                prevrow = None
                 curline = x[0].split('->')[0]
                 curfile, curln = curline.split(':')
                 curln = int(curln)
@@ -64,19 +66,31 @@ class Listing(object):
                 if not prevfile == curfile:
                     prevfile = curfile  
                     print("Source file: %s" % curfile, file=out)
-                srcline = filelines['curfile'][curln - 1]
+                srcline = filelines['curfile'][curln - 1].strip()
                 if prevline == curline:
                     print("%-32s" % (x[1]), file=out)
                 else:
                     prevline = curline
-                    print("%-32s %5d  %s" % (x[1], curln, srcline.strip()), file=out)
+                    print("%-32s %5d  %s" % (x[1], curln, srcline), file=out)
             elif type(x) is tuple:
+                prevline = None
                 i = 0
                 pc = x[0]
+                dupestring = None
+                prevrow = None
                 while True:
                     row = x[1][i:i + 16]
                     if row == []:
                         break
+                    if prevrow == row:
+                        i += 16
+                        if not dupestring:
+                            dupestring = "   . . ."
+                            print(dupestring, file=out)
+                        continue
+                    else:
+                        dupestring = None
+                        prevrow = row
                     dataline = " %04X " % (pc + i)
                     dataline += (" %02X" * len(row)) % tuple(row)
                     charline = ""
