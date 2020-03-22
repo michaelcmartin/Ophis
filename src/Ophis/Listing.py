@@ -37,6 +37,10 @@ class Listing(object):
         self.listing[-1][1].extend(vals)
 
     def dump(self):
+        openfiles = []
+        filelines = {}
+        prevline = None
+        prevfile = None
         if self.filename == "-":
             out = sys.stdout
         else:
@@ -44,6 +48,28 @@ class Listing(object):
         for x in self.listing:
             if type(x) is str:
                 print(x, file=out)
+            elif type(x) is list:
+                curline = x[0].split('->')[0]
+                curfile, curln = curline.split(':')
+                curln = int(curln)
+                if not curfile in openfiles:
+                    openfiles.append(curfile)
+                    with open(curfile, 'rt') as f:
+                        filelines['curfile'] = f.read().splitlines()
+                    #print("=== %s" % curfile)
+                    #lnum = 0
+                    #for fileline in filelines['curfile']:
+                    #    lnum += 1
+                    #    print("%4d %s" % (lnum, fileline))
+                if not prevfile == curfile:
+                    prevfile = curfile  
+                    print("Source file: %s" % curfile, file=out)
+                srcline = filelines['curfile'][curln - 1]
+                if prevline == curline:
+                    print("%-32s" % (x[1]), file=out)
+                else:
+                    prevline = curline
+                    print("%-32s %5d  %s" % (x[1], curln, srcline.strip()), file=out)
             elif type(x) is tuple:
                 i = 0
                 pc = x[0]
