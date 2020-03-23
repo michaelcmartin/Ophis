@@ -58,11 +58,6 @@ class Listing(object):
                     openfiles.append(curfile)
                     with open(curfile, 'rt') as f:
                         filelines['curfile'] = f.read().splitlines()
-                    #print("=== %s" % curfile)
-                    #lnum = 0
-                    #for fileline in filelines['curfile']:
-                    #    lnum += 1
-                    #    print("%4d %s" % (lnum, fileline))
                 if not prevfile == curfile:
                     prevfile = curfile  
                     print("Source file: %s" % curfile, file=out)
