@@ -929,10 +929,10 @@ class Assembler(Pass):
                 self.outputbyte(expr, env, inst_bytes)
             elif arglen == 2:
                 self.outputword(expr, env, inst_bytes)
-        self.listing.listInstruction(self.listing_string(env.getPC(),
+        self.listing.listInstruction([node.ppt, self.listing_string(env.getPC(),
                                                          inst_bytes,
                                                          mode, opcode,
-                                                         val1, val2))
+                                                         val1, val2)])
         env.incPC(1 + arglen)
         self.code += 1 + arglen
 
