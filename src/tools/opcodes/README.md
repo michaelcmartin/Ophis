@@ -1,0 +1,5 @@
+This directory holds the definitive instruction lists for all supported architectures. The `gensets.py` program generates the Opcodes file from the text files here. To fix bugs or gaps in the ISAs, or to introduce new ones, edit or extend this directory in preference to directly updating `Opcodes.py`.
+
+The opcode information for the 6502 and 65c02 match the information in the reference manual _Programming the 65816: Including the 6502, 65C02 and 65802_ by David Eyes and Ron Lichty. The opcode information for the 4502 largely matches version 0.9 of Michael Steil's _Commodore Semiconductor Group CSG65CE02 Technical Reference,_ with the exception of the `INW` and `DEW` instructions, which are incorrectly or inconsistently marked as Absolute mode instructions. They are currently understood by C65-related project workers as being Zero Page. This includes the 65CE02 docs included with the VICE project.
+
+The "Undocumented 6510 Opcodes" match the descriptions and usage in the documentation for the VICE emulator, which also seem to follow traditional practice.

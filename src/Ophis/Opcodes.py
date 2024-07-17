@@ -359,7 +359,7 @@ csg4502extensions = {
                              0x79, None, None, None, None, None, 0x61, 0x71, None, 0x72, None, None, None],
                      'and': [None, 0x29, None, 0x25, 0x35, None, 0x2D, 0x3D,
                              0x39, None, None, None, None, None, 0x21, 0x31, None, 0x32, None, None, None],
-                     'asr': [0x43, None, None, None, 0x54, None, None, None,
+                     'asr': [0x43, None, None, 0x44, 0x54, None, None, None,
                              None, None, None, None, None, None, None, None, None, None, None, None, None],
                      'asw': [None, None, None, None, None, None, 0xCB, None,
                              None, None, None, None, None, None, None, None, None, None, None, None, None],

@@ -66,7 +66,7 @@
   41: EOR - (Zero Page, X)
   42: NEG - Implied
   43: ASR - Implied
-  44: ASR Zero Page
+  44: ASR - Zero Page
   45: EOR - Zero Page
   46: LSR - Zero Page
   47: RMB4 - Zero Page
@@ -193,7 +193,7 @@
   C0: CPY - Immediate
   C1: CMP - (Zero Page, X)
   C2: CPZ - Immediate
-  C3: DEW - Zero Page
+  C3: DEW - Zero Page              # Docs inconsistent on mode
   C4: CPY - Zero Page
   C5: CMP - Zero Page
   C6: DEC - Zero Page
@@ -225,7 +225,7 @@
   E0: CPX - Immediate
   E1: SBC - (Zero Page, X)
   E2: LDA - (Zero Page, SP), Y
-  E3: INW - Zero Page 
+  E3: INW - Zero Page              # Docs incorrectly call this Absolute
   E4: CPX - Zero Page
   E5: SBC - Zero Page
   E6: INC - Zero Page
