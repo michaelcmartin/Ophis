@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 
-verbose = 0
+verbose = False
 
 prologue = '"""' + """Opcodes file.
 
@@ -94,6 +94,8 @@ def parse_chipset_file(fname):
                 op = int(l[0], 16)
                 syns = l[1].split(';')
                 for s in syns:
+                    if s.strip() == "":
+                        continue
                     s_p = s.split('-')
                     if len(s_p) == 2:
                         mnem = s_p[0].lower().strip()
@@ -103,9 +105,11 @@ def parse_chipset_file(fname):
                                 result[op] = []
                             result[op].append((mnem, flatmodes.index(mode)))
                         else:
-                            print("Unknown mode '%s'" % s_p[1])
+                            print(f"Unknown mode \"{s_p[1]}\"", file=sys.stderr)
+                    else:
+                        print(f"Malformed instruction \"{s}\"", file=sys.stderr)
             except ValueError:
-                print("Illegal opcode '%s'" % l[0])
+                print(f"Illegal opcode \"{l[0]}\"", file=sys.stderr)
     return result
 
 
@@ -118,7 +122,7 @@ def collate_chipset_map(cs_list, base):
                 if mnem not in result:
                     result[mnem] = [None] * len(modes)
                 if result[mnem][mode] is not None:
-                    print("Warning: Reassigning %s - %s" % (mnem, modes[mode]))
+                    print(f"Warning: Reassigning {mnem} - {modes[mode]}", file=sys.stderr)
                 result[mnem][mode] = opcode
     if base is not None:
         todel = []
@@ -127,9 +131,9 @@ def collate_chipset_map(cs_list, base):
                 if result[x] == base[x]:
                     todel.append(x)
                 elif verbose != 0:
-                    print("# Opcode %s changed" % x)
+                    print(f"# Opcode {x} changed")
             elif verbose != 0:
-                print("# Opcode %s added" % x)
+                print(f"# Opcode {x} added")
         for x in todel:
             del result[x]
     return result
@@ -161,15 +165,14 @@ if __name__ == '__main__':
     archs = []
     for x in chipsets:
         try:
-            ls = [[x.strip() for x in y]
-                  for y in [z.split(':', 1) for z in decomment_readlines(x)]]
-            for l in ls:
+            for line in decomment_readlines(x):
+                l = [x.strip() for x in line.split(":", 1)]
                 if len(l) != 2:
-                    print("Could not parse the chipset line '%s'" % ":".join(l))
+                    print(f"Could not parse the chipset line \"{line}\"" , file=sys.stderr)
                 else:
                     archs.append((l[0], l[1]))
         except IOError:
-            print("Could not read file %s" % x)
+            print(f"Could not read file {x}", file=sys.stderr)
     print(prologue)
     baseset = None
     for (field, fname) in archs:
