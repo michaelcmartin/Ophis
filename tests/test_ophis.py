@@ -401,6 +401,10 @@ def test_subfiles():
                 '.charmap\n'
                 '.byte "hELLO, wORLD!",10\n',
                 b"Hello, World!\nhELLO, wORLD!\n")
+    test_string(".charmap (multi-arg)",
+                '.charmap \'A, "abcdefghijklmnopqrstuvwxyz"\n'
+                '.charmap \'a, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\n'
+                '.byte "hELLO, ", "wORLD!",10\n', b"Hello, World!\n")
     test_string(".charmap (out of range)",
                 '.charmap 250, "ABCDEFGHIJKLM"\n.byte 250,251',
                 b'')

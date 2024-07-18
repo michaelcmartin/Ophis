@@ -122,7 +122,7 @@ def pragmaCharmap(ppt, line, result):
     if str(line.lookahead(0)) == "EOL":
         currentcharmap = basecharmap
     else:
-        bytes = readData(line)
+        bytes = readRawData(line)
         try:
             base = bytes[0].data
             newsubstr = "".join([chr(x.data) for x in bytes[1:]])
@@ -254,8 +254,26 @@ def pragmaCbmfloat(ppt, line, result):
     result.append(IR.Node(ppt, "Byte", *bytes))
 
 
-def readData(line):
+def readRawData(line):
     "Read raw data from a comma-separated list"
+    if line.lookahead(0).type == "STRING":
+        data = [IR.ConstantExpr(ord(x))
+                for x in line.expect("STRING").value]
+    else:
+        data = [FE.parse_expr(line)]
+    next = line.expect(',', 'EOL').type
+    while next == ',':
+        if line.lookahead(0).type == "STRING":
+            data.extend([IR.ConstantExpr(ord(x))
+                         for x in line.expect("STRING").value])
+        else:
+            data.append(FE.parse_expr(line))
+        next = line.expect(',', 'EOL').type
+    return data
+
+
+def readData(line):
+    "Read charmap-translated data from a comma-separated list"
     if line.lookahead(0).type == "STRING":
         data = [IR.ConstantExpr(ord(x))
                 for x in line.expect("STRING").value.translate(currentcharmap)]
@@ -265,7 +283,7 @@ def readData(line):
     while next == ',':
         if line.lookahead(0).type == "STRING":
             data.extend([IR.ConstantExpr(ord(x))
-                         for x in line.expect("STRING").value])
+                         for x in line.expect("STRING").value.translate(currentcharmap)])
         else:
             data.append(FE.parse_expr(line))
         next = line.expect(',', 'EOL').type
@@ -332,5 +350,5 @@ def pragmaInvoke(ppt, line, result):
     if line.lookahead(0).type == "EOL":
         args = []
     else:
-        args = readData(line)
+        args = readRawData(line)
     result.append(IR.Node(ppt, "MacroInvoke", macro, *args))
