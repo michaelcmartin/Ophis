@@ -2,7 +2,7 @@
 
 import optparse
 
-# Copyright 2002-2014 Michael C. Martin and additional contributors.
+# Copyright 2002-2024 Michael C. Martin and additional contributors.
 # You may use, modify, and distribute this file under the MIT
 # license: See README for details.
 

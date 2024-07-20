@@ -1,0 +1,7 @@
+include tests/*.oph
+include tests/*.bin
+include tests/*.py
+include tests/sub/*.oph
+include tests/sub/sub/*.oph
+graft examples
+graft platform

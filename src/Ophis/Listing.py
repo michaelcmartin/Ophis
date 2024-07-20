@@ -4,7 +4,7 @@
     traditional to mix binary with reconstructed instructions that
     have all arguments precomputed. This class manages that."""
 
-# Copyright 2002-2014 Michael C. Martin and additional contributors.
+# Copyright 2002-2024 Michael C. Martin and additional contributors.
 # You may use, modify, and distribute this file under the MIT
 # license: See README for details.
 

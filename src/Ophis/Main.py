@@ -3,7 +3,7 @@
     When invoked as main, interprets its command line and goes from there.
     Otherwise, use run_ophis(cmdline-list) to use it inside a script."""
 
-# Copyright 2002-2014 Michael C. Martin and additional contributors.
+# Copyright 2002-2024 Michael C. Martin and additional contributors.
 # You may use, modify, and distribute this file under the MIT
 # license: See README for details.
 
@@ -109,7 +109,3 @@ def run_ophis(args):
 
     Ophis.CorePragmas.reset()
     return run_all()
-
-
-if __name__ == '__main__':
-    sys.exit(run_ophis(sys.argv[1:]))

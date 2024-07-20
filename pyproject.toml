@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ophis-asm"
+version = "2.2.0"
+authors = [
+  { name="Michael Martin", email="mcmartin@gmail.com" },
+]
+description = "A cross-assembler for the 6502 series of chips"
+readme = "README"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Assemblers"
+]
+dependencies = []
+
+[project.scripts]
+ophis = "Ophis:ophis_argv"
+
+[tool.setuptools.package-dir]
+Ophis = "src/Ophis"

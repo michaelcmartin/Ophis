@@ -8,7 +8,7 @@ prologue = '"""' + """Opcodes file.
     Tables for the assembly of 6502-family instructions, mapping
     opcodes and addressing modes to binary instructions.""" + '"""' + """
 
-# Copyright 2002-2014 Michael C. Martin and additional contributors.
+# Copyright 2002-2024 Michael C. Martin and additional contributors.
 # You may use, modify, and distribute this file under the MIT
 # license: See README for details.
 
