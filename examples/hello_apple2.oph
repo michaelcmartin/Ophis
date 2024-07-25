@@ -1,0 +1,31 @@
+;;; ----------------------------------------------------------------------
+;;;  HELLO WORLD for the Apple II
+;;;  This is a ProDOS 8 program. Its output should be importable by
+;;;  CiderPress without incident.
+;;; ----------------------------------------------------------------------
+
+	.outfile "HI.SYSTEM#ff2000"
+	.org	$2000
+
+	;; Write message
+	ldx	#$00
+*	lda	msg,x
+	beq	wait
+	ora	#$80			; Disable inverse
+	jsr	$fded			; CHROUT
+	inx
+	bne	-
+
+	;; Wait for keypress
+wait:	bit	$c000			; Check keypress bit
+	bpl	wait
+	bit	$c010			; Acknowledge keypress
+
+	;; Return to ProDOS
+	jsr	$bf00
+	.byte	$65
+	.word	+
+	brk				; Unreachable
+*	.byte 4, 0, 0, 0, 0, 0, 0
+
+msg:	.byte "HELLO, WORLD!",13,"PRESS ANY KEY TO EXIT",0

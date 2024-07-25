@@ -110,8 +110,8 @@ _done:  rts
   </table>
   <para>
     Note that brackets, not parentheses, are used to group arithmetic
-    operations.  This is because parentheses are used for the indirect
-    addressing modes, and it makes parsing much easier.
+    operations.  Parentheses are reserved for the indirect addressing
+    modes.
   </para>
 
   <para>

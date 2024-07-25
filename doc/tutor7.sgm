@@ -130,7 +130,7 @@ _done:  rts
 
 <programlisting>
 .data zp
-.checkpc $80
+.checkpc $90
 </programlisting>
 
     <para>

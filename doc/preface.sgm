@@ -6,7 +6,7 @@
     consoles. Its primary design goals are code readability and output
     flexibility - Ophis has successfully been used to create programs
     for the Nintendo Entertainment System, the Atari 2600, and various
-    8-bit Commodore machines.
+    8-bit Commodore and Apple machines.
   </para>
   <para>
     Ophis's syntax is noticably different from the formats
@@ -39,20 +39,20 @@
       cross-assembler for the 6502 chip the C64 used in both.
     </para>
     <para>
-      The Perl one&mdash;uncreatively
-      dubbed <quote>Perl65</quote>&mdash;was quickly abandoned, but
-      the Python one saw more work. When it came time to name it, one
-      of the things I had been hoping to do with the assembler was to
+      The Perl one&mdash;uncreatively dubbed
+      <quote>Perl65</quote>&mdash;was quickly abandoned, but the
+      Python one saw more work. When it came time to name it, one of
+      the things I had been hoping to do with the assembler was to
       produce working Apple II programs.  <quote>Ophis</quote> is
       Greek for <quote>snake</quote>, and a number of traditions also
       use it as the actual <emphasis>name</emphasis> of the serpent in
       the Garden of Eden.  So, Pythons, snakes, and stories involving
       really old Apples all combined to name the
       assembler.<footnote><para>Ironically, cross-platform development
-      for the Apple II is extremely difficult, and while Ophis has
-      been very successfully used to develop code for the Commodore
-      64, Nintendo Entertainment System, and Atari 2600, it has yet to
-      actually be deployed on any of the Apples which inspired its
+      for the Apple II is much less straightforward than for the
+      Commodore 8-bits or ROM-based consoles, and it took many years
+      after its release before it was actually used to write code
+      deployed on any of the Apples which inspired its
       name.</para></footnote>
     </para>
     <para>
@@ -68,18 +68,38 @@
     </para>
     <para>
       After its release Ophis 2 was picked up by a number of
-      developers work with actual hardware from the period, including
-      prototype machines that never saw production. Some of their
-      contributions have refined the code generators for version 2.1.
+      developers working with actual hardware from the period,
+      including prototype machines that never saw production. Some
+      of their contributions have refined the code generators for
+      version 2.1.
     </para>
     <para>
-      This is an updated edition of <emphasis>Programming With
-      Ophis</emphasis>, including documentation for all new features
-      introduced and expanding the examples to include simple
-      demonstration programs for platforms besides the Commodore
-      64. It also includes updated versions of the <emphasis>To HLL
-      and Back</emphasis> essays I wrote using Ophis and Perl65 as
-      example languages.
+      At that point, the program was basically done, and very little
+      changes for about five years. The world, however, moved on, and
+      Python 2, my implementation language, was deprecated and
+      rendered obsolete. That didn't change much about the 2.1
+      release&mdash;Python 2 was still installed on non-Windows
+      machines by default, and the Windows distribution was as a
+      bundled .EXE file&mdash;but it threatened the viability of the
+      program overall. In 2019, then, I converted the source base to
+      the backwards-incompatible Python 3, in the hopes of
+      future-proofing the system. Five years after
+      <emphasis>that</emphasis>, enough bug reports and bug fixes had
+      trickled in to justify a fresh release, and 2.2 was published in
+      2024&mdash;a lightly polished update that now fit more neatly
+      into the Python toolchains of the 2020s.
+    </para>
+    <para>
+      In the twenty years since I first started this project, I've
+      gained quite a bit more experience with programming the computer
+      systems of the 1970s and 1980s. I have left this manual largely
+      as it was in its 2014 edition, including its versions of the
+      <emphasis>To HLL and Back</emphasis> essays I wrote using Ophis
+      and Perl65 as example languages. I don't think I stand behind my
+      design decisions back then as firmly as I did when I wrote those
+      essays, but there's noting <emphasis>wrong</emphasis> with them
+      either so I'm happy to leave them as a testament to my younger,
+      brasher self.
     </para>
   </section>
 

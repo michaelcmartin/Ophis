@@ -1,5 +1,5 @@
 <chapter>
-  <title>Platform-Specific Techniques</title>
+  <title>Included Platform Support</title>
 
   <para>
     Ophis is intended to produce cross-assembled binaries that will
@@ -18,9 +18,7 @@
       In a real sense, the Commodore 64 is the &quot;native&quot;
       target platform for Ophis. It was the first platform targeted
       and it's the one that has received the most additional
-      support. It's also one where the developer needs to take the
-      most care about exactly what kind of program they are
-      writing.
+      support.
     </para>
 
     <itemizedlist>
@@ -166,27 +164,33 @@
     <title>The Nintendo Entertainment System</title>
 
     <para>
-      The NES development community is somewhat more fragmented than
-      the others. A skeletal <literal>nes.oph</literal> file is
-      provided, but memory locations are not as consistently
-      named. Much sample code doesn't provide aliases for control
-      registers at all.
+      The NES development community in 2024 has standardized on the
+      sophisticated <literal>ca65</literal> assembler for major
+      homebrew projects, but Ophis's simpler output model has
+      advantages of its own. A skeletal <literal>nes.oph</literal>
+      file is provided in the platform support directory, but most
+      NES code you'll find in the wild doesn't use aliases for control
+      registers at all&mdash;it just sticks with the register numbers.
     </para>
 
     <para>
-      Conveniently creating runnable NES programs is somewhat
-      involved. Any given product was generally burned onto several
-      chips that were affixed to one of a large number of circuit
-      boards. These are often referred to as &quot;mappers&quot; by
-      developers because their effect is to implement various
-      bankswitching schemes. The result is a program built out of
-      parts, each with its own origin. A &quot;Hello World&quot;
-      sample program ships with Ophis. It does not use a bankswitcher,
-      but it does split its contents into a program chip and a
-      graphics chip, with one of two wrapper files to knit them
-      together into a file that other software will recognize. Samples
-      are given for the common iNES format and the defunct UNIF
-      format.
+      Creating output files that emulators or other tools will
+      recognize as complete NES programs is somewhat involved.
+      Any given product was generally one of a large selection of
+      circuit boards with several ROM or support-logic chips 
+      affixed to it. These circuit board configurations are generally
+      referred to as &quot;mappers&quot; by developers because their
+      effect is to implement various bankswitching schemes. The result
+      is a program built out of parts, each with its own origin.
+      A simple <quote>Hello World</quote> sample program ships with
+      Ophis. It is configured to use "Mapper Zero", or a simulation of
+      the <quote>NROM</quote> circuit board, which had no special
+      bankswitching logic and simply wired the program chip and the
+      graphics chip directly into the address bus. The sample code
+      includes one source file for each chip, and then two wrapper
+      files to knit them together into a file that other software will
+      recognize. As of 2024, the UNIF format is entirely abandoned in
+      favor of the backwards-compatible iNES 2.0 format.
     </para>
   </section>
 
@@ -194,18 +198,66 @@
     <title>The Atari 2600 VCS</title>
 
     <para>
-      Of all the 8-bit development communities, the Atari developers
-      seem to be the most cohesive. The development documents
-      available are universal, and analysts and developers alike all
-      use the register names in the <emphasis>Stella Developer's
-      Guide</emphasis>. Ophis follows their lead, providing these
-      names in the header <literal>stella.oph</literal>.
+      Ophis provides a <literal>stella.oph</literal> header that names
+      the system's registers to match the documentation in
+      the <emphasis>Stella Programmer's Guide</emphasis>. It also
+      replicates two macros that were widely shared on mailing lists
+      and other tutorial documents at the time Ophis was first
+      released. See the file itself for details.
     </para>
 
     <para>
-      The <literal>stella.oph</literal> header also replicates two
-      macros that appear in the header files distributed to budding
-      VCS developers. They are documented in the file.
+      Atari 2600 ROM images are simple ROM dumps and do not require
+      any more sophisticated organization in the Ophis source files
+      than an <literal>.advance</literal> directive to pad the output
+      to the appropriate size.
+    </para>
+
+    <para>
+      Two sample programs ship with Ophis 2.2; a tiny hello-world
+      program, and a more sophisticated interactive program that
+      explores the system's color palette.
+    </para>
+  </section>
+
+  <section>
+    <title>Other Atari 8-bits</title>
+
+    <para>
+      The Atari 2600's successor, the Atari 5200, shares much of its
+      architecture with the Atari 400/800/1200/XL/XE line. Atari DOS
+      had an executable format that divided itself up into chunks that
+      were independently loaded, with some chunks being special and
+      identifying program entry points or intervening processing to be
+      done mid-load.
+    </para>
+
+    <para>
+      A simple Hello World program compatible with Atari DOS is
+      included in the examples directory. The output file may be
+      loaded and run directly in many emulators, or may be copied
+      into a disk image with a tool like <literal>atr</literal> or
+      Altirra and executed from the DOS prompt.
+    </para>
+  </section>
+
+  <section>
+    <title>The Apple II series</title>
+
+    <para>
+      For most of its lifespan, Apple II systems ran either a
+      primitive system named "DOS 3.3" or more sophisticated one
+      named ProDOS. ProDOS 8 is as of 2024 still under active
+      development, and its superior support for machine-language
+      interfacing with the disk drive makes it the preferable
+      choice for Ophis-based development.
+    </para>
+
+    <para>
+      A simple Hello World program is included in the examples
+      directory. To actually run the resulting binary, it must be
+      added to a ProDOS-formatted disk using a tool such as CADIUS
+      or CiderPress.
     </para>
   </section>
 </chapter>

@@ -708,7 +708,7 @@ _done:  rts
 .checkpc $D000
 
 .data zp
-.checkpc $80
+.checkpc $90
 </programlisting>
   </section>
   <section id="structure-src">

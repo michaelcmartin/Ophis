@@ -1,9 +1,9 @@
-"Hi Stella" is a simple "Hello World" program for the "Stella" chip,
-more famously known as the Atari 2600. Simply running
+"Hi Stella" is a simple "Hello World" program for the "Stella"
+system, more famously known as the Atari 2600. Simply running
 
 ophis hi_stella.oph
 
-should produce hi_stella.bin, a 256-byte file that prints "HI" on
+should produce hi_stella.bin, a simple demo that prints "HI" on
 the screen with some rolling color bars.
 
 A more sophisticated program is colortest, which lets the user

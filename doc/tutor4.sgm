@@ -104,4 +104,12 @@ target10: .byte "Universe", 0
     provided with the sample programs
     as <filename>petscii.map</filename>.
   </para>
+
+  <para>
+    Versions of Ophis prior to 2.2 have a bug where only the first
+    argument to <literal>.byte</literal> would be translated. That's
+    fine for our example code here, with only one string per line, but
+    a more text-heavy title that relied on this should confirm their
+    version before getting too far in.
+  </para>
 </chapter>

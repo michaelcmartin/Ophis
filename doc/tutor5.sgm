@@ -91,7 +91,11 @@ delay:  sta _tmp        ; save argument (rdtim destroys it)
     using are <literal>.org</literal> and <literal>.space</literal>
     commands.  Ophis will not complain if you
     use <literal>.space</literal> inside a <literal>.text</literal>
-    segment, but this is nearly always wrong.
+    segment, but this is nearly always wrong. Remember,
+    both <literal>.org</literal> and <literal>.space</literal> only
+    ever alter the way that Ophis computes labels. They do not output
+    any bytes, nor do they change where in the output file the bytes
+    are actually written.
   </para>
 
   <para>

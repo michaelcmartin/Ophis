@@ -58,11 +58,11 @@
 
     <para>
       We <userinput>SAVE</userinput> this program to a file, then
-      study it in a debugger.  It's 15 bytes long:
+      study it with a hex dumper.  It's 15 bytes long:
     </para>
 
     <screen>
-1070:0100  01 08 0C 08 0A 00 9E 20-32 30 36 34 00 00 00
+00000000  01 08 0c 08 0a 00 9e 20  32 30 36 34 00 00 00     |....... 2064...|
     </screen>
 
     <para>
@@ -72,29 +72,32 @@
 
     <table frame="all">
       <title>BASIC program breakdown</title>
-      <tgroup cols='2'>
+      <tgroup cols='3'>
         <thead>
           <row>
+            <entry align="center">File Offsets</entry>
             <entry align="center">Memory Locations</entry>
             <entry align="center">Value</entry>
           </row>
         </thead>
         <tbody>
-          <row><entry>$0801-$0802</entry><entry>2-byte pointer to the next line of BASIC code ($080C).</entry></row>
-          <row><entry>$0803-$0804</entry><entry>2-byte line number ($000A = 10).</entry></row>
-          <row><entry>$0805</entry><entry>Byte code for the <userinput>SYS</userinput> command.</entry></row>
-          <row><entry>$0806-$080A</entry><entry>The rest of the line, which is just the string <quote> 2064</quote>.</entry></row>
-          <row><entry>$080B</entry><entry>Null byte, terminating the line.</entry></row>
-          <row><entry>$080C-$080D</entry><entry>2-byte pointer to the next line of BASIC code ($0000 = end of program).</entry></row>
+          <row><entry>0-1</entry><entry>Nowhere</entry><entry>2-byte pointer to where in memory to load the rest of the file ($0801).</entry></row>
+          <row><entry>2-3</entry><entry>$0801-$0802</entry><entry>2-byte pointer to the next line of BASIC code ($080C).</entry></row>
+          <row><entry>4-5</entry><entry>$0803-$0804</entry><entry>2-byte line number ($000A = 10).</entry></row>
+          <row><entry>6</entry><entry>$0805</entry><entry>Byte code for the <userinput>SYS</userinput> command.</entry></row>
+          <row><entry>7-11</entry><entry>$0806-$080A</entry><entry>The rest of the line, which is just the string <quote> 2064</quote>.</entry></row>
+          <row><entry>12</entry><entry>$080B</entry><entry>Null byte, terminating the line.</entry></row>
+          <row><entry>13-14</entry><entry>$080C-$080D</entry><entry>2-byte pointer to the next line of BASIC code ($0000 = end of program).</entry></row>
         </tbody>
       </tgroup>
     </table>
 
     <para>
-      That's 13 bytes.  We started at 2049, so we need 2 more bytes of
-      filler to make our code actually start at location 2064.  These
-      17 bytes will give us the file format and the BASIC code we need
-      to have our machine language program run.
+      That's 15 bytes, of which 13 are actually loaded into memory.
+      We started at 2049, so we need 2 more bytes of filler to make
+      our code actually start at location 2064.  These 17 bytes will
+      give us the file format and the BASIC code we need to have our
+      machine language program run.
     </para>
 
     <para>
@@ -175,6 +178,16 @@ next:   .word 0              ; End of program
           to the end of the line is ignored.
         </para></listitem>
       </itemizedlist>
+    </para>
+
+    <para>
+      We can do better still, though. That initial starting address
+      of 2064 was only ever a guess; now that we know that we overshot
+      by two bytes, we can simply change the starting address to 2062
+      and omit the <literal>.advance</literal> directive entirely. In
+      fact, we can even remove the space before the number and make it
+      2061 instead&mdash;BASIC doesn't need that space in its
+      instruction and it's arguably a wasted byte.
     </para>
   </section>
 

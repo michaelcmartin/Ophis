@@ -94,4 +94,4 @@ _done:	rts
 .checkpc $D000
 
 .data zp
-.checkpc $80
+.checkpc $90

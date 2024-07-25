@@ -24,7 +24,8 @@
     <para>
       A related directive, <literal>.require</literal>, will include
       the file as long as it hasn't been included yet elsewhere.  It
-      is useful for ensuring a library is linked in.
+      is useful for ensuring a library is present somewhere in the
+      final code.
     </para>
 
     <para>
@@ -131,11 +132,6 @@ _done:
     </section>
     <section>
       <title>Macro invocations</title>
-
-      <para>
-        Macros may be invoked in two ways: one that looks like a
-        directive, and one that looks like an instruction.
-      </para>
 
       <para>
         The most common way to invoke a macro is to backquote the name

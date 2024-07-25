@@ -1,0 +1,34 @@
+	.outfile "hello.obj"
+	.word	$ffff			; Binary file
+	.word	start			; start of code
+	.word	end-1			; end of code
+
+	.org	$0600			; Load into page 6
+
+	;; `iostob OFFSET, VALUE
+	;; `iostow OFFSET, VALUE
+	;; Store value in OFFSET in I/O control block X>>4.
+.macro	iostob
+	lda	#_2
+	sta	$340+_1,x
+.macend
+
+.macro	iostow
+	`iostob	_1,<_2
+	`iostob	_1+1,>_2
+.macend
+
+start:	ldx	#$00			; Channel 0 (E:)
+
+	;; Write message with one I/O call, and exit
+	`iostob	2,11			; WRITE command
+	`iostow	4,msg			; buffer pointer
+	`iostow	8,msgend-msg		; buffer length
+	jmp	$e456			; Do I/O call and quit
+
+msg:	.byte	"Hello, world!",$9b
+msgend:					; End of message
+end:					; End of code block
+
+	;; Autostart at start
+	.word	$02e0,$02e1,start

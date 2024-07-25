@@ -25,9 +25,9 @@
     </para>
 
     <para>
-      We can thus rewrite our header data using temporary labels, thus
-      allowing the main program to have a label
-      named <literal>next</literal> if it wants.
+      We can rewrite our header data using temporary labels, allowing
+      the main program to have a label named <literal>next</literal>
+      if it wants.
     </para>
 
 <programlisting>

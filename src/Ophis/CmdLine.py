@@ -36,7 +36,7 @@ def parse_args(raw_args):
 
     parser = optparse.OptionParser(
         usage="Usage: %prog [options] srcfile [srcfile ...]",
-        version="Ophis 6502 cross-assembler, version 2.1")
+        version="Ophis 6502 cross-assembler, version 2.2")
 
     parser.add_option("-o", default=None, dest="outfile",
                       help="Output filename (default 'ophis.bin')")
