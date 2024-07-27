@@ -1,10 +1,5 @@
-from distutils.core import setup
 import py2exe
-import sys
 
-sys.argv.append('py2exe')
-
-setup(options={'py2exe': {'bundle_files': 1}},
-      packages=['Ophis'],
-      zipfile=None,
-      console=[{'script': "scripts/ophis"}])
+py2exe.freeze(options={'bundle_files': 1, 'packages': ['Ophis']},
+              console=[{'script': "scripts/ophis"}],
+              zipfile='modules.zip')
