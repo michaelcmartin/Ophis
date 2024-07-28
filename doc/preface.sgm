@@ -106,34 +106,24 @@
   <section>
     <title>Getting a copy of Ophis</title>
     <para>
-      As of this writing, the Ophis assembler is hosted at Github. The
-      latest downloads and documentation will be available
+      As of version 2.2, the Python Package Index offers Ophis
+      at <ulink url="https://pypi.org/manage/project/ophis-asm/"></ulink>.
+      This version may be installed on any system
+      where <literal>pip</literal> or <literal>pipx</literal> works.
+    </para>
+    <para>
+      Development is hosted at Github. The latest downloads and
+      documentation will be available
       at <ulink url="http://github.com/michaelcmartin/Ophis"></ulink>. If
       this is out-of-date, a Web search on <quote>Ophis 6502
       assembler</quote> (without the quotation marks) should yield its
       page.
     </para>
     <para>
-      Ophis is written entirely in Python and packaged using the
-      distutils.  The default installation script on Unix and Mac OS X
-      systems should put the files where they need to go.  If you are
-      running it locally, you will need to install
-      the <literal>Ophis</literal> package somewhere in your Python
-      package path, and then put the <command>ophis</command> script
-      somewhere in your path.
-    </para>
-    <para>
       For Windows users, a prepackaged system made
       with <command>py2exe</command> is also available.  The default
       Windows installer will use this.  In this case, all you need to
       do is have <command>ophis.exe</command> in your path.
-    </para>
-    <para>
-      If you are working on a system with Python installed but to
-      which you do not wish to install software, there is also a
-      standalone pure-Python edition with an ophis.py script. This may
-      be placed anywhere and running ophis.py will temporarily set the
-      library path to point to your directory.
     </para>
   </section>
 

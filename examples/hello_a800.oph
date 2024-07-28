@@ -1,13 +1,26 @@
+;;; HELLO WORLD for the Atari 800
+;;; This produces a file named "HELLO.OBJ" in the Atari DOS ("XEX")
+;;; format. Loading it into a DOS-capable disk will let it run
+;;; with the "LOAD BINARY FILE" command, and many emulators will
+;;; accept it as a boot image.
+
 	.outfile "hello.obj"
-	.word	$ffff			; Binary file
-	.word	start			; start of code
-	.word	end-1			; end of code
 
-	.org	$0600			; Load into page 6
-
-	;; `iostob OFFSET, VALUE
-	;; `iostow OFFSET, VALUE
-	;; Store value in OFFSET in I/O control block X>>4.
+	;; Outputting text on the Atari is more reminiscent of modern
+	;; Unix or Windows-based systems than like most 8-bit BIOSes.
+	;; A series of 16-byte blocks of memory starting at $340 serve
+	;; as "I/O channels", and writing text is a matter of
+	;; outputting a string of bytes to the screen editor device in
+	;; channel zero.
+	;;
+	;; Writing the arguments can be tedious, so this example
+	;; includes two macros for simplifying that a bit: IOSTOB and
+	;; IOSTOW (I/O Store Byte/Word). The first argument is the
+	;; offset to write (0-15), and the second is the 8- or 16-bit
+	;; value to write. The channel itself is selected by the X
+	;; index register, and the value in .X should be the
+	;; destination channel multiplied by 16 (so, 0 for channel 0,
+	;; $10 for channel 1, etc.)
 .macro	iostob
 	lda	#_2
 	sta	$340+_1,x
@@ -18,17 +31,59 @@
 	`iostob	_1+1,>_2
 .macend
 
-start:	ldx	#$00			; Channel 0 (E:)
+	;; With that out of the way, we may start producing our
+	;; actual file. We open with a $FFFF word to mark ourselves
+	;; as a binary file.
+	.word	$ffff
 
-	;; Write message with one I/O call, and exit
-	`iostob	2,11			; WRITE command
+	;; The rest of the file is a series of blocks, marking the
+	;; first and last addresses that the block occupies, followed
+	;; by the data itself. These addresses are inclusive, so we
+	;; will need to subtract one from a label placed after the
+	;; final line of the block to get the correct value.
+	.word	start
+	.word	end-1
+
+	;; The main program block begins here. The .org instruction
+	;; sets us to assemble at the location we want the program
+	;; to actually live; this ensures that the start and end
+	;; labels have the correct values. For this program, we will
+	;; load into location $0600 --- the $0600-$06FF region ("page
+	;; six") is reserved for use by support cartridges, but BASIC
+	;; doesn't use it and the OS is guaranteed not to.
+	.org	$0600
+
+	;; The program itself does a single write request.
+start:	ldx	#$00			; I/O request on Channel 0
+	`iostob	2,11			; request type: WRITE
 	`iostow	4,msg			; buffer pointer
-	`iostow	8,msgend-msg		; buffer length
-	jmp	$e456			; Do I/O call and quit
+	`iostow	8,msglen		; buffer length
+	jsr	$e456			; Do I/O call
 
+	;; This program intends to return to DOS once it's done, so
+	;; it returns with RTS. If this were to be a program to boot
+	;; directly into the emulator, going into an infinite loop
+	;; would be more polite.
+	rts				; Return to DOS
+
+	;; The message itself. Character $9B is the new-line on the
+	;; Atari 800. Strings are written with length arguments here
+	;; instead of with a terminator character, so we collect the
+	;; length of the string here as well.
 msg:	.byte	"Hello, world!",$9b
-msgend:					; End of message
-end:					; End of code block
+	.alias	msglen	^-msg
 
-	;; Autostart at start
+	;; The end of the main file block. This mark lets the block
+	;; header compute the correct address.
+end:
+
+	;; Two memory locations are special during load. If a block
+	;; load rewrites the word at $02E2, the load process will be
+	;; interrupted and will call the routine at the address
+	;; written to that location. $02E0 is similar, but the word
+	;; written is taken to be the address of the start of the
+	;; program, and controll will pass to that address once the
+	;; load is complete. We don't need any intervening init
+	;; routines, so we close by putting our entry point in $02e0
+	;; as a two-byte block in its own right.
 	.word	$02e0,$02e1,start

@@ -1,9 +1,18 @@
 ;;; ----------------------------------------------------------------------
 ;;;  HELLO WORLD for the Apple II
 ;;;  This is a ProDOS 8 program. Its output should be importable by
-;;;  CiderPress without incident.
+;;;  CiderPress without incident, and by CADIUS with only minor changes.
 ;;; ----------------------------------------------------------------------
 
+	;; All ProDOS 8 programs are loaded into location $2000 and
+	;; own the memory from $0800 to $BEFF, as well as all of the
+	;; zero page except for $30-$4F. The suffix of the output
+	;; file is used by CiderPress to mark file type and
+	;; attributes -- for ProDOS 8 programs this type is always
+	;; $FF (System file) and the attribute is always $2000 (the
+	;; load address). Be sure to set the option to infer type
+	;; and attributes from filenames when adding files in
+	;; CiderPress.
 	.outfile "HI.SYSTEM#ff2000"
 	.org	$2000
 
@@ -21,7 +30,7 @@ wait:	bit	$c000			; Check keypress bit
 	bpl	wait
 	bit	$c010			; Acknowledge keypress
 
-	;; Return to ProDOS
+	;; Return to ProDOS with a QUIT call
 	jsr	$bf00
 	.byte	$65
 	.word	+
