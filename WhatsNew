@@ -1,0 +1,70 @@
+Ophis 2.2: 28 Jul 2024
+ - Codebase updated to Python 3: new minimum version is 3.6
+ - New delivery option: pip and pipx (ophis-asm project). Older
+   ad-hoc standalone script delivery options have been retired.
+ - All instructions with Absolute modes may force them with a .W
+   suffix to the instruction
+ - New example code for Atari 2600, Atari 800, and Apple II
+ - Bugfix: charmap now applies to every string in a data directive
+ - Bugfix: ASR instructions on the 4502 now properly emit Zero Page
+           addressing modes when possible
+ - Bugfix: original Atari 2600 example program now runs properly on a
+           Harmony cartridge
+
+Ophis 2.1: 24 May 2014
+ - Listfile support: passing "-l <filename>" will produce a human-
+   readable version of the generated binary, annotated with addresses
+   and disassemblies where appropriate
+ - Mapfile support: passing "-m <filename>" will produce a map from
+   raw addresses in the binary to locations in the code where that
+   address was defined
+ - Success or failure is now reflected in the process exit code
+ - Additional platform headers for the VIC-20
+ - Platform headers for interacting with C64 BASIC's floating-point
+   libraries
+ - Support for the 4502 chip
+ - Bugfix: BBXn instructions on the 6502 are now correctly emitted
+ - Bugfix: The startup stub code for the C64 now properly handles
+           cases where the BASIC program is overwritten during
+           program run
+
+Ophis 2.0: 16 Jun 2012
+ - Codebase updated: new minimum version is Python 2.3
+ - New delivery option: Windows EXE with installer
+ - The .include directive now computes relative paths relative to the
+   source file rather than the CWD
+ - The .incbin directive now accepts start/length arguments to include
+   only parts of a binary file
+ - New directives: .advance, .outfile
+ - Directives deprecated in 1.0 release removed: .address, .ascii,
+   .code, .link, and .segment. These are replicated by .byte, .word,
+   .text, and .org/.include pairs.
+ - The file "-" may be passed as input or output to represent stdin
+   and stdout
+ - Out-of-bounds branches will be translated into legal code with a
+   warning
+ - Instructions with both Zero Page and Absolute modes may force
+   Absolute by appending ".W" to the instruction
+ - Sample code, platform headers, and test suite
+
+Ophis 1.0:  3 Oct 2007
+ - New directives: .charmap, .charmapbin
+ - Support for the 65c02 chip
+
+Ophis 0.7.2: 17 Jul 2003
+ - Bugfix: indexed LSR instructions parsed incorrectly
+
+Ophis 0.7.1: 10 Jul 2003
+ - Bugfix: Macros without arguments now work properly
+
+Ophis 0.7: 1 Jan 2003
+ - Codebase updated: new minimum version is 2.1
+ - New directives: .macro, .macend, .invoke, .require
+ - Standalone script instead of invoking Ophis.Main directly
+ - Circularity check for labels
+
+Ophis 0.2: 28 Nov 2002
+ - New directives: .wordbe, .dwordbe, .scope, .scend
+
+Ophis 0.1: 15 Aug 2002
+ - First public release

@@ -64,6 +64,7 @@ Section "Ophis" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite try
   File /oname=README.txt "..\..\README"
+  File /oname=WhatsNew.txt "..\..\WhatsNew"
   File "..\dist\ophis.exe"
   File "..\dist\libcrypto-1_1.dll"
   File "..\dist\libffi-7.dll"
