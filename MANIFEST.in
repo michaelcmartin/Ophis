@@ -5,5 +5,10 @@ include tests/sub/*.oph
 include tests/sub/sub/*.oph
 include doc/*.sgm
 include doc/ophismanual.pdf
+include src/tools/opcodes/*.txt
+include src/tools/opcodes/gensets.py
+include src/tools/opcodes/README.md
+include src/tools/charmaps/*.map
+include src/tools/charmaps/*.py
 graft examples
 graft platform
