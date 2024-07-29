@@ -176,6 +176,7 @@ Section Uninstall
   Delete "$INSTDIR\modules.zip"
   Delete "$INSTDIR\ophismanual.pdf"
   Delete "$INSTDIR\README.txt"
+  Delete "$INSTDIR\WhatsNew.txt"
   Delete "$INSTDIR\examples\stella\hi_stella.oph"
   Delete "$INSTDIR\examples\stella\colortest.oph"
   Delete "$INSTDIR\examples\stella\README.txt"
