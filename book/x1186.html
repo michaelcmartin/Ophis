@@ -1,0 +1,262 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>hello7.oph</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Example Programs"
+HREF="a1143.html"><LINK
+REL="PREVIOUS"
+TITLE="hello6.oph"
+HREF="x1182.html"><LINK
+REL="NEXT"
+TITLE="structuredemo.oph"
+HREF="x1190.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x1182.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Example Programs</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x1190.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="TUTOR7-SRC"
+><TT
+CLASS="FILENAME"
+>hello7.oph</TT
+></A
+></H1
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>.include "../platform/c64_0.oph"
+.require "../platform/c64kernal.oph"
+.outfile "hello.prg"
+
+.data
+.org $C000
+.text
+
+.macro print
+        lda #&#60;_1
+        ldx #&#62;_1
+        jsr printstr
+.macend
+
+.macro greet
+        lda #30
+        jsr delay
+        `print hello1
+        `print _1
+        `print hello2
+.macend
+
+        lda #147
+        jsr chrout
+        `greet target1
+        `greet target2
+        `greet target3
+        `greet target4
+        `greet target5
+        `greet target6
+        `greet target7
+        `greet target8
+        `greet target9
+        `greet target10
+
+        rts
+
+hello1: .byte "HELLO, ",0
+hello2: .byte "!", 13, 0
+
+target1:  .byte "PROGRAMMER", 0
+target2:  .byte "ROOM", 0
+target3:  .byte "BUILDING", 0
+target4:  .byte "NEIGHBORHOOD", 0
+target5:  .byte "CITY", 0
+target6:  .byte "NATION", 0
+target7:  .byte "WORLD", 0
+target8:  .byte "SOLAR SYSTEM", 0
+target9:  .byte "GALAXY", 0
+target10: .byte "UNIVERSE", 0
+
+; DELAY routine.  Takes values from the Accumulator and pauses
+; for that many jiffies (1/60th of a second).
+.scope
+.data
+.space _tmp 1
+.space _target 1
+
+.text
+
+delay:  sta _tmp        ; save argument (rdtim destroys it)
+        jsr rdtim
+        clc
+        adc _tmp        ; add current time to get target
+        sta _target
+*       jsr rdtim
+        cmp _target
+        bmi -           ; Buzz until target reached
+        rts
+.scend
+
+; PRINTSTR routine.  Accumulator stores the low byte of the address,
+; X register stores the high byte.  Destroys the values of $10 and
+; $11.
+
+.scope
+.data zp
+.space _ptr 2
+.text
+printstr:
+        sta _ptr
+        stx _ptr+1
+        ldy #$00
+_lp:    lda (_ptr),y
+        beq _done
+        jsr chrout
+        iny
+        bne _lp
+_done:  rts
+.scend
+
+.checkpc $A000
+
+.data
+.checkpc $D000
+
+.data zp
+.checkpc $90</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x1182.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x1190.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><TT
+CLASS="FILENAME"
+>hello6.oph</TT
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="a1143.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><TT
+CLASS="FILENAME"
+>structuredemo.oph</TT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

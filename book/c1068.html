@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Call Stacks</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="To HLL and Back"
+HREF="p649.html"><LINK
+REL="PREVIOUS"
+TITLE="A final reminder"
+HREF="x1060.html"><LINK
+REL="NEXT"
+TITLE="Our Goals"
+HREF="x1083.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x1060.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x1083.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="AEN1068"
+></A
+>Call Stacks</H1
+><P
+>  All our previous work has been assuming FORTRAN-style calling
+  conventions.  In this, all procedure-local variables are actually
+  secretly globals.  This means that a function that calls itself will
+  end up stomping on its previous values, and everything will be
+  hideously scrambled.  Various workarounds for this are covered
+  in <A
+HREF="c711.html"
+>the Chapter called <I
+>Structured Programming</I
+></A
+>.  Here, we solve the problem fully.</P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN1072"
+>Recursion</A
+></H1
+><P
+>    A procedure in C or other similar languages declares a chunk of
+    storage that's unique to that invocation.  This chunk is just
+    large enough to hold the return address and all the local
+    variables, and is called the <I
+CLASS="EMPHASIS"
+>stack frame</I
+>.
+    Stack frames are arranged on a <I
+CLASS="EMPHASIS"
+>call stack</I
+>;
+    when a function is called, the stack grows with the new frame, and
+    when that function returns, its frame is destroyed.  Once the main
+    function returns, the stack is empty.
+  </P
+><P
+>    Most modern architectures are designed to let you implement
+    variable access like this directly, without touching the registers
+    at all.  The x86 architecture even dedicates a register to
+    function explicitly as the <I
+CLASS="EMPHASIS"
+>stack pointer</I
+>, and
+    then one could read, say, the fifth 16-bit variable into the
+    register AX with the command <TT
+CLASS="LITERAL"
+>MOV AX, [SP+10]</TT
+>.
+  </P
+><P
+>    As we saw in <A
+HREF="c916.html"
+>the Chapter called <I
+>Pointers and Indirection</I
+></A
+>, the 6502 isn't nearly as
+    convenient.  We'd need to keep the stack pointer somewhere on the
+    zero page, then load the Y register with 10, then load the
+    accumulator with an indexed-indirect call.  This is verbose, keeps
+    trashing our registers, and it's very, very slow.
+  </P
+><P
+>    So, in the spirit of programmers everywhere, we'll cheat.
+  </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x1060.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x1083.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>A final reminder</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="p649.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Our Goals</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

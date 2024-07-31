@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>The Nintendo Entertainment System</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Included Platform Support"
+HREF="c507.html"><LINK
+REL="PREVIOUS"
+TITLE="Included Platform Support"
+HREF="c507.html"><LINK
+REL="NEXT"
+TITLE="The Atari 2600 VCS"
+HREF="x632.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c507.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Included Platform Support</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x632.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN624"
+>The Nintendo Entertainment System</A
+></H1
+><P
+>      The NES development community in 2024 has standardized on the
+      sophisticated <TT
+CLASS="LITERAL"
+>ca65</TT
+> assembler for major
+      homebrew projects, but Ophis's simpler output model has
+      advantages of its own. A skeletal <TT
+CLASS="LITERAL"
+>nes.oph</TT
+>
+      file is provided in the platform support directory, but most
+      NES code you'll find in the wild doesn't use aliases for control
+      registers at all&#8212;it just sticks with the register numbers.
+    </P
+><P
+>      Creating output files that emulators or other tools will
+      recognize as complete NES programs is somewhat involved.
+      Any given product was generally one of a large selection of
+      circuit boards with several ROM or support-logic chips 
+      affixed to it. These circuit board configurations are generally
+      referred to as "mappers" by developers because their
+      effect is to implement various bankswitching schemes. The result
+      is a program built out of parts, each with its own origin.
+      A simple <SPAN
+CLASS="QUOTE"
+>"Hello World"</SPAN
+> sample program ships with
+      Ophis. It is configured to use "Mapper Zero", or a simulation of
+      the <SPAN
+CLASS="QUOTE"
+>"NROM"</SPAN
+> circuit board, which had no special
+      bankswitching logic and simply wired the program chip and the
+      graphics chip directly into the address bus. The sample code
+      includes one source file for each chip, and then two wrapper
+      files to knit them together into a file that other software will
+      recognize. As of 2024, the UNIF format is entirely abandoned in
+      favor of the backwards-compatible iNES 2.0 format.
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c507.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x632.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Included Platform Support</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c507.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>The Atari 2600 VCS</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,267 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Unsigned arithmetic</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="The Second Step"
+HREF="c654.html"><LINK
+REL="PREVIOUS"
+TITLE="The solution"
+HREF="x666.html"><LINK
+REL="NEXT"
+TITLE="16-bit addition and subtraction"
+HREF="x695.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x666.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>The Second Step</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x695.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN672"
+>Unsigned arithmetic</A
+></H1
+><P
+>    When writing control code that hinges on numbers, we should always
+    strive to have our comparison be with zero; that way, no explicit
+    compare is necessary, and we can branch simply
+    with <TT
+CLASS="LITERAL"
+>BEQ/BNE</TT
+>, which test the zero flag.
+    Otherwise, we use <TT
+CLASS="LITERAL"
+>CMP</TT
+>.
+    The <TT
+CLASS="LITERAL"
+>CMP</TT
+> command subtracts its argument from the
+    accumulator (without borrow), updates the flags, but throws away
+    the result.  If the value is equal, the result is zero.
+    (<TT
+CLASS="LITERAL"
+>CMP</TT
+> followed by <TT
+CLASS="LITERAL"
+>BEQ</TT
+>
+    branches if the argument is equal to the accumulator; this is
+    probably why it's called <TT
+CLASS="LITERAL"
+>BEQ</TT
+> and not something
+    like <TT
+CLASS="LITERAL"
+>BZS</TT
+>.)
+  </P
+><P
+>    Intuitively, then, to check if the accumulator is <I
+CLASS="EMPHASIS"
+>less
+    than</I
+> some value, we <TT
+CLASS="LITERAL"
+>CMP</TT
+> against that
+    value and <TT
+CLASS="LITERAL"
+>BMI</TT
+>.  The <TT
+CLASS="LITERAL"
+>BMI</TT
+>
+    command branches based on the Negative Flag, which is equal to the
+    seventh bit of <TT
+CLASS="LITERAL"
+>CMP</TT
+>'s subtract.  That's exactly
+    what we need, for signed arithmetic.  However, this produces
+    problems if you're writing a boundary detector on your screen or
+    something and find that 192 &#60; 4.  192 is outside of a signed
+    byte's range, and is interpreted as if it were -64.  This will not
+    do for most graphics applications, where your values will be
+    ranging from 0-319 or 0-199 or 0-255.
+  </P
+><P
+>    Instead, we take advantage of the implied subtraction
+    that <TT
+CLASS="LITERAL"
+>CMP</TT
+> does.  When subtracting, the result's
+    carry bit starts at 1, and gets borrowed from if necessary.  Let
+    us consider some four-bit subtractions.
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>C|3210       C|3210
+------       ------
+1|1001    9  1|1001    9
+ |0100  - 4   |1100  -12
+------  ---  ------  ---
+1|0101    5  0|1101   -3</PRE
+></TD
+></TR
+></TABLE
+><P
+>    The <TT
+CLASS="LITERAL"
+>CMP</TT
+> command properly modifies the carry bit
+    to reflect this.  When computing A-B, the carry bit is set if A
+    &#62;= B, and it's clear if A &#60; B.  Consider the following two
+    code sequences.
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>    (1)                  (2)
+  CMP #$C0            CMP #$C0
+  BMI label           BCC label</PRE
+></TD
+></TR
+></TABLE
+><P
+>    The code in the first column treats the value in the accumulator
+    as a signed value, and branches if the value is less than -64.
+    (Because of overflow issues, it will actually branch for
+    accumulator values between $40 and $BF, even though it *should*
+    only be doing it for values between $80 and $BF.  To see why,
+    compare $40 to $C0 and look at the result.)  The second column
+    code treats the accumulator as holding an unsigned value, and
+    branches if the value is less than 192.  It will branch for
+    accumulator values $00-$BF.
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x666.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x695.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>The solution</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c654.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>16-bit addition and subtraction</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

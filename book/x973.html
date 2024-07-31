@@ -2,7 +2,7 @@
 <HTML
 ><HEAD
 ><TITLE
->A quick digression on how subroutines work</TITLE
+>Comparison with the other indexed forms</TITLE
 ><META
 NAME="GENERATOR"
 CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
@@ -10,14 +10,14 @@ REL="HOME"
 TITLE="Programming with Ophis"
 HREF="book1.html"><LINK
 REL="UP"
-TITLE="Functionals"
-HREF="c953.html"><LINK
+TITLE="Pointers and Indirection"
+HREF="c916.html"><LINK
 REL="PREVIOUS"
-TITLE="Functionals"
-HREF="c953.html"><LINK
+TITLE="What about Indexed Indirect?"
+HREF="x966.html"><LINK
 REL="NEXT"
-TITLE="Dispatch-on-type and Data-Directed Assembler"
-HREF="x992.html"></HEAD
+TITLE="Conclusion"
+HREF="x981.html"></HEAD
 ><BODY
 CLASS="SECTION"
 BGCOLOR="#FFFFFF"
@@ -45,7 +45,7 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="bottom"
 ><A
-HREF="c953.html"
+HREF="x966.html"
 ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
@@ -53,13 +53,13 @@ ACCESSKEY="P"
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Functionals</TD
+>Pointers and Indirection</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
-HREF="x992.html"
+HREF="x981.html"
 ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
@@ -74,78 +74,56 @@ CLASS="SECTION"
 CLASS="SECTION"
 ><A
 NAME="AEN973"
->A quick digression on how subroutines work</A
+>Comparison with the other indexed forms</A
 ></H1
 ><P
->    Ordinarily, subroutines are called with <TT
+>    Pointers are slow.  It sounds odd saying this, when C is the
+    fastest language around on modern machines precisely because of
+    its powerful and extensive use of pointers.  However, modern
+    architectures are designed to be optimized for C-style code (as an
+    example, the x86 architecture allows statements like <TT
 CLASS="LITERAL"
->JSR</TT
-> and
-    finished with <TT
-CLASS="LITERAL"
->RTS</TT
->.  The <TT
-CLASS="LITERAL"
->JSR</TT
->
-    instruction takes its own address, adds 2 to it, and pushes this
-    16-bit value on the stack, high byte first, then low byte (so that
-    the low byte will be popped off first).
-  </P
-><P
->    But wait, you may object.  All <TT
-CLASS="LITERAL"
->JSR</TT
-> instructions
-    are three bytes long.  This <SPAN
-CLASS="QUOTE"
->"return address"</SPAN
-> is in
-    the middle of the instruction.  And you would be quite right;
-    the <TT
-CLASS="LITERAL"
->RTS</TT
-> instruction pops off the 16-bit
-    address, adds one to it, and <I
+>mov
+    eax, [bs+bx+4*di]</TT
+> as a single instruction), while the
+    6502 is not.  An (Indirect, Y) operation can take up to 6 cycles
+    to complete just on its own, while the preparation of that command
+    costs additional time <I
 CLASS="EMPHASIS"
->then</I
-> sets the
-    program counter to that value.
+>and</I
+> scribbles over a
+    bunch of registers, meaning memory operations to save the values
+    and yet more time spent.  The simple code given at the beginning
+    of this essay&#8212;loading <TT
+CLASS="LITERAL"
+>*b</TT
+> into the
+    accumulator&#8212;takes 7 cycles, not counting the 6 it takes to
+    load b with the appropriate value to begin with.  If b is known to
+    contain a specific value, we can write a single Absolute mode
+    instruction to load its value, which takes only 4 cycles and also
+    preserves the value in the Y register.  Clearly, Absolute mode
+    should be used whenever possible.
   </P
 ><P
->    So it <I
-CLASS="EMPHASIS"
->is</I
-> possible to set up
-    a <SPAN
-CLASS="QUOTE"
->"<TT
-CLASS="LITERAL"
->JSR</TT
-> indirect"</SPAN
-> kind of operation
-    by adding two to the indirect jump's address and then pushing that
-    value onto the stack before making the jump; however, you wouldn't
-    want to do this.  It takes six bytes and trashes your accumulator,
-    and you can get the same functionality with half the space and
-    with no register corruption by simply defining the indirect jump
-    to be a one-instruction routine and <TT
-CLASS="LITERAL"
->JSR</TT
->-ing to
-    it directly.  As an added bonus, that way if you have multiple
-    indirect jumps through the same pointer, you don't need to
-    duplicate the jump instruction.
+>    One might be tempted to use self-modifying code to solve this
+    problem.  This actually doesn't pay off near enough for the hassle
+    it generates; for self-modifying code, the address must be
+    generated, then stored in the instruction, and then the data must
+    be loaded.  Cost: 16 cycles for 2 immediate loads, 2 absolute
+    stores, and 1 absolute load.  For the straight pointer
+    dereference, we generate the address, store it in the pointer,
+    clear the index, then dereference that.  Cost: 17 cycles for 3
+    immediate loads, 2 zero page stores, and 1 indexed indirect load.
+    Furthermore, unlike in the self-modifying case, loops where simple
+    arithmetic is being continuously performed only require repeating
+    the final load instruction, which allows for much greater time
+    savings over an equivalent self-modifying loop.
   </P
 ><P
->    Does this mean that abusing <TT
-CLASS="LITERAL"
->JSR</TT
->
-    and <TT
-CLASS="LITERAL"
->RTS</TT
-> is a dead-end, though?  Not at all...
+>    (This point is also completely moot for NES programmers or anyone
+    else whose programs are sitting in ROM, because programs stored on
+    a ROM cannot modify themselves.)
   </P
 ></DIV
 ><DIV
@@ -164,7 +142,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="c953.html"
+HREF="x966.html"
 ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
@@ -182,7 +160,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="x992.html"
+HREF="x981.html"
 ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
@@ -192,13 +170,13 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->Functionals</TD
+>What about Indexed Indirect?</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="c953.html"
+HREF="c916.html"
 ACCESSKEY="U"
 >Up</A
 ></TD
@@ -206,7 +184,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->Dispatch-on-type and Data-Directed Assembler</TD
+>Conclusion</TD
 ></TR
 ></TABLE
 ></DIV

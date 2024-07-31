@@ -1,0 +1,249 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Dispatch-on-type and Data-Directed Assembler</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Functionals"
+HREF="c984.html"><LINK
+REL="PREVIOUS"
+TITLE="A quick digression on how subroutines work"
+HREF="x1004.html"><LINK
+REL="NEXT"
+TITLE="VTables and Object-Oriented Assembler"
+HREF="x1039.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x1004.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Functionals</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x1039.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN1023"
+>Dispatch-on-type and Data-Directed Assembler</A
+></H1
+><P
+>    Most of the time, you care about function pointers because you've
+    arranged them in some kind of table.  You hand it an index
+    representing the type of your argument, or which method it is
+    you're calling, or some other determinator, and then you index
+    into an array of routines and execute the right one.
+  </P
+><P
+>    Writing a generic routine to do this is kind of a pain.  First you
+    have to pass a 16-bit pointer in, then you have to dereference it
+    to figure out where your table is, then you have to do an indexed
+    dereference on <I
+CLASS="EMPHASIS"
+>that</I
+> to get the routine you
+    want to run, then you need to copy it out to somewhere fixed so
+    that you can write your jump instruction.  And making this
+    non-generic doesn't help a whole lot, since that only saves you
+    the first two steps, but now you have to write them out in every
+    single indexed jump instruction.  If only there were some way to
+    easily and quickly pass in a local pointer directly...
+  </P
+><P
+>    Something, say, like the <TT
+CLASS="LITERAL"
+>JSR</TT
+> instruction, only not for
+    program code.
+  </P
+><P
+>    Or we could just use the <TT
+CLASS="LITERAL"
+>JSR</TT
+> statement itself,
+    but only call this routine at the ends of other routines, much
+    like we were organizing for indirect jumps to begin with.  This
+    lets us set up routines that look like this:
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>jump'table'alpha:
+    jsr do'jump'table
+    .word alpha'0, alpha'1, alpha'2</PRE
+></TD
+></TR
+></TABLE
+><P
+>    Where the <TT
+CLASS="LITERAL"
+>alpha'x</TT
+> routines are the ones to be
+    called when the index has that value.  This leaves the
+    implementation of do'jump'table, which in this case uses the Y
+    register to hold the index:
+  </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>do'jump'table:
+    sta _scratch
+    pla
+    sta _jmpptr
+    pla
+    sta _jmpptr+1
+    tya
+    asl
+    tay
+    iny
+    lda (_jmpptr), y
+    sta _target
+    iny
+    lda (_jmpptr), y
+    sta _target+1
+    lda _scratch
+    jmp (_target)</PRE
+></TD
+></TR
+></TABLE
+><P
+>    The <TT
+CLASS="LITERAL"
+>TYA:ASL:TAY:INY</TT
+> sequence can actually be
+    omitted if you don't mind having your Y indices be 1, 3, 5, 7, 9,
+    etc., instead of 0, 1, 2, 3, 4, etc.  Likewise, the instructions
+    dealing with <TT
+CLASS="LITERAL"
+>_scratch</TT
+> can be omitted if you
+    don't mind trashing the accumulator.  Keeping the accumulator and
+    X register pristine for the target call comes in handy, though,
+    because it means we can pass in a pointer argument purely in
+    registers.  This will come in handy soon...
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x1004.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x1039.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>A quick digression on how subroutines work</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c984.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>VTables and Object-Oriented Assembler</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

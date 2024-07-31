@@ -1,0 +1,512 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Structured Programming</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="To HLL and Back"
+HREF="p649.html"><LINK
+REL="PREVIOUS"
+TITLE="16-bit comparisons"
+HREF="x705.html"><LINK
+REL="NEXT"
+TITLE="The stack"
+HREF="x765.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x705.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x765.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="HLL2"
+></A
+>Structured Programming</H1
+><P
+>  This essay discusses the machine language equivalents of the
+  basic <SPAN
+CLASS="QUOTE"
+>"structured programming"</SPAN
+> concepts that are part
+  of the <SPAN
+CLASS="QUOTE"
+>"imperative"</SPAN
+> family of programming languages:
+  if/then/else, for/next, while loops, and procedures.  It also
+  discusses basic use of variables, as well as arrays, multi-byte data
+  types (records), and sub-byte data types (bitfields).  It closes by
+  hand-compiling pseudo-code for an insertion sort on linked lists
+  into assembler.  A complete Commodore 64 application is included as
+  a sample with this essay.</P
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN716"
+>Control constructs</A
+></H1
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN718"
+>Branches: <TT
+CLASS="LITERAL"
+>if x then y else z</TT
+></A
+></H2
+><P
+>      This is almost the most basic control construct.
+      The <I
+CLASS="EMPHASIS"
+>most</I
+> basic is <TT
+CLASS="LITERAL"
+>if x then
+      y</TT
+>, which is a simple branch instruction
+      (bcc/bcs/beq/bmi/bne/bpl/bvc/bvs) past the <SPAN
+CLASS="QUOTE"
+>"then"</SPAN
+>
+      clause if the conditional is false:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   iny
+   bne no'overflow
+   inx
+no'overflow:
+   ;; rest of code</PRE
+></TD
+></TR
+></TABLE
+><P
+>      This increments the value of the y register, and if it just
+      wrapped back around to zero, it increments the x register too.
+      It is basically equivalent to the C statement <TT
+CLASS="LITERAL"
+>if
+      ((++y)==0) ++x;</TT
+>.  We need a few more labels to handle
+      else clauses as well.
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   ;; Computation of the conditional expression.
+   ;; We assume for the sake of the example that
+   ;; we want to execute the THEN clause if the
+   ;; zero bit is set, otherwise the ELSE
+   ;; clause.  This will happen after a CMP,
+   ;; which is the most common kind of 'if'
+   ;; statement anyway.
+
+   BNE else'clause
+
+   ;; THEN clause code goes here.
+
+   JMP end'of'if'stmt
+else'clause:
+
+   ;; ELSE clause code goes here.
+
+end'of'if'stmt:
+   ;; ... rest of code.</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN729"
+>Free loops: <TT
+CLASS="LITERAL"
+>while x do y</TT
+></A
+></H2
+><P
+>      A <I
+CLASS="EMPHASIS"
+>free loop</I
+> is one that might execute any
+      number of times.  These are basically just a combination
+      of <TT
+CLASS="LITERAL"
+>if</TT
+> and <TT
+CLASS="LITERAL"
+>goto</TT
+>.  For
+      a <SPAN
+CLASS="QUOTE"
+>"while x do y"</SPAN
+> loop, that executes zero or more
+      times, you'd have code like this...
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>loop'begin:
+   ;; ... computation of condition, setting zero
+   ;;     bit if loop is finished...
+   beq loop'done
+   ;; ... loop body goes here
+   jmp loop'begin
+loop'done:
+   ;; ... rest of program.</PRE
+></TD
+></TR
+></TABLE
+><P
+>      If you want to ensure that the loop body executes at least once
+      (do y while x), just move the test to the end.
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>loop'begin:
+   ;; ... loop body goes here
+   ;; ... computation of condition, setting zero
+   ;;     bit if loop is finished...
+   bne loop'begin
+   ;; ... rest of program.</PRE
+></TD
+></TR
+></TABLE
+><P
+>      The choice of zero bit is kind of arbitrary here.  If the
+      condition involves the carry bit, or overflow, or negative, then
+      replace the beq with bcs/bvs/bmi appropriately.
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN741"
+>Bounded loops: <TT
+CLASS="LITERAL"
+>for i = x to y do z</TT
+></A
+></H2
+><P
+>      A special case of loops is one where you know exactly how many
+      times you're going through it&#8212;this is called
+      a <I
+CLASS="EMPHASIS"
+>bounded</I
+> loop.  Suppose you're copying 16
+      bytes from $C000 to $D000.  The C code for that would look
+      something like this:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   int *a = 0xC000;
+   int *b = 0xD000;
+   int i;
+   for (i = 0; i &#60; 16; i++) { a[i] = b[i]; }</PRE
+></TD
+></TR
+></TABLE
+><P
+>      C doesn't directly support bounded loops;
+      its <TT
+CLASS="LITERAL"
+>for</TT
+> statement is just <SPAN
+CLASS="QUOTE"
+>"syntactic
+      sugar"</SPAN
+> for a while statement.  However, we can take
+      advantage of special purpose machine instructions to get very
+      straightforward code:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   ldx #$00
+loop:
+   lda $c000, x
+   sta $d000, x
+   inx
+   cpx #$10
+   bmi loop</PRE
+></TD
+></TR
+></TABLE
+><P
+>      However, remember that every arithmetic operation,
+      including <TT
+CLASS="LITERAL"
+>inx</TT
+> and <TT
+CLASS="LITERAL"
+>dex</TT
+>,
+      sets the various flags, including the Zero bit.  That means that
+      if we can make our computation <I
+CLASS="EMPHASIS"
+>end</I
+> when the
+      counter hits zero, we can shave off some bytes:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   ldx #$10
+loop:
+   lda #$bfff, x
+   sta #$cfff, x
+   dex
+   bne loop</PRE
+></TD
+></TR
+></TABLE
+><P
+>      Notice that we had to change the addresses we're indexing from,
+      because x takes a slightly different range of values.  The space
+      savings is small here, and it's become slightly more unclear.
+      (It also hasn't actually saved any time, because the lda and sta
+      instructions are crossing a page boundary where they weren't
+      before&#8212;but if the start or end arrays began at $b020 or
+      something this wouldn't be an issue.)  This tends to work better
+      when the precise value of the counter isn't used in the
+      computation&#8212;so let us consider the NES, which uses memory
+      location $2007 as a port to its video memory.  Suppose we wish
+      to jam 4,096 copies of the hex value $20 into the video memory.
+      We can write this <I
+CLASS="EMPHASIS"
+>very</I
+> cleanly, using the X
+      and Y registers as indices in a nested loop.
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   ldx #$10
+   ldy #$00
+   lda #$20
+loop:
+   sta $2007
+   iny
+   bne loop
+   dex
+   bne loop</PRE
+></TD
+></TR
+></TABLE
+><P
+>      Work through this code.  Convince yourself that
+      the <TT
+CLASS="LITERAL"
+>sta</TT
+> is executed exactly 16*256 = 4096
+      times.
+    </P
+><P
+>      This is an example of a <I
+CLASS="EMPHASIS"
+>nested</I
+> loop: a loop
+      inside a loop.  Since our internal loop didn't need the X or Y
+      registers, we got to use both of them, which is nice, because
+      they have special incrementing and decrementing instructions.
+      The accumulator lacks these instructions, so it is a poor choice
+      to use for index variables.  If you have a bounded loop and
+      don't have access to registers, use memory locations
+      instead:
+    </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>   lda #$10
+   sta counter  ; loop 16 times
+loop:
+   ;; Do stuff that trashes all the registers
+   dec counter
+   bne loop</PRE
+></TD
+></TR
+></TABLE
+><P
+>      That's it!  These are the basic control constructs for using
+      inside of procedures.  Before talking about how to organize
+      procedures, I'll briefly cover the way the 6502 handles its
+      stack, because stacks and procedures are very tightly
+      intertwined.
+    </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x705.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x765.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>16-bit comparisons</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="p649.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>The stack</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,348 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Variables</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Programming with Ophis"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Structured Programming"
+HREF="c711.html"><LINK
+REL="PREVIOUS"
+TITLE="Procedures and register saving"
+HREF="x771.html"><LINK
+REL="NEXT"
+TITLE="Data structures"
+HREF="x834.html"></HEAD
+><BODY
+CLASS="SECTION"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Programming with Ophis</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x771.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Structured Programming</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x834.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECTION"
+><H1
+CLASS="SECTION"
+><A
+NAME="AEN789"
+>Variables</A
+></H1
+><P
+>    Variables come in several flavors.
+  </P
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN792"
+>Global variables</A
+></H2
+><P
+>      Global variables are variables that can be reached from any
+      point in the program.  Since the 6502 has no memory protection,
+      these are easy to declare.  Take some random chunk of unused
+      memory and declare it to be the global variables area.  All
+      reasonable assemblers have commands that let you give a symbolic
+      name to a memory location&#8212;you can use this to give your
+      globals names.
+    </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN795"
+>Local variables</A
+></H2
+><P
+>      All modern languages have some concept of <SPAN
+CLASS="QUOTE"
+>"local
+      variables"</SPAN
+>, which are data values unique to that
+      invocation of that procedure.  In modern architecures, this data
+      is stored into and read directly off of the stack.  The 6502
+      doesn't really let you do this cleanly; I'll discuss ways of
+      handling it in a later essay.  If you're implementing a system
+      from scratch, you can design your memory model to not require
+      such extreme measures.  There are three basic techniques.
+    </P
+><DIV
+CLASS="SECTION"
+><H3
+CLASS="SECTION"
+><A
+NAME="AEN799"
+>Treat local variables like registers</A
+></H3
+><P
+>        This means that any memory location you use, you save on the
+        stack and restore afterwards.  This
+        can <I
+CLASS="EMPHASIS"
+>really</I
+> eat up stack space, and it's
+        really slow, it's often pointless, and it has a tendency to
+        overflow the stack.  I can't recommend it.  But it does let
+        you do recursion right, if you don't need to save much memory
+        and you aren't recursing very deep.
+      </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H3
+CLASS="SECTION"
+><A
+NAME="AEN803"
+>Procedure-based memory allocation</A
+></H3
+><P
+>        With this technique, you give each procedure its own little
+        chunk of memory for use with its data.  All the variables are
+        still, technically, globals; a
+        routine <I
+CLASS="EMPHASIS"
+>could</I
+> interfere with another's,
+        but the discipline of <SPAN
+CLASS="QUOTE"
+>"only mess with real globals, and
+        your own locals"</SPAN
+> is very, very easy to maintain.
+      </P
+><P
+>        This has many advantages.  It's <I
+CLASS="EMPHASIS"
+>very</I
+>
+        fast, both to write and to run, because loading a variable is
+        an Absolute or Zero Page instruction.  Also, any procedure may
+        call any other procedure, as long as it doesn't wind up
+        calling itself at some point.
+      </P
+><P
+>        It has two major disadvantages.  First, if many routines need
+        a lot of space, it can consume more memory than it should.
+        Also, this technique can require significant assembler
+        support&#8212;you must ensure that no procedure's local
+        variables are defined in the same place as any other
+        procedure, and it essentially requires a full symbolic linker
+        to do right.  Ophis includes commands for <I
+CLASS="EMPHASIS"
+>memory
+        segmentation simulation</I
+> that automate most of this
+        task, and make writing general libraries feasible.
+      </P
+></DIV
+><DIV
+CLASS="SECTION"
+><H3
+CLASS="SECTION"
+><A
+NAME="AEN812"
+>Partition-based memory allocation</A
+></H3
+><P
+>        It's not <I
+CLASS="EMPHASIS"
+>really</I
+> necessary that no
+        procedure overwrite memory used by any other procedure.  It's
+        only required that procedures don't write on the memory that
+        their <I
+CLASS="EMPHASIS"
+>callers</I
+> use.  Suppose that your
+        program is organized into a bunch of procedures, and each fall
+        into one of three sets:
+      </P
+><P
+></P
+><UL
+><LI
+><P
+>Procedures in set A don't call anyone.</P
+></LI
+><LI
+><P
+>Procedures in set B only call procedures in set A.</P
+></LI
+><LI
+><P
+>Procedures in set C only call procedures in sets A or B.</P
+></LI
+></UL
+><P
+>        Now, each <I
+CLASS="EMPHASIS"
+>set</I
+> can be given its own chunk
+        of memory, and we can be absolutely sure that no procedures
+        overwrite each other.  Even if every procedure in set C uses
+        the <I
+CLASS="EMPHASIS"
+>same</I
+> memory location, they'll never
+        step on each other, because there's no way to get to any other
+        routine in set C <I
+CLASS="EMPHASIS"
+>from</I
+> any routine in set
+        C.
+      </P
+><P
+>        This has the same time efficiencies as procedure-based memory
+        allocation, and, given a thoughtful design aimed at using this
+        technique, also can use significantly less memory at run time.
+        It's also requires much less assembler support, as addresses
+        for variables may be assigned by hand without having to worry
+        about those addresses already being used.  However, it does
+        impose a very tight discipline on the design of the overall
+        system, so you'll have to do a lot more work before you start
+        actually writing code.
+      </P
+></DIV
+></DIV
+><DIV
+CLASS="SECTION"
+><H2
+CLASS="SECTION"
+><A
+NAME="AEN829"
+>Constants</A
+></H2
+><P
+>      Constants are <SPAN
+CLASS="QUOTE"
+>"variables"</SPAN
+> that don't change.  If
+      you know that the value you're using is not going to change, you
+      should fold it into the code, either as an Immediate operand
+      wherever it's used, or (if it's more complicated than that)
+      as <TT
+CLASS="LITERAL"
+>.byte</TT
+> commands in between the procedures.
+      This is especially important for ROM-based systems such as the
+      NES; the NES has very little RAM available, so constants should
+      be kept in the more plentiful ROM wherever possible.
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x771.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x834.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Procedures and register saving</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c711.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Data structures</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

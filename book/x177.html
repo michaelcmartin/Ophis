@@ -2,7 +2,7 @@
 <HTML
 ><HEAD
 ><TITLE
->Example: Fibonnacci Numbers</TITLE
+>Writing the actual code</TITLE
 ><META
 NAME="GENERATOR"
 CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
@@ -10,14 +10,14 @@ REL="HOME"
 TITLE="Programming with Ophis"
 HREF="book1.html"><LINK
 REL="UP"
-TITLE="Call Stacks"
-HREF="c1068.html"><LINK
+TITLE="The basics"
+HREF="c58.html"><LINK
 REL="PREVIOUS"
-TITLE="Our Goals"
-HREF="x1083.html"><LINK
+TITLE="Related commands and options"
+HREF="x156.html"><LINK
 REL="NEXT"
-TITLE="Example Programs"
-HREF="a1143.html"></HEAD
+TITLE="Assembling the code"
+HREF="x186.html"></HEAD
 ><BODY
 CLASS="SECTION"
 BGCOLOR="#FFFFFF"
@@ -45,7 +45,7 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="bottom"
 ><A
-HREF="x1083.html"
+HREF="x156.html"
 ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
@@ -53,13 +53,13 @@ ACCESSKEY="P"
 WIDTH="80%"
 ALIGN="center"
 VALIGN="bottom"
->Call Stacks</TD
+>The basics</TD
 ><TD
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
-HREF="a1143.html"
+HREF="x186.html"
 ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
@@ -73,22 +73,30 @@ CLASS="SECTION"
 ><H1
 CLASS="SECTION"
 ><A
-NAME="AEN1135"
->Example: Fibonnacci Numbers</A
+NAME="AEN177"
+>Writing the actual code</A
 ></H1
 ><P
->    About the simplest <SPAN
+>      Now that we have our header information, let's actually write
+      the <SPAN
 CLASS="QUOTE"
->"interesting"</SPAN
-> recursive function
-    is the Fibonacci numbers.  The function fib(x) is defined as being
-    1 if x is 0 or 1, and being fib(x-2)+fib(x-1) otherwise.
-  </P
+>"Hello world"</SPAN
+> program.  It's pretty
+      short&#8212;a simple loop that steps through a hardcoded array
+      until it reaches a 0 or outputs 256 characters.  It then returns
+      control to BASIC with an <TT
+CLASS="LITERAL"
+>RTS</TT
+> statement.
+    </P
 ><P
->    Actually expressing it like that directly produces a very
-    inefficient implementation, but it's a simple demonstration of the
-    system.  Here's code for expressing the fib function:
-  </P
+>      Each character in the array is passed as an argument to a
+      subroutine at memory location $FFD2.  This is part of the
+      Commodore 64's BIOS software, which its development
+      documentation calls the KERNAL.  Location $FFD2 prints out the
+      character corresponding to the character code in the
+      accumulator.
+    </P
 ><TABLE
 BORDER="0"
 BGCOLOR="#E0E0E0"
@@ -97,60 +105,30 @@ WIDTH="100%"
 ><TD
 ><PRE
 CLASS="PROGRAMLISTING"
->.scope
-; Uint16 fib (Uint8 x): compute Xth fibonnaci number.
-; fib(0) = fib(1) = 1.
-; Stack usage: 3.
+>        ldx #0
+loop:   lda hello, x
+        beq done
+        jsr $ffd2
+        inx
+        bne loop
+done:   rts
 
-fib:    lda     #$03
-        jsr     save'stack
-        lda     fun'vars
-        cmp     #$02
-        bcc     _base
-
-        dec     fun'args
-        jsr     fib
-        lda     fun'args
-        sta     fun'vars+1
-        lda     fun'args+1
-        sta     fun'vars+2
-        lda     fun'vars
-        sec
-        sbc     #$02
-        sta     fun'args
-        jsr     fib
-        clc
-        lda     fun'args
-        adc     fun'vars+1
-        sta     fun'args
-        lda     fun'args+1
-        adc     fun'vars+2
-        sta     fun'args+1
-        jmp     _done
-
-_base:  ldy     #$01
-        sty     fun'args
-        dey
-        sty     fun'args+1
-
-_done:  lda     #$03
-        jsr     restore'stack
-        rts
-.scend</PRE
+hello:  .byte "HELLO, WORLD!", 0
+    </PRE
 ></TD
 ></TR
 ></TABLE
 ><P
->    The full application, which deals with interfacing with CBM BASIC
-    and handles console I/O and such, is in <A
-HREF="x1194.html"
+>      The complete, final source is available in
+      the <A
+HREF="a1143.html#TUTOR1-SRC"
 ><I
 ><I
->fibonacci.oph</I
+>hello1.oph</I
 ></I
 ></A
->.
-  </P
+> file.
+    </P
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"
@@ -168,7 +146,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="x1083.html"
+HREF="x156.html"
 ACCESSKEY="P"
 >&#60;&#60;&#60; Previous</A
 ></TD
@@ -186,7 +164,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="a1143.html"
+HREF="x186.html"
 ACCESSKEY="N"
 >Next &#62;&#62;&#62;</A
 ></TD
@@ -196,13 +174,13 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->Our Goals</TD
+>Related commands and options</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="c1068.html"
+HREF="c58.html"
 ACCESSKEY="U"
 >Up</A
 ></TD
@@ -210,7 +188,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->Example Programs</TD
+>Assembling the code</TD
 ></TR
 ></TABLE
 ></DIV
