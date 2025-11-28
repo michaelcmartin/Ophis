@@ -1,8 +1,8 @@
 """Command line options data."""
 
-import optparse
+import argparse
 
-# Copyright 2002-2024 Michael C. Martin and additional contributors.
+# Copyright 2002-2025 Michael C. Martin and additional contributors.
 # You may use, modify, and distribute this file under the MIT
 # license: See README for details.
 
@@ -25,7 +25,7 @@ listfile = None
 mapfile = None
 
 
-def parse_args(raw_args):
+def parse_args(args):
     "Populate the module's globals based on the command-line options given."
     global enable_collapse, enable_branch_extend
     global enable_undoc_ops, enable_65c02_exts, enable_4502_exts
@@ -34,48 +34,79 @@ def parse_args(raw_args):
     global print_pass, print_ir, print_labels
     global infiles, outfile, listfile, mapfile
 
-    parser = optparse.OptionParser(
-        usage="Usage: %prog [options] srcfile [srcfile ...]",
-        version="Ophis 6502 cross-assembler, version 2.2")
+    program_description = "Ophis 6502 series cross-assembler"
 
-    parser.add_option("-o", default=None, dest="outfile",
-                      help="Output filename (default 'ophis.bin')")
-    parser.add_option("-l", default=None, dest="listfile",
-                      help="Listing filename (not created by default)")
-    parser.add_option("-m", default=None, dest="mapfile",
-                      help="Label-address map filename (not created by default)")
+    parser = argparse.ArgumentParser(description=program_description)
 
-    ingrp = optparse.OptionGroup(parser, "Input options")
-    ingrp.add_option("-u", "--undoc", action="store_true", default=False,
-                     help="Enable 6502 undocumented opcodes")
-    ingrp.add_option("-c", "--65c02", action="store_true", default=False,
-                     dest="c02", help="Enable 65c02 extended instruction set")
-    ingrp.add_option("-4", "--4502", action="store_true", default=False,
-                     dest="csg4502", help="Enable 4502 extended instruction set")
+    parser.add_argument(
+        "srcfile", nargs="+", help="Input filenames (concatenated at assemble time)"
+    )
+    parser.add_argument("-o", "--outfile", help="Output filename (default: ophis.bin)")
+    parser.add_argument("-l", "--listfile", help="Create program listing")
+    parser.add_argument("-m", "--mapfile", help="Create label-address map")
+    parser.add_argument(
+        "--version", action="version", version=f"{program_description}, version 2.3-dev"
+    )
 
-    outgrp = optparse.OptionGroup(parser, "Console output options")
-    outgrp.add_option("-v", "--verbose", action="store_const", const=2,
-                      help="Verbose mode", default=1)
-    outgrp.add_option("-q", "--quiet", action="store_const", help="Quiet mode",
-                      dest="verbose", const=0)
-    outgrp.add_option("-d", "--debug", action="count", dest="verbose",
-                      help=optparse.SUPPRESS_HELP)
-    outgrp.add_option("--no-warn", action="store_false", dest="warn",
-                      default=True, help="Do not print warnings")
+    ingrp = parser.add_argument_group("Input options")
+    ingrp.add_argument(
+        "-u",
+        "--undoc",
+        action="store_true",
+        default=False,
+        help="Enable 6502 undocumented opcodes",
+    )
+    ingrp.add_argument(
+        "-c",
+        "--65c02",
+        action="store_true",
+        default=False,
+        dest="c02",
+        help="Enable 65c02 extended instruction set",
+    )
+    ingrp.add_argument(
+        "-4",
+        "--4502",
+        action="store_true",
+        default=False,
+        dest="csg4502",
+        help="Enable 4502 extended instruction set",
+    )
 
-    bingrp = optparse.OptionGroup(parser, "Compilation options")
-    bingrp.add_option("--no-branch-extend", action="store_false",
-                      dest="enable_branch_extend", default="True",
-                      help="Disable branch-extension pass")
+    outgrp = parser.add_argument_group("Console output options")
+    outgrp.add_argument(
+        "-v", "--verbose", action="store_const", const=2, help="Verbose mode", default=1
+    )
+    outgrp.add_argument(
+        "-q",
+        "--quiet",
+        action="store_const",
+        help="Quiet mode",
+        dest="verbose",
+        const=0,
+    )
+    outgrp.add_argument(
+        "-d", "--debug", action="count", dest="verbose", help=argparse.SUPPRESS
+    )
+    outgrp.add_argument(
+        "--no-warn",
+        action="store_false",
+        dest="warn",
+        default=True,
+        help="Do not print warnings",
+    )
 
-    parser.add_option_group(ingrp)
-    parser.add_option_group(outgrp)
-    parser.add_option_group(bingrp)
+    bingrp = parser.add_argument_group("Compilation options")
+    bingrp.add_argument(
+        "--no-branch-extend",
+        action="store_false",
+        dest="enable_branch_extend",
+        default="True",
+        help="Disable branch-extension pass",
+    )
 
-    (options, args) = parser.parse_args(raw_args)
+    options = parser.parse_args(args)
 
-    if len(args) == 0:
-        parser.error("No input files specified")
     if options.c02 and options.undoc:
         parser.error("--undoc and --65c02 are mutually exclusive")
     if options.c02 and options.csg4502:
@@ -83,7 +114,7 @@ def parse_args(raw_args):
     if options.csg4502 and options.undoc:
         parser.error("--undoc and --4502 are mutually exclusive")
 
-    infiles = args
+    infiles = options.srcfile
     outfile = options.outfile
     listfile = options.listfile
     mapfile = options.mapfile
