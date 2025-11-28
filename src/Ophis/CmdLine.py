@@ -48,15 +48,16 @@ def parse_args(args):
         "--version", action="version", version=f"{program_description}, version 2.3-dev"
     )
 
-    ingrp = parser.add_argument_group("Input options")
-    ingrp.add_argument(
+    cpugrp = parser.add_argument_group("CPU options")
+    xgrp = cpugrp.add_mutually_exclusive_group()
+    xgrp.add_argument(
         "-u",
         "--undoc",
         action="store_true",
         default=False,
         help="Enable 6502 undocumented opcodes",
     )
-    ingrp.add_argument(
+    xgrp.add_argument(
         "-c",
         "--65c02",
         action="store_true",
@@ -64,7 +65,7 @@ def parse_args(args):
         dest="c02",
         help="Enable 65c02 extended instruction set",
     )
-    ingrp.add_argument(
+    xgrp.add_argument(
         "-4",
         "--4502",
         action="store_true",
@@ -106,13 +107,6 @@ def parse_args(args):
     )
 
     options = parser.parse_args(args)
-
-    if options.c02 and options.undoc:
-        parser.error("--undoc and --65c02 are mutually exclusive")
-    if options.c02 and options.csg4502:
-        parser.error("--65c02 and --4502 are mutually exclusive")
-    if options.csg4502 and options.undoc:
-        parser.error("--undoc and --4502 are mutually exclusive")
 
     infiles = options.srcfile
     outfile = options.outfile
