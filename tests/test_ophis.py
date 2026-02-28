@@ -322,7 +322,7 @@ def test_scopes():
                 '.scend\n', b'ABA')
     test_string('Anonymous labels (basic)',
                 '.org $41\n'
-                '* .byte -, +\n'
+                ': .byte -, +\n'
                 '* .byte -, --\n', b'ACCA')
     test_string('Anonymous labels (across scopes)',
                 '.org $41\n'

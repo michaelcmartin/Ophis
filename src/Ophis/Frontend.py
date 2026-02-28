@@ -301,12 +301,12 @@ def parse_line(ppt, lexemelist):
             line.expect(":")
             result.append(IR.Node(ppt, "Label", newlabel, IR.PCExpr()))
             aux()
-        elif line.lookahead(0).type == "*":
+        elif line.lookahead(0).type == "*" or line.lookahead(0).type == ':':
             global templabelcount
             templabelcount = templabelcount + 1
             result.append(IR.Node(ppt, "Label", "*" + str(templabelcount),
                                   IR.PCExpr()))
-            line.expect("*")
+            line.expect("*", ":")
             aux()
         elif line.lookahead(0).type == "." or line.lookahead(0).type == "`":
             which = line.expect(".", "`").type

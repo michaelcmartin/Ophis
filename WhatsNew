@@ -1,3 +1,12 @@
+Changes towards Ophis 2.3:
+ - Refactored commandline parsing to use argparse and to conform
+   with expectations for Python CLI programs
+ - Allow parentheses for expression grouping alongside braces.
+   This will misparse if it is at the beginning of an operand.
+ - Allow colon (:) as well as star (*) to mark anonymous labels.
+   This is friendlier for some editors that interpret leading
+   stars as comments.
+
 Ophis 2.2: 28 Jul 2024
  - Codebase updated to Python 3: new minimum version is 3.6
  - New delivery option: pip and pipx (ophis-asm project). Older
