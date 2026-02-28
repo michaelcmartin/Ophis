@@ -235,7 +235,10 @@ def test_expressions():
     test_string('Underflow', '.byte 2-3', b'')
     test_string('Masked underflow', '.byte 2-3&$FF', b'\xff')
     test_string('Arithmetic precedence', '.byte 2+3*4-6/2', b'\x0b')
-    test_string('Parentheses', '.byte [2+3]*[4-6/2]', b'\x05')
+    test_string('Parentheses', '.byte (2+3)*(4-6/2)', b'\x05')
+    test_string('Braces', '.byte [2+3]*[4-6/2]', b'\x05')
+    test_string('Mixed Parens and Braces', '.byte (2+3)*[4-6/2]', b'\x05')
+    test_string('Paren mismatch', '.byte (2+3]*[4-6/2)', b'')
     test_string('String escapes',
                 '.byte "The man said, \\"The \\\\ is Windowsy.\\""',
                 b'The man said, "The \\ is Windowsy."')

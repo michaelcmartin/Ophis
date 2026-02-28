@@ -10,7 +10,7 @@ import sys
 import os
 import os.path
 
-# Copyright 2002-2024 Michael C. Martin and additional contributors.
+# Copyright 2002-2026 Michael C. Martin and additional contributors.
 # You may use, modify, and distribute this file under the MIT
 # license: See README for details.
 
@@ -223,6 +223,11 @@ def parse_expr(line):
             line.expect("[")
             result = parse_expr(line)
             line.expect("]")
+            return result
+        elif next == "(":
+            line.expect("(")
+            result = parse_expr(line)
+            line.expect(")")
             return result
         elif next == "+":
             offset = 0
