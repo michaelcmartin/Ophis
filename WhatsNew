@@ -3,6 +3,8 @@ Changes towards Ophis 2.3:
    with expectations for Python CLI programs
  - Allow parentheses for expression grouping alongside braces.
    This will misparse if it is at the beginning of an operand.
+ - Allow curly braces {} alongside parentheses and brackets as
+   grouping operators.
  - Allow colon (:) as well as star (*) to mark anonymous labels.
    This is friendlier for some editors that interpret leading
    stars as comments.

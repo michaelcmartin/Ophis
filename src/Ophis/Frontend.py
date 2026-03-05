@@ -44,7 +44,7 @@ bases = {"$": ("hexadecimal", 16),
          "0": ("octal", 8)}
 
 
-punctuation = "#,`<>():.+-*/&|^[]"
+punctuation = "#,`<>():.+-*/&|^[]{}"
 
 
 def lex(point, line):
@@ -219,6 +219,11 @@ def parse_expr(line):
         elif next == "^":
             line.expect("^")
             return IR.PCExpr()
+        elif next == "{":
+            line.expect("{")
+            result = parse_expr(line)
+            line.expect("}")
+            return result
         elif next == "[":
             line.expect("[")
             result = parse_expr(line)
