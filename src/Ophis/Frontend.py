@@ -339,17 +339,20 @@ def parse_line(ppt, lexemelist):
                 arg = parse_expr(line)
                 if line.lookahead(0).type == ",":
                     line.expect(",")
-                    if line.lookahead(0).type == "X":
-                        mode = "PointerX"
-                        line.expect("X")
-                        line.expect(")")
-                        line.expect("EOL")
-                    else:
+                    if Cmd.enable_4502_exts and line.lookahead(0).type == "SP":
                         mode = "PointerSPY"
                         line.expect("SP")
                         line.expect(")")
                         line.expect(",")
                         line.expect("Y")
+                        line.expect("EOL")
+                    else:
+                        mode = "PointerX"
+                        if Cmd.enable_4502_exts:
+                            line.expect("X", "SP")      # SP here for the error
+                        else:
+                            line.expect("X")
+                        line.expect(")")
                         line.expect("EOL")
                 else:
                     line.expect(")")
@@ -357,13 +360,16 @@ def parse_line(ppt, lexemelist):
                     if tok == "EOL":
                         mode = "Pointer"
                     else:
-                        if line.lookahead(0).type == "Y":
-                            mode = "PointerY"
-                            line.expect("Y")
-                            line.expect("EOL")
-                        else:
+                        if Cmd.enable_4502_exts and line.lookahead(0).type == "Z":
                             mode = "PointerZ"
                             line.expect("Z")
+                            line.expect("EOL")
+                        else:
+                            mode = "PointerY"
+                            if Cmd.enable_4502_exts:
+                                line.expect("Y", "Z")
+                            else:
+                                line.expect("Y")
                             line.expect("EOL")
             elif line.lookahead(0).type == "EOL":
                 mode = "Implied"
@@ -374,17 +380,20 @@ def parse_line(ppt, lexemelist):
                 if tok == ",":
                     # Parser has to special-case the BBXn instructions,
                     # Which uniquely take two addresses
-                    if opcode[:3] in ["bbs", "bbr"]:
+                    if (Cmd.enable_65c02_exts or Cmd.enable_4502_exts) and opcode[:3] in ["bbs", "bbr"]:
                         arg2 = parse_expr(line)
                         mode = "Memory2"
                     else:
-                        tok = line.expect("X", "Y", "Z").type
-                        if tok == "X":
-                            mode = "MemoryX"
+                        if Cmd.enable_4502_exts:
+                            tok = line.expect("X", "Y", "Z").type
+                        else:
+                            tok = line.expect("X", "Y").type
+                        if tok == "Z":
+                            mode = "MemoryZ"
                         elif tok == "Y":
                             mode = "MemoryY"
                         else:
-                            mode = "MemoryZ"
+                            mode = "MemoryX"
                     line.expect("EOL")
                 else:
                     mode = "Memory"
