@@ -47,6 +47,9 @@ bases = {"$": ("hexadecimal", 16),
 punctuation = "#,`<>():.+-*/&|^[]{}"
 
 
+operators = ["&","|","^","+","-","*","/"]
+
+
 def lex(point, line):
     """Turns a line of source into a sequence of lexemes."""
     Err.currentpoint = point
@@ -205,8 +208,11 @@ class ParseLine(object):
 pragma_modules = []
 
 
-def parse_expr(line):
-    "Parses an Ophis arithmetic expression."
+def parse_expr(line, first_atom=None):
+    """Parses an Ophis arithmetic expression. If first_atom is not
+       None, then it was a parenthesized expression parsed before
+       realizing that it did not represent indirection, and parsing
+       will proceed from that point."""
 
     def atom():
         "Parses lowest-priority expression components."
@@ -257,15 +263,20 @@ def parse_expr(line):
         else:
             Err.log('Expected: expression')
 
-    def precedence_read(constructor, reader, separators):
+    def precedence_read(constructor, reader, separators, head=None):
         """Handles precedence.  The reader argument is a function that returns
     expressions that bind more tightly than these; separators is a list
     of strings naming the operators at this precedence level.  The
     constructor argument is a class, indicating what node type holds
-    objects of this precedence level.
+    objects of this precedence level. The optional head argument, if not
+    None, indicates that a parse discovered this was an expression partway
+    through and must now complete the tail.
 
     Returns a list of Expr objects with separator strings between them."""
-        result = [reader()]  # first object
+        if head is not None:
+            result = [head] # preassign first object
+        else:
+            result = [reader()]  # read first object
         nextop = line.lookahead(0).type
         while (nextop in separators):
             line.expect(nextop)
@@ -276,19 +287,23 @@ def parse_expr(line):
             return result[0]
         return constructor(result)
 
-    def term():
+    def term(h=None):
         "Parses * and /"
-        return precedence_read(IR.SequenceExpr, atom, ["*", "/"])
+        return precedence_read(IR.SequenceExpr, atom, ["*", "/"], h)
 
-    def arith():
+    def arith(h=None):
         "Parses + and -"
-        return precedence_read(IR.SequenceExpr, term, ["+", "-"])
+        return precedence_read(IR.SequenceExpr, term, ["+", "-"], h)
 
-    def bits():
+    def bits(h=None):
         "Parses &, |, and ^"
-        return precedence_read(IR.SequenceExpr, arith, ["&", "|", "^"])
+        return precedence_read(IR.SequenceExpr, arith, ["&", "|", "^"], h)
 
-    return bits()
+    if first_atom is None:
+        return bits()
+    first_term = term(first_atom)
+    first_arith = arith(first_term)
+    return bits(first_arith)
 
 
 def parse_line(ppt, lexemelist):
@@ -296,6 +311,31 @@ def parse_line(ppt, lexemelist):
     Err.currentpoint = ppt
     result = []
     line = ParseLine(lexemelist)
+
+    def parse_memory_tail(opcode):
+        arg2 = None
+        tok = line.expect("EOL", ",").type
+        if tok == ",":
+            # Parser has to special-case the BBXn instructions,
+            # Which uniquely take two addresses
+            if (Cmd.enable_65c02_exts or Cmd.enable_4502_exts) and opcode[:3] in ["bbs", "bbr"]:
+                arg2 = parse_expr(line)
+                mode = "Memory2"
+            else:
+                if Cmd.enable_4502_exts:
+                    tok = line.expect("X", "Y", "Z").type
+                else:
+                    tok = line.expect("X", "Y").type
+                if tok == "Z":
+                    mode = "MemoryZ"
+                elif tok == "Y":
+                    mode = "MemoryY"
+                else:
+                    mode = "MemoryX"
+            line.expect("EOL")
+        else:
+            mode = "Memory"
+        return (mode, arg2)
 
     def aux():
         "Accumulates all IR nodes defined by this line."
@@ -356,47 +396,31 @@ def parse_line(ppt, lexemelist):
                         line.expect("EOL")
                 else:
                     line.expect(")")
-                    tok = line.expect(",", "EOL").type
-                    if tok == "EOL":
-                        mode = "Pointer"
+                    if line.lookahead(0).type in operators:
+                        arg = parse_expr(line,arg)
+                        (mode, arg2) = parse_memory_tail(opcode)
                     else:
-                        if Cmd.enable_4502_exts and line.lookahead(0).type == "Z":
-                            mode = "PointerZ"
-                            line.expect("Z")
-                            line.expect("EOL")
+                        tok = line.expect(",", "EOL").type
+                        if tok == "EOL":
+                            mode = "Pointer"
                         else:
-                            mode = "PointerY"
-                            if Cmd.enable_4502_exts:
-                                line.expect("Y", "Z")
+                            if Cmd.enable_4502_exts and line.lookahead(0).type == "Z":
+                                mode = "PointerZ"
+                                line.expect("Z")
+                                line.expect("EOL")
                             else:
-                                line.expect("Y")
-                            line.expect("EOL")
+                                mode = "PointerY"
+                                if Cmd.enable_4502_exts:
+                                    line.expect("Y", "Z")
+                                else:
+                                    line.expect("Y")
+                                line.expect("EOL")
             elif line.lookahead(0).type == "EOL":
                 mode = "Implied"
                 arg = None
             else:
                 arg = parse_expr(line)
-                tok = line.expect("EOL", ",").type
-                if tok == ",":
-                    # Parser has to special-case the BBXn instructions,
-                    # Which uniquely take two addresses
-                    if (Cmd.enable_65c02_exts or Cmd.enable_4502_exts) and opcode[:3] in ["bbs", "bbr"]:
-                        arg2 = parse_expr(line)
-                        mode = "Memory2"
-                    else:
-                        if Cmd.enable_4502_exts:
-                            tok = line.expect("X", "Y", "Z").type
-                        else:
-                            tok = line.expect("X", "Y").type
-                        if tok == "Z":
-                            mode = "MemoryZ"
-                        elif tok == "Y":
-                            mode = "MemoryY"
-                        else:
-                            mode = "MemoryX"
-                    line.expect("EOL")
-                else:
-                    mode = "Memory"
+                (mode, arg2) = parse_memory_tail(opcode)
             result.append(IR.Node(ppt, mode, opcode, arg, arg2))
 
     aux()

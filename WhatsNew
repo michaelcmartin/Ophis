@@ -2,7 +2,6 @@ Changes towards Ophis 2.3:
  - Refactored commandline parsing to use argparse and to conform
    with expectations for Python CLI programs
  - Allow parentheses for expression grouping alongside braces.
-   This will misparse if it is at the beginning of an operand.
  - Allow curly braces {} alongside parentheses and brackets as
    grouping operators.
  - Allow colon (:) as well as star (*) to mark anonymous labels.

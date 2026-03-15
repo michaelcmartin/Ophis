@@ -240,6 +240,10 @@ def test_expressions():
     test_string('Braces', '.byte {2+3}*{4-6/2}', b'\x05')
     test_string('Mixed Grouping', '.byte (2+3)*[4-6/2]-{4-3}', b'\x04')
     test_string('Paren mismatch', '.byte (2+3]*[4-6/2)', b'')
+    test_string('Deceptive Parentheses', 'jmp ($2000)+3\njmp ($2000)\nlda ($2000)*3+3,x', b'\x4c\x03 \x6c\x00 \xbd\x03\x60')
+    test_string('Deceptive Brackets (6502)', 'jmp [$2000]+3\njmp [$2000]\nlda [$2000]*3+3,x', b'\x4c\x03 \x4c\x00 \xbd\x03\x60')
+    # TODO: Deceptive Brackets has a different answer on chips with Long Indirect
+    test_string('Deceptive Parentheses (ZPR mode)', 'bbr1 ($11)*4|4-3,$22', b'\x1f\x45\x1f',['-c'])
     test_string('String escapes',
                 '.byte "The man said, \\"The \\\\ is Windowsy.\\""',
                 b'The man said, "The \\ is Windowsy."')
