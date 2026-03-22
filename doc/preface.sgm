@@ -87,7 +87,9 @@
       <emphasis>that</emphasis>, enough bug reports and bug fixes had
       trickled in to justify a fresh release, and 2.2 was published in
       2024&mdash;a lightly polished update that now fit more neatly
-      into the Python toolchains of the 2020s.
+      into the Python toolchains of the 2020s. 2.3, in 2026, fixed up
+      some infelicities and inconveniences that I finally decided I
+      didn't need to put up with any more.
     </para>
     <para>
       In the twenty years since I first started this project, I've

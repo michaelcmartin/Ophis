@@ -57,8 +57,8 @@ _next:  .word 0              ; End of program
         Anonymous labels are a way to handle short-ranged branches
         without having to come up with names for the then and else
         branches, for brief loops, and other such purposes.  To define
-        an anonymous label, use an asterisk.  To refer to an anonymous
-        label, use a series of <literal>+</literal>
+        an anonymous label, use a bare colon or an asterisk.  To refer
+        to an anonymous label, use a series of <literal>+</literal>
         or <literal>-</literal> signs.  <literal>+</literal> refers to
         the next anonymous label, <literal>++</literal> the label
         after that, etc.  Likewise, <literal>-</literal> is the most
@@ -74,7 +74,7 @@ _next:  .word 0              ; End of program
         jsr $ffd2
         inx
         bne -
-*       rts
+:       rts
 </programlisting>
 
     <para>

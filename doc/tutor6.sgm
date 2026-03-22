@@ -100,7 +100,7 @@ _done:  rts
         </row>
       </thead>
       <tbody>
-        <row><entry><literal>[ ]</literal></entry><entry>Parenthesized expressions</entry></row>
+        <row><entry><literal>{ } [ ] ( )</literal></entry><entry>Parenthesized expressions</entry></row>
         <row><entry><literal>&lt; &gt;</literal></entry><entry>Byte selection (low, high)</entry></row>
         <row><entry><literal>* /</literal></entry><entry>Multiply, divide</entry></row>
         <row><entry><literal>+ -</literal></entry><entry>Add, subtract</entry></row>
@@ -108,10 +108,9 @@ _done:  rts
       </tbody>
     </tgroup>
   </table>
+
   <para>
-    Note that brackets, not parentheses, are used to group arithmetic
-    operations.  Parentheses are reserved for the indirect addressing
-    modes.
+    Until version 2.3, only brackets were allowed to parenthesize expressions.
   </para>
 
   <para>

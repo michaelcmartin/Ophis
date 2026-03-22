@@ -58,8 +58,8 @@
           Normal labels are <emphasis>defined</emphasis> by
           prefixing a line with the label name and then a colon
           (e.g., <literal>label:</literal>).  Anonymous labels
-          are defined by prefixing a line with an asterisk
-          (e.g., <literal>*</literal>).
+          are defined by prefixing a line with just a colon or
+          with an asterisk.
         </para>
         <para>
           Temporary labels are only reachable from inside the
@@ -103,9 +103,9 @@
         bytes of 16-bit values, respectively.
       </para>
       <para>
-        Use brackets [ ] instead of parentheses ( ) when grouping
-        arithmetic operations, as the parentheses are needed for the
-        indirect addressing modes.
+        You may use parentheses ( ), brackets [ ], or curly braces { }
+        to group arithmetic expressions. Note that a fully parenthesized
+        expression will be interpreted as an indirect addressing mode.
       </para>
       <para>
         Examples:
