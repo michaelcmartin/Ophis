@@ -6,7 +6,7 @@ RequestExecutionlevel admin
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Ophis"
-!define PRODUCT_VERSION "2.2"
+!define PRODUCT_VERSION "2.3"
 !define PRODUCT_PUBLISHER "Michael Martin"
 !define PRODUCT_WEB_SITE "https://michaelcmartin.github.com/Ophis"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\ophis.exe"

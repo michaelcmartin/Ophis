@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ophis-asm"
-version = "2.2.0-1"
+version = "2.3.0"
 authors = [
   { name="Michael Martin", email="mcmartin@gmail.com" },
 ]

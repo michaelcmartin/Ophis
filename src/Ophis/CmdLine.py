@@ -45,7 +45,7 @@ def parse_args(args):
     parser.add_argument("-l", "--listfile", help="Create program listing")
     parser.add_argument("-m", "--mapfile", help="Create label-address map")
     parser.add_argument(
-        "--version", action="version", version=f"{program_description}, version 2.3-dev"
+        "--version", action="version", version=f"{program_description}, version 2.3"
     )
 
     cpugrp = parser.add_argument_group("CPU options")

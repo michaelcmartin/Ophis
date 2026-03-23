@@ -1,4 +1,4 @@
-Changes towards Ophis 2.3:
+Ophis 2.3: 22 Mar 2026
  - Refactored commandline parsing to use argparse and to conform
    with expectations for Python CLI programs
  - Allow parentheses for expression grouping alongside braces.
