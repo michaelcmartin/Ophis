@@ -80,8 +80,8 @@ NAME="AEN266"
 >        Anonymous labels are a way to handle short-ranged branches
         without having to come up with names for the then and else
         branches, for brief loops, and other such purposes.  To define
-        an anonymous label, use an asterisk.  To refer to an anonymous
-        label, use a series of <TT
+        an anonymous label, use a bare colon or an asterisk.  To refer
+        to an anonymous label, use a series of <TT
 CLASS="LITERAL"
 >+</TT
 >
@@ -121,7 +121,7 @@ CLASS="PROGRAMLISTING"
         jsr $ffd2
         inx
         bne -
-*       rts</PRE
+:       rts</PRE
 ></TD
 ></TR
 ></TABLE
